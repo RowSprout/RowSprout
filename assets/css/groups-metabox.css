@@ -1,0 +1,135 @@
+.dp-input-invalid { border-color:#d63638 !important; box-shadow:0 0 0 1px rgba(214,54,56,.15) !important; }
+.dp-href-error-msg { display:none; color:#d63638; font-size:11px; margin-top:3px; }
+.dp-href-error-msg.is-visible { display:block; }
+.dp-groups-list { display:flex; flex-direction:column; gap:10px; }
+.dp-group-card { border:1px solid #dcdcde; border-radius:8px; background:#fff; }
+.dp-group-card.is-new { animation:dpGroupFlash .9s ease-out; }
+.dp-group-head { display:grid; grid-template-columns:24px 90px minmax(180px,1fr) minmax(180px,1fr) auto auto; gap:8px; align-items:end; padding:10px; background:#f8f9fa; border-bottom:1px solid #dcdcde; cursor:pointer; }
+.dp-group-head .label { display:block; font-size:11px; color:#646970; margin-bottom:3px; }
+.dp-group-handle { cursor:move; text-align:center; font-size:15px; color:#646970; user-select:none; }
+.dp-group-index { font-weight:600; color:#1d2327; }
+.dp-group-head input[type='text'], .dp-group-head input[type='url'] { width:100%; }
+.dp-group-toggle { white-space:nowrap; }
+.dp-group-delete { color:#a00; text-decoration:none; }
+.dp-group-body { padding:10px; display:none; }
+.dp-group-card.is-open .dp-group-body { display:block; }
+.dp-fields-grid { display:grid; gap:12px; grid-template-columns:repeat(2, minmax(0, 1fr)); align-items:start; }
+.dp-field { border:1px solid #e2e4e7; border-radius:6px; padding:8px; background:#fff; }
+.dp-field-label { font-weight:600; margin-bottom:6px; font-size:12px; }
+.dp-field-label small { display:block; font-weight:400; color:#646970; margin-top:2px; }
+.dp-field textarea, .dp-field input, .dp-field select { width:100%; }
+.dp-state-badge { display:inline-flex; align-items:center; border-radius:999px; padding:2px 8px; font-size:11px; font-weight:600; }
+.dp-state-badge.is-fixed { background:#eceff1; color:#3c434a; }
+.dp-state-badge.is-overruled { background:#e8f5e9; color:#1e4d2b; }
+#dp-columns-meta { display:none; }
+.dp-empty-state { color:#646970; font-style:italic; }
+.dp-section-top-sm { margin:14px 0 0; }
+.dp-section-top { margin:12px 0 0; }
+.dp-groups-toolbar { margin:0 0 12px; display:flex; justify-content:flex-end; align-items:center; gap:8px; }
+.dp-col-delete { color:#a00; }
+.dp-prop-actions { display:flex; align-items:center; justify-content:flex-end; gap:8px; }
+.dp-prop-label-wrap { display:inline-flex; align-items:center; gap:8px; }
+.dp-prop-drag { color:#646970; cursor:move; user-select:none; }
+.dp-prop-drag.is-disabled { color:#c3c4c7; cursor:default; }
+.dp-prop-row.is-dragging { opacity:.55; }
+
+.dp-add-col-modal { display:none; position:fixed; inset:0; z-index:100000; }
+.dp-add-col-backdrop { position:absolute; inset:0; background:rgba(15,23,42,.55); }
+.dp-add-col-dialog { position:relative; width:min(560px, calc(100vw - 32px)); margin:8vh auto 0; background:#fff; border-radius:12px; box-shadow:0 24px 60px rgba(15,23,42,.25); overflow:hidden; }
+.dp-add-col-dialog-head { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid #e2e8f0; }
+.dp-add-col-close { text-decoration:none; font-size:24px; line-height:1; }
+.dp-add-col-content { padding:16px; }
+.dp-add-col-table { border-collapse:collapse; width:100%; }
+.dp-add-col-label-cell { padding:4px 8px 4px 0; width:120px; }
+.dp-add-col-field-cell { padding:4px 0; }
+.dp-add-col-input { width:100%; max-width:260px; }
+.dp-type-description { margin-top:6px; font-size:12px; color:#64748b; }
+.dp-new-options-row { display:none; }
+.dp-modal-actions { margin-top:14px; display:flex; gap:8px; justify-content:flex-end; }
+
+.dp-thumb-preview { margin-bottom:4px; }
+.dp-thumb-image { max-width:50px; max-height:50px; display:block; }
+.dp-thumb-image--inherited { opacity:.55; }
+.dp-thumb-inherited-note { font-size:11px; color:#646970; font-style:italic; margin-bottom:4px; }
+.dp-thumb-remove.is-hidden { display:none; }
+@keyframes dpGroupFlash {
+0% { box-shadow:0 0 0 0 rgba(34,197,94,.28); border-color:#86efac; }
+100% { box-shadow:0 0 0 0 rgba(34,197,94,0); border-color:#dcdcde; }
+}
+@media (max-width: 1024px) {
+.dp-group-head { grid-template-columns:24px 90px 1fr 1fr; }
+.dp-group-toggle, .dp-group-delete { justify-self:start; }
+}
+@media (max-width: 782px) {
+.dp-fields-grid { grid-template-columns:1fr; }
+.dp-group-head { grid-template-columns:24px 1fr; }
+}
+
+/* Self-contained WP-admin-style controls, scoped to our own UI wrappers
+   (.dp-template-tabs on the classic edit screen, .dp-elementor-tab-modal
+   inside Elementor's own editing canvas — the latter never loads WP
+   core's admin.css/forms.css, which is what these classes/elements
+   normally borrow their look from on the classic screen, so without this
+   they rendered unstyled there). Kept visually close to WP core's own
+   button/table/form-field styling so both contexts look the same. */
+:is(.dp-template-tabs, .dp-elementor-tab-modal) .button {
+	display:inline-flex; align-items:center; justify-content:center; box-sizing:border-box;
+	margin:0; padding:0 10px; min-height:30px; line-height:2.15384615; font-size:13px;
+	cursor:pointer; border:1px solid #c3c4c7; border-radius:3px; white-space:nowrap;
+	text-decoration:none; background:#f6f7f7; color:#2c3338;
+}
+:is(.dp-template-tabs, .dp-elementor-tab-modal) .button:hover {
+	background:#f0f0f1; border-color:#8c8f94;
+}
+:is(.dp-template-tabs, .dp-elementor-tab-modal) .button.button-primary {
+	background:#2271b1; border-color:#2271b1; color:#fff;
+}
+:is(.dp-template-tabs, .dp-elementor-tab-modal) .button.button-primary:hover {
+	background:#135e96; border-color:#135e96;
+}
+:is(.dp-template-tabs, .dp-elementor-tab-modal) .button.button-small {
+	min-height:24px; line-height:2.05; padding:0 8px; font-size:11px;
+}
+:is(.dp-template-tabs, .dp-elementor-tab-modal) .button-link {
+	background:none; border:none; box-shadow:none; color:#2271b1; cursor:pointer;
+	padding:0; text-decoration:underline; font-size:13px;
+}
+:is(.dp-template-tabs, .dp-elementor-tab-modal) .button-link:hover { color:#135e96; }
+
+:is(.dp-template-tabs, .dp-elementor-tab-modal) .description {
+	color:#646970; font-size:13px; font-style:normal; margin-top:4px;
+}
+
+:is(.dp-template-tabs, .dp-elementor-tab-modal) label { font-weight:600; color:#1d2327; }
+
+:is(.dp-template-tabs, .dp-elementor-tab-modal) input[type="text"],
+:is(.dp-template-tabs, .dp-elementor-tab-modal) input[type="url"],
+:is(.dp-template-tabs, .dp-elementor-tab-modal) input[type="number"],
+:is(.dp-template-tabs, .dp-elementor-tab-modal) input[type="email"],
+:is(.dp-template-tabs, .dp-elementor-tab-modal) textarea,
+:is(.dp-template-tabs, .dp-elementor-tab-modal) select {
+	box-sizing:border-box; border:1px solid #8c8f94; border-radius:4px; padding:4px 8px;
+	font-size:13px; line-height:1.6; color:#2c3338; background:#fff;
+}
+:is(.dp-template-tabs, .dp-elementor-tab-modal) input[type="text"]:focus,
+:is(.dp-template-tabs, .dp-elementor-tab-modal) input[type="url"]:focus,
+:is(.dp-template-tabs, .dp-elementor-tab-modal) input[type="number"]:focus,
+:is(.dp-template-tabs, .dp-elementor-tab-modal) input[type="email"]:focus,
+:is(.dp-template-tabs, .dp-elementor-tab-modal) textarea:focus,
+:is(.dp-template-tabs, .dp-elementor-tab-modal) select:focus {
+	border-color:#2271b1; box-shadow:0 0 0 1px #2271b1; outline:2px solid transparent;
+}
+
+:is(.dp-template-tabs, .dp-elementor-tab-modal) table.widefat {
+	border-collapse:collapse; width:100%; border:1px solid #c3c4c7; background:#fff;
+}
+:is(.dp-template-tabs, .dp-elementor-tab-modal) table.widefat th,
+:is(.dp-template-tabs, .dp-elementor-tab-modal) table.widefat td {
+	padding:8px 10px; text-align:left; border-bottom:1px solid #c3c4c7;
+}
+:is(.dp-template-tabs, .dp-elementor-tab-modal) table.widefat thead th {
+	font-weight:600; background:#f6f7f7;
+}
+:is(.dp-template-tabs, .dp-elementor-tab-modal) table.striped tbody tr:nth-child(odd) {
+	background:#f6f7f7;
+}

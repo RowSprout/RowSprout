@@ -1,0 +1,13 @@
+.dp-elementor-tab-modal { display: none; position: fixed; inset: 0; z-index: 999999; }
+.dp-elementor-tab-modal.is-open { display: block; }
+.dp-elementor-tab-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.5); }
+.dp-elementor-tab-dialog { position: relative; margin: 3vh auto; width: min(960px, 92vw); max-height: 94vh; overflow-y: auto; background: #fff; border-radius: 4px; box-shadow: 0 4px 24px rgba(0,0,0,.3); }
+.dp-elementor-tab-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid #dcdcde; position: sticky; top: 0; background: #fff; z-index: 1; }
+.dp-elementor-tab-close { background: none; border: 0; font-size: 22px; line-height: 1; cursor: pointer; }
+.dp-elementor-tab-body { padding: 20px; }
+/* The Elementor editor doesn't load wp-admin's notice styles. */
+.dp-elementor-tab-body .notice { background: #fff; border: 1px solid #c3c4c7; border-left-width: 4px; }
+.dp-elementor-tab-body .notice.notice-error { border-left-color: #d63638; }
+.dp-elementor-tab-body .notice.notice-warning { border-left-color: #dba617; }
+.dp-elementor-tab-body .notice[hidden] { display: none; }
+.dp-elementor-tab-foot { display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding: 14px 20px; border-top: 1px solid #dcdcde; position: sticky; bottom: 0; background: #fff; }
