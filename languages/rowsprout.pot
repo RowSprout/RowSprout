@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-30T07:02:31+00:00\n"
+"POT-Creation-Date: 2026-10-04T11:04:50+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: rowsprout\n"
@@ -20,7 +20,7 @@ msgstr ""
 #: src/Admin/Menu.php:29
 #: src/Admin/MenuRegistrar.php:15
 #: src/Admin/MenuRegistrar.php:16
-#: src/ThirdParty/Elementor/ElementorIntegration.php:149
+#: src/ThirdParty/Elementor/ElementorIntegration.php:147
 msgid "RowSprout"
 msgstr ""
 
@@ -39,34 +39,34 @@ msgid "RowSprout requires PHP 7.4 or higher."
 msgstr ""
 
 #. translators: %s: template title.
-#: src/Admin/ChildTemplateAdminUx.php:78
+#: src/Admin/ChildTemplateAdminUx.php:77
 #, php-format
 msgid "Move &#8220;%s&#8221; and its child pages to the Trash"
 msgstr ""
 
-#: src/Admin/ChildTemplateAdminUx.php:81
+#: src/Admin/ChildTemplateAdminUx.php:80
 msgid "Trash with Child pages"
 msgstr ""
 
 #. translators: %s: template title.
-#: src/Admin/ChildTemplateAdminUx.php:96
+#: src/Admin/ChildTemplateAdminUx.php:95
 #, php-format
 msgid "Restore &#8220;%s&#8221; and its parent from the Trash"
 msgstr ""
 
-#: src/Admin/ChildTemplateAdminUx.php:99
+#: src/Admin/ChildTemplateAdminUx.php:98
 msgid "Restore with Parent"
 msgstr ""
 
-#: src/Admin/ChildTemplateAdminUx.php:114
+#: src/Admin/ChildTemplateAdminUx.php:113
 msgid "This template has child templates, so it cannot have a parent itself."
 msgstr ""
 
-#: src/Admin/ChildTemplateAdminUx.php:144
+#: src/Admin/ChildTemplateAdminUx.php:143
 msgid "This template is a child of a selected parent and will be trashed along with it."
 msgstr ""
 
-#: src/Admin/ChildTemplateAdminUx.php:145
+#: src/Admin/ChildTemplateAdminUx.php:144
 msgid "Restoring this child template also restores its parent."
 msgstr ""
 
@@ -207,7 +207,7 @@ msgstr ""
 
 #: src/Admin/MenuRegistrar.php:49
 #: src/Admin/MenuRegistrar.php:50
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:70
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:59
 #: assets/js/blocks.js:37
 msgid "Settings"
 msgstr ""
@@ -220,8 +220,8 @@ msgstr ""
 
 #: src/Admin/Metaboxes.php:34
 #: src/ThirdParty/Elementor/TemplateEditorTab.php:150
-#: src/ThirdParty/Elementor/TemplateEditorTab.php:232
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:78
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:230
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:67
 #: src/ThirdParty/WPBakery/WPBakeryIntegration.php:144
 #: assets/js/blocks.js:39
 msgid "RowSprout template"
@@ -230,14 +230,14 @@ msgstr ""
 #: src/Admin/Metaboxes/ColumnSchema.php:48
 #: src/Admin/Metaboxes/ColumnSchema.php:85
 #: src/Admin/Metaboxes/GroupCardRenderer.php:51
-#: src/Admin/Metaboxes/TitleHrefMetaBoxRenderer.php:33
+#: src/Admin/Metaboxes/TitleHrefMetaBoxRenderer.php:41
 msgid "Href"
 msgstr ""
 
 #: src/Admin/Metaboxes/ColumnSchema.php:69
 #: src/Admin/Metaboxes/GroupCardRenderer.php:48
 #: src/Core/Template/FieldTypes/TitleFieldType.php:16
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:306
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:295
 msgid "Title"
 msgstr ""
 
@@ -258,26 +258,26 @@ msgstr ""
 msgid "Delete group"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupFieldInputRenderer.php:66
+#: src/Admin/Metaboxes/GroupFieldInputRenderer.php:94
 msgid "Inherited from parent template"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupFieldInputRenderer.php:69
+#: src/Admin/Metaboxes/GroupFieldInputRenderer.php:97
 #: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:63
 #: src/Admin/Metaboxes/RowRenderer.php:119
 msgid "Select"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupFieldInputRenderer.php:70
+#: src/Admin/Metaboxes/GroupFieldInputRenderer.php:98
 #: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:64
 #: src/Admin/Metaboxes/RowRenderer.php:120
 msgid "Remove"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupFieldInputRenderer.php:82
+#: src/Admin/Metaboxes/GroupFieldInputRenderer.php:110
 #: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:65
 #: src/Admin/Metaboxes/RowRenderer.php:124
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:153
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:142
 #: src/ThirdParty/WPBakery/WPBakeryIntegration.php:147
 msgid "Yes"
 msgstr ""
@@ -390,7 +390,7 @@ msgid "Add new property"
 msgstr ""
 
 #: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:100
-#: src/ThirdParty/Elementor/TemplateEditorTab.php:233
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:231
 msgid "Close"
 msgstr ""
 
@@ -414,16 +414,16 @@ msgstr ""
 msgid "Add group"
 msgstr ""
 
-#: src/Admin/Metaboxes/ParentPayloadAjaxHandler.php:27
+#: src/Admin/Metaboxes/ParentPayloadAjaxHandler.php:26
 msgid "You do not have permission to edit templates."
 msgstr ""
 
-#: src/Admin/Metaboxes/ParentPayloadAjaxHandler.php:34
+#: src/Admin/Metaboxes/ParentPayloadAjaxHandler.php:33
 #: src/ThirdParty/Elementor/TemplateEditorTab.php:181
 msgid "You do not have permission to edit this template."
 msgstr ""
 
-#: src/Admin/Metaboxes/ParentPayloadAjaxHandler.php:40
+#: src/Admin/Metaboxes/ParentPayloadAjaxHandler.php:39
 msgid "Invalid parent template."
 msgstr ""
 
@@ -484,13 +484,19 @@ msgid "Groups"
 msgstr ""
 
 #. translators: 1: example href with only the href token, 2: example href with extra text around a token.
-#: src/Admin/Metaboxes/TitleHrefMetaBoxRenderer.php:20
+#: src/Admin/Metaboxes/TitleHrefMetaBoxRenderer.php:21
 #, php-format
 msgid "The URL of each generated page. Use placeholder tokens so every page gets its own URL, for example %1$s or %2$s."
 msgstr ""
 
+#. translators: 1: example child href, 2: the resulting URL of a generated child page.
+#: src/Admin/Metaboxes/TitleHrefMetaBoxRenderer.php:27
+#, php-format
+msgid "The last part of the URL of each generated page. Every child page is placed under its parent page, so a fixed value such as %1$s already gives each page its own URL (e.g. %2$s)."
+msgstr ""
+
 #. translators: %s: the href placeholder token, e.g. @code_href_123@.
-#: src/Admin/Metaboxes/TitleHrefMetaBoxRenderer.php:26
+#: src/Admin/Metaboxes/TitleHrefMetaBoxRenderer.php:33
 #, php-format
 msgid "This href does not contain the group's href token (%s), so the generated pages do not get a URL of their own: WordPress numbers them instead (e.g. offer, offer-2, offer-3), and with an empty href no pages are generated at all."
 msgstr ""
@@ -616,13 +622,13 @@ msgid "(opens in a new tab)"
 msgstr ""
 
 #: src/Blocks/BlockRegistry.php:43
-#: src/ThirdParty/Elementor/ElementorIntegration.php:156
+#: src/ThirdParty/Elementor/ElementorIntegration.php:154
 #: src/ThirdParty/WPBakery/WPBakeryIntegration.php:140
 msgid "RowSprout pages"
 msgstr ""
 
 #: src/Blocks/BlockRegistry.php:67
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:48
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:37
 #: src/ThirdParty/WPBakery/WPBakeryIntegration.php:138
 msgid "Grid"
 msgstr ""
@@ -673,97 +679,97 @@ msgstr ""
 msgid "Page URL base set to \"%s\"."
 msgstr ""
 
-#: src/Core/PostTypes.php:54
+#: src/Core/PostTypes.php:52
+#: src/Core/PostTypes.php:55
 #: src/Core/PostTypes.php:57
-#: src/Core/PostTypes.php:59
 msgid "RowSprout Pages"
 msgstr ""
 
-#: src/Core/PostTypes.php:55
+#: src/Core/PostTypes.php:53
 msgid "All RowSprout Pages lives here"
 msgstr ""
 
-#: src/Core/PostTypes.php:58
+#: src/Core/PostTypes.php:56
 msgid "RowSprout Page"
 msgstr ""
 
-#: src/Core/PostTypes.php:60
+#: src/Core/PostTypes.php:58
 msgid "All Pages"
 msgstr ""
 
-#: src/Core/PostTypes.php:61
+#: src/Core/PostTypes.php:59
 msgid "View RowSprout Page"
 msgstr ""
 
-#: src/Core/PostTypes.php:62
+#: src/Core/PostTypes.php:60
 msgid "Add New Page"
 msgstr ""
 
-#: src/Core/PostTypes.php:63
+#: src/Core/PostTypes.php:61
 msgid "Add New"
 msgstr ""
 
-#: src/Core/PostTypes.php:64
+#: src/Core/PostTypes.php:62
 msgid "Edit Page"
+msgstr ""
+
+#: src/Core/PostTypes.php:63
+#: src/Core/PostTypes.php:104
+msgid "Update Page"
+msgstr ""
+
+#: src/Core/PostTypes.php:64
+msgid "Search in RowSprout Pages"
 msgstr ""
 
 #: src/Core/PostTypes.php:65
 #: src/Core/PostTypes.php:106
-msgid "Update Page"
-msgstr ""
-
-#: src/Core/PostTypes.php:66
-msgid "Search in RowSprout Pages"
-msgstr ""
-
-#: src/Core/PostTypes.php:67
-#: src/Core/PostTypes.php:108
 msgid "Not Found"
 msgstr ""
 
-#: src/Core/PostTypes.php:68
-#: src/Core/PostTypes.php:109
+#: src/Core/PostTypes.php:66
+#: src/Core/PostTypes.php:107
 msgid "Not Found in Trash"
 msgstr ""
 
-#: src/Core/PostTypes.php:95
+#: src/Core/PostTypes.php:93
 msgid "RowSprout Template Pages"
 msgstr ""
 
-#: src/Core/PostTypes.php:96
+#: src/Core/PostTypes.php:94
 msgid "All RowSprout Template Pages lives here"
 msgstr ""
 
+#: src/Core/PostTypes.php:96
 #: src/Core/PostTypes.php:98
-#: src/Core/PostTypes.php:100
 msgid "RowSprout Templates"
 msgstr ""
 
-#: src/Core/PostTypes.php:99
+#: src/Core/PostTypes.php:97
 msgid "RowSprout Template"
 msgstr ""
 
-#: src/Core/PostTypes.php:101
+#: src/Core/PostTypes.php:99
 msgid "All Template Pages"
 msgstr ""
 
-#: src/Core/PostTypes.php:102
+#: src/Core/PostTypes.php:100
 msgid "View RowSprout Template Page"
 msgstr ""
 
-#: src/Core/PostTypes.php:103
+#: src/Core/PostTypes.php:101
 msgid "Add New Template Page"
 msgstr ""
 
-#: src/Core/PostTypes.php:104
+#: src/Core/PostTypes.php:102
 msgid "Add New Template"
 msgstr ""
 
-#: src/Core/PostTypes.php:105
+#: src/Core/PostTypes.php:103
 msgid "Edit Template"
 msgstr ""
 
-#: src/Core/PostTypes.php:107
+#: src/Core/PostTypes.php:105
 msgid "Search in RowSprout Template Pages"
 msgstr ""
 
@@ -812,7 +818,7 @@ msgid "For numeric values."
 msgstr ""
 
 #: src/Core/Template/FieldTypes/TextareaFieldType.php:16
-#: src/ThirdParty/Elementor/Widgets/TextareaWidget.php:33
+#: src/ThirdParty/Elementor/Widgets/TextareaWidget.php:25
 msgid "Textarea"
 msgstr ""
 
@@ -822,7 +828,7 @@ msgstr ""
 
 #: src/Core/Template/FieldTypes/TextfieldFieldType.php:16
 #: src/ThirdParty/Elementor/Widgets/HeadingWidget.php:57
-#: src/ThirdParty/Elementor/Widgets/TextareaWidget.php:60
+#: src/ThirdParty/Elementor/Widgets/TextareaWidget.php:52
 msgid "Text field"
 msgstr ""
 
@@ -842,8 +848,12 @@ msgstr ""
 msgid "For web addresses or links."
 msgstr ""
 
+#: src/Core/Template/HrefPatternValidator.php:84
+msgid "The href of this child template is empty, so no pages are generated for it. Enter the last part of the URL, for example /contact: every child page is placed under its parent page, so that already gives each page its own URL."
+msgstr ""
+
 #. translators: %s: the href placeholder token, e.g. @code_href_123@.
-#: src/Core/Template/HrefPatternValidator.php:63
+#: src/Core/Template/HrefPatternValidator.php:93
 #, php-format
 msgid "The href of this template does not contain the group's href token (%s), so the generated pages do not get a URL of their own: WordPress numbers them instead (e.g. offer, offer-2, offer-3), and with an empty href no pages are generated at all. Add the token to the href and save again."
 msgstr ""
@@ -893,19 +903,19 @@ msgstr ""
 msgid "Two or more groups share the same URL/slug. Every group's URL must be unique."
 msgstr ""
 
-#: src/ThirdParty/Elementor/TemplateEditorTab.php:239
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:237
 msgid "Save"
 msgstr ""
 
-#: src/ThirdParty/Elementor/TemplateEditorTab.php:275
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:273
 msgid "Preview group"
 msgstr ""
 
-#: src/ThirdParty/Elementor/TemplateEditorTab.php:283
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:281
 msgid "Determines which group the widgets and tags show in this editor. After choosing, click \"Refresh preview\" to update the preview. Has no effect on the actual pages."
 msgstr ""
 
-#: src/ThirdParty/Elementor/TemplateEditorTab.php:311
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:309
 msgid "Refresh preview"
 msgstr ""
 
@@ -963,154 +973,154 @@ msgstr ""
 msgid "Optional: take the button text from a Text field property."
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:88
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:77
 msgid "Sort direction"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:92
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:81
 msgid "By row (horizontal)"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:93
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:82
 msgid "By column (vertical)"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:104
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:93
 #: src/ThirdParty/WPBakery/WPBakeryIntegration.php:146
 #: assets/js/blocks.js:56
 msgid "Columns"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:121
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:110
 msgid "Rows"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:138
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:127
 msgid "Layout Type"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:141
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:130
 msgid "Cart Layout"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:142
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:131
 msgid "List Layout"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:151
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:140
 #: src/ThirdParty/WPBakery/WPBakeryIntegration.php:147
 #: assets/js/blocks.js:64
 msgid "Show thumbnail"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:154
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:143
 msgid "No"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:164
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:153
 #: src/ThirdParty/WPBakery/WPBakeryIntegration.php:148
 #: assets/js/blocks.js:70
 msgid "Thumbnail size"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:167
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:345
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:156
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:334
 #: src/ThirdParty/WPBakery/WPBakeryIntegration.php:148
 #: assets/js/blocks.js:73
 msgid "Thumbnail"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:168
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:157
 #: src/ThirdParty/WPBakery/WPBakeryIntegration.php:148
 #: assets/js/blocks.js:74
 msgid "Medium"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:169
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:158
 #: src/ThirdParty/WPBakery/WPBakeryIntegration.php:148
 #: assets/js/blocks.js:75
 msgid "Large"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:170
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:159
 #: src/ThirdParty/WPBakery/WPBakeryIntegration.php:148
 #: assets/js/blocks.js:76
 msgid "Full"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:183
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:172
 #: src/ThirdParty/WPBakery/WPBakeryIntegration.php:149
 #: assets/js/blocks.js:82
 msgid "Show title"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:187
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:176
 #: src/ThirdParty/WPBakery/WPBakeryIntegration.php:149
 #: assets/js/blocks.js:85
 msgid "Parent title"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:188
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:177
 #: src/ThirdParty/WPBakery/WPBakeryIntegration.php:149
 #: assets/js/blocks.js:86
 msgid "Child title"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:196
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:185
 #: src/ThirdParty/WPBakery/WPBakeryIntegration.php:150
 #: assets/js/blocks.js:92
 msgid "Sort items"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:200
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:189
 #: src/ThirdParty/WPBakery/WPBakeryIntegration.php:150
 #: assets/js/blocks.js:95
 msgid "No sorting"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:201
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:190
 #: src/ThirdParty/WPBakery/WPBakeryIntegration.php:150
 #: assets/js/blocks.js:96
 msgid "Alphabetical (A-Z)"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:202
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:191
 #: src/ThirdParty/WPBakery/WPBakeryIntegration.php:150
 #: assets/js/blocks.js:97
 msgid "Alphabetical (Z-A)"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:212
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:201
 msgid "Item"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:248
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:376
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:237
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:365
 msgid "Border radius"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:260
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:331
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:249
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:320
 msgid "Padding"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:272
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:261
 msgid "Gap between columns"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:288
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:277
 msgid "Gap between rows"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:314
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:303
 msgid "Color"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:354
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:343
 msgid "Max width"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:365
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:354
 msgid "Height"
 msgstr ""
 
@@ -1119,7 +1129,7 @@ msgid "Heading"
 msgstr ""
 
 #: src/ThirdParty/Elementor/Widgets/HeadingWidget.php:49
-#: src/ThirdParty/Elementor/Widgets/TextareaWidget.php:52
+#: src/ThirdParty/Elementor/Widgets/TextareaWidget.php:44
 msgid "Content"
 msgstr ""
 
@@ -1128,7 +1138,7 @@ msgid "HTML tag"
 msgstr ""
 
 #: src/ThirdParty/Elementor/Widgets/HeadingWidget.php:84
-#: src/ThirdParty/Elementor/Widgets/TextareaWidget.php:70
+#: src/ThirdParty/Elementor/Widgets/TextareaWidget.php:62
 msgid "Fallback text"
 msgstr ""
 
@@ -1137,16 +1147,16 @@ msgid "Lorem ipsum dolor sit amet"
 msgstr ""
 
 #: src/ThirdParty/Elementor/Widgets/HeadingWidget.php:95
-#: src/ThirdParty/Elementor/Widgets/TextareaWidget.php:82
+#: src/ThirdParty/Elementor/Widgets/TextareaWidget.php:74
 msgid "Text"
 msgstr ""
 
 #: src/ThirdParty/Elementor/Widgets/HeadingWidget.php:111
-#: src/ThirdParty/Elementor/Widgets/TextareaWidget.php:98
+#: src/ThirdParty/Elementor/Widgets/TextareaWidget.php:90
 msgid "Text color"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/TextareaWidget.php:73
+#: src/ThirdParty/Elementor/Widgets/TextareaWidget.php:65
 msgid "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
 msgstr ""
 

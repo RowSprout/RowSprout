@@ -211,9 +211,7 @@ final class TemplateEditorTab {
 		wp_send_json_success( [
 			'config_updated_at' => (string) ( $saved['config_updated_at'] ?? '' ),
 			// Not an error: the config is saved; the modal stays open and shows it.
-			'warning'           => HrefPatternValidator::shouldWarnOnSave( $saved, $postId )
-				? HrefPatternValidator::missingTokenMessage( $postId )
-				: '',
+			'warning'           => HrefPatternValidator::saveWarning( $saved, $postId ),
 		] );
 	}
 

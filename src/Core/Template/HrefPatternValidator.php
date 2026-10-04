@@ -17,6 +17,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  * pattern makes PageBuilder skip the page and the row ends up `failed`.
  * HrefUniquenessValidator can't catch either, since it only compares the
  * per-group values. This only warns; it never blocks.
+ *
+ * A child template is exempt from the token rule: its groups map one-to-one
+ * onto the parent's groups (it cannot add its own) and each page is created
+ * under its parent group's page (post_parent), so a fixed href such as
+ * "/contact" already gives every page its own URL. The href token would even
+ * be wrong there: in a child it resolves to the parent group's href, giving
+ * "/amsterdam/amsterdam". Only an empty href is still flagged.
  */
 final class HrefPatternValidator {
 
@@ -54,31 +61,38 @@ final class HrefPatternValidator {
 		return array_values( array_unique( array_filter( $codes ) ) );
 	}
 
+	public static function isChildTemplate( int $templateId ): bool {
+		return $templateId > 0 && (int) wp_get_post_parent_id( $templateId ) > 0;
+	}
+
 	/**
-	 * Shared by the save notice (SavePost) and the Elementor modal's save response.
+	 * The warning a save should show, or '' for none. Shared by the save
+	 * notice (SavePost) and the Elementor modal's save response. An empty href
+	 * only matters once there are groups to generate — a brand-new template
+	 * starts out empty and that isn't a mistake yet.
+	 *
+	 * @param array<string, mixed> $config
 	 */
-	public static function missingTokenMessage( int $templateId ): string {
+	public static function saveWarning( array $config, int $templateId ): string {
+		$pattern = (string) ( $config['rowsprout_page_href'] ?? '' );
+
+		if ( self::isChildTemplate( $templateId ) ) {
+			if ( $pattern !== '' || empty( $config['groups'] ) ) {
+				return '';
+			}
+
+			return __( 'The href of this child template is empty, so no pages are generated for it. Enter the last part of the URL, for example /contact: every child page is placed under its parent page, so that already gives each page its own URL.', 'rowsprout' );
+		}
+
+		if ( $pattern === '' ? empty( $config['groups'] ) : self::referencesGroupHref( $pattern, $templateId ) ) {
+			return '';
+		}
+
 		return sprintf(
 			/* translators: %s: the href placeholder token, e.g. @code_href_123@. */
 			__( 'The href of this template does not contain the group\'s href token (%s), so the generated pages do not get a URL of their own: WordPress numbers them instead (e.g. offer, offer-2, offer-3), and with an empty href no pages are generated at all. Add the token to the href and save again.', 'rowsprout' ),
 			'@code_href_' . $templateId . '@'
 		);
-	}
-
-	/**
-	 * Whether a save should warn. An empty href only matters once there are
-	 * groups to generate — a brand-new template starts out empty and that
-	 * isn't a mistake yet.
-	 *
-	 * @param array<string, mixed> $config
-	 */
-	public static function shouldWarnOnSave( array $config, int $templateId ): bool {
-		$pattern = (string) ( $config['rowsprout_page_href'] ?? '' );
-		if ( $pattern === '' ) {
-			return ! empty( $config['groups'] );
-		}
-
-		return ! self::referencesGroupHref( $pattern, $templateId );
 	}
 
 	/**

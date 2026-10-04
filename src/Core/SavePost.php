@@ -107,7 +107,7 @@ final class SavePost {
 	 * HrefPatternValidator for why a pattern without the href token is
 	 * almost always a mistake.
 	 */
-	private static function persistHrefTokenMissingNotice( int $postId ): void {
+	private static function persistHrefTokenMissingNotice( string $message ): void {
 		$userId = get_current_user_id();
 		if ( ! $userId ) {
 			return;
@@ -115,7 +115,7 @@ final class SavePost {
 
 		set_transient(
 			self::hrefTokenMissingNoticeTransientKey( $userId ),
-			HrefPatternValidator::missingTokenMessage( $postId ),
+			$message,
 			MINUTE_IN_SECONDS
 		);
 	}
@@ -374,8 +374,9 @@ final class SavePost {
 			}
 
 			TemplateMeta::save( $postId, $config );
-			if ( HrefPatternValidator::shouldWarnOnSave( $config, $postId ) ) {
-				self::persistHrefTokenMissingNotice( $postId );
+			$hrefWarning = HrefPatternValidator::saveWarning( $config, $postId );
+			if ( $hrefWarning !== '' ) {
+				self::persistHrefTokenMissingNotice( $hrefWarning );
 			}
 			self::handlePostSaveQueue( $postId, $existingConfig, $input );
 			return;

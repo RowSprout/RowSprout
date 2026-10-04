@@ -36,7 +36,8 @@ final class ConfigNormalizer {
 	 * token. PageBuilder replaces the tokens and runs the result through
 	 * sanitize_title() to get the page's post_name, so only the slug part
 	 * matters — an absolute URL here would just be flattened into a slug
-	 * (HrefPatternValidator warns when the href token is missing). The
+	 * (HrefPatternValidator warns when the href token is missing; a child
+	 * template's href may be fixed text). The
 	 * stored pattern itself must keep its tokens intact, so it can't be run through
 	 * sanitize_title() the way a single per-group href/slug value is (see
 	 * HrefFieldType::sanitize()): that would strip the leading slash,
