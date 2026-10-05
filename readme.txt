@@ -31,6 +31,7 @@ A plumbing company works in 30 towns. With RowSprout it designs one "Plumber in 
 
 * **Real pages, not virtual ones.** Every generated page is a normal WordPress post with its own permalink, so search engines, caching plugins and your theme treat it like any other page.
 * **Your own URL pattern.** Build each page's address from its properties, for example `/plumber-amsterdam/`, `/plumber-utrecht/` and so on, under the site root or a prefix of your choice. RowSprout warns you before two pages would get the same URL.
+* **Every language and alphabet.** Accents, Greek, Cyrillic, Arabic, Hebrew, Chinese, Japanese and emoji are fully supported in your rows, titles, content and URLs. Addresses follow WordPress's own rules: *Zürich* becomes `/plumber-zurich/`, while other alphabets stay as they are (`/plumber-αθήνα/`).
 * **Pages stay in sync.** Change the design or a row, save, and every page of the template is regenerated from it, so no page is ever out of date.
 * **Status at a glance.** The Templates screen shows per template how many of its pages are up to date.
 * **Background generation.** Pages are created in a queue (Action Scheduler), so saving a template with hundreds of rows never slows down your admin.
@@ -92,6 +93,10 @@ No. RowSprout works with the WordPress block editor, Elementor and WPBakery Page
 = Are the generated pages good for SEO? =
 
 They are ordinary WordPress pages with their own URL, title, content and featured image, so SEO plugins, sitemaps and caching treat them like any page you made by hand. Make sure every row has genuinely useful, distinct content: search engines value pages that answer a real question, not near-identical copies.
+
+= Does RowSprout work in my language? =
+
+Yes, in every language and alphabet. Accents, Greek, Cyrillic, Arabic, Hebrew, Chinese, Japanese and emoji arrive on your pages exactly as you type them. In URLs, accents are simplified the way WordPress does it (with German and Danish spelling on sites in those languages), and letters of other alphabets stay as they are. More in the documentation: [Languages and special characters](https://docs.rowsprout.com/getting-started/languages/).
 
 = What happens when I change the template? =
 
