@@ -49,7 +49,9 @@ final class RankMath {
 	}
 
 	/**
-	 * Filter decision if post type is excluded from the XML sitemap.
+	 * Keeps templates out of the XML sitemap. RankMath excludes a post type
+	 * when this filter returns true (see its sitemap Post_Type provider's
+	 * handles_type()).
 	 *
 	 * @param bool   $exclude
 	 * @param string $type
@@ -57,13 +59,14 @@ final class RankMath {
 	 */
 	public static function excludePostType( bool $exclude, string $type ): bool {
 		if ( PostTypes::TEMPLATE === $type ) {
-			return false;
+			return true;
 		}
 		return $exclude;
 	}
 
 	/**
-	 * Force noindex for rowsprout_template and index for rowsprout_page.
+	 * Forces noindex for templates. Generated pages are left alone: they
+	 * carry the robots settings copied from the template's RankMath meta.
 	 *
 	 * @param array $robots
 	 * @return array
@@ -72,11 +75,6 @@ final class RankMath {
 		if ( is_singular( PostTypes::TEMPLATE ) ) {
 			$robots['index']  = 'noindex';
 			$robots['follow'] = 'nofollow';
-		}
-
-		if ( is_singular( PostTypes::PAGE ) ) {
-			$robots['index']  = 'index';
-			$robots['follow'] = 'follow';
 		}
 
 		return $robots;

@@ -48,7 +48,7 @@ A plumbing company works in 30 towns. With RowSprout it designs one "Plumber in 
 
 = Integrations =
 
-* **Rank Math:** generated pages get the template's SEO and social settings with each page's own values, are included in the sitemap and are indexable; the template itself stays out of the sitemap and is set to noindex.
+* **Rank Math:** generated pages get the template's SEO, social and robots settings with each page's own values, and are included in the sitemap; the template itself stays out of the sitemap and is set to noindex.
 * **WP Rocket:** templates are never cached as pages of their own.
 
 = RowSprout Pro =

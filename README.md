@@ -56,7 +56,7 @@ Also works with builds bundled with themes. A template built with WPBakery opens
 
 ### Other plugins
 
-- **RankMath**: excludes templates (but not generated pages) from the XML sitemap, forces noindex on templates, and copies SEO/social meta fields to each generated page.
+- **RankMath**: excludes templates (but not generated pages) from the XML sitemap, forces noindex on templates, and copies SEO/social/robots meta fields to each generated page (their robots setting comes from the template, not from RowSprout).
 - **WP Rocket**: hides the "Purge Cache" row action on templates, which are never served/cached directly.
 - **WPML**: the free plugin exposes the hook points WPML/Pro need to detect and cascade translations; full multi-language support (translate a template once and all of its pages are generated in that language, with per-group field translation and linked translations) is a Pro feature.
 
