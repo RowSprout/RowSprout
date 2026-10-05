@@ -47,6 +47,8 @@ final class ChildTemplateAdminUx {
 			return;
 		}
 
+		// No action2 fallback: since WordPress 5.7 core reads only 'action'
+		// (common.js keeps the bottom selector in sync with the top one).
 		$action = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : '';
 		if ( isset( $_REQUEST['delete_all'] ) || isset( $_REQUEST['delete_all2'] ) ) {
 			$action = 'delete_all';
