@@ -75,9 +75,13 @@ final class TemplateImporter {
 			return $result;
 		}
 
-		$formatVersion = (int) ( $data['format_version'] ?? 0 );
-		if ( $formatVersion < 1 || $formatVersion > TemplateExporter::FORMAT_VERSION ) {
+		$formatVersion = is_numeric( $data['format_version'] ?? null ) ? (int) $data['format_version'] : 0;
+		if ( $formatVersion > TemplateExporter::FORMAT_VERSION ) {
 			$result->addError( __( 'This export file was made by a newer version of RowSprout. Update RowSprout on this site and try again.', 'rowsprout' ) );
+			return $result;
+		}
+		if ( $formatVersion < 1 ) {
+			$result->addError( __( 'This export file is damaged: it has no valid format version.', 'rowsprout' ) );
 			return $result;
 		}
 
@@ -137,8 +141,11 @@ final class TemplateImporter {
 
 		if ( $unknownTypes !== [] ) {
 			$result->addWarning( sprintf(
-				/* translators: %s: comma-separated property types, e.g. "richtext, date". */
-				__( 'These property types are not available on this site: %s. Their values were imported unchanged; activate the plugin that adds them (such as RowSprout Pro) to edit and use them.', 'rowsprout' ),
+				current_user_can( 'unfiltered_html' )
+					/* translators: %s: comma-separated property types, e.g. "richtext, date". */
+					? __( 'These property types are not available on this site: %s. Their values were imported unchanged; activate the plugin that adds them (such as RowSprout Pro) to edit and use them.', 'rowsprout' )
+					/* translators: %s: comma-separated property types, e.g. "richtext, date". */
+					: __( 'These property types are not available on this site: %s. Their values were imported with only safe HTML kept (your account may not add other HTML), so some markup may be gone; activate the plugin that adds them (such as RowSprout Pro) to edit and use them.', 'rowsprout' ),
 				implode( ', ', array_keys( $unknownTypes ) )
 			) );
 		}
@@ -443,8 +450,14 @@ final class TemplateImporter {
 					continue;
 				}
 
+				// A declared property decides the field's type and code, as in a
+				// save from the template form; the field's own entry only counts
+				// for a key without a property.
 				$property = $properties[ $key ] ?? [];
-				$type     = sanitize_key( self::text( $rawField['type'] ?? ( $property['type'] ?? '' ) ) );
+				$type     = (string) ( $property['type'] ?? '' );
+				if ( $type === '' ) {
+					$type = sanitize_key( self::text( $rawField['type'] ?? '' ) );
+				}
 				if ( $type === '' ) {
 					$type = 'textfield';
 				}
@@ -457,7 +470,7 @@ final class TemplateImporter {
 				$fields[ $key ] = [
 					'type'             => $type,
 					'value'            => self::sanitizeValue( $type, (string) ( $property['field_type'] ?? '' ), $rawField['value'] ?? '', (array) ( $property['options'] ?? [] ) ),
-					'code'             => sanitize_key( self::text( $rawField['code'] ?? ( $property['code'] ?? $key ) ) ),
+					'code'             => ( $property['code'] ?? '' ) !== '' ? $property['code'] : sanitize_key( self::text( $rawField['code'] ?? $key ) ),
 					'id'               => SavePayloadSanitizer::ensureUniqueId( $fieldId > 0 ? $fieldId : SavePayloadSanitizer::generateNumericId(), $usedFieldIds ),
 					'can_be_overruled' => in_array( $type, self::LOCKED_TYPES, true ) ? false : (bool) ( $rawField['can_be_overruled'] ?? true ),
 				];

@@ -48,7 +48,7 @@ final class MenuRegistrar {
 			'rowsprout_home',
 			__( 'Import / Export', 'rowsprout' ),
 			__( 'Import / Export', 'rowsprout' ),
-			'export',
+			TemplateTransferPage::requiredCapability(),
 			TemplateTransferPage::PAGE_SLUG,
 			[ TemplateTransferPage::class, 'renderPage' ]
 		);

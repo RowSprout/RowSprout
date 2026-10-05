@@ -18,7 +18,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * list gets an "Export" row action and bulk action too.
  *
  * Same capabilities as WordPress's own Tools → Export/Import: "export" to
- * download, "import" to upload.
+ * download, "import" to upload. The page opens for either; each card shows
+ * only for its own capability.
  */
 final class TemplateTransferPage {
 
@@ -36,6 +37,15 @@ final class TemplateTransferPage {
 		add_filter( 'handle_bulk_actions-edit-' . PostTypes::TEMPLATE, [ self::class, 'handleBulkAction' ], 10, 3 );
 		// Templates are hierarchical, so their list uses page_row_actions.
 		add_filter( 'page_row_actions', [ self::class, 'addRowAction' ], 30, 2 );
+	}
+
+	/**
+	 * The capability the menu item needs: a single one, so whichever of
+	 * export/import this user has (export when neither, which hides the
+	 * page).
+	 */
+	public static function requiredCapability(): string {
+		return ! current_user_can( 'export' ) && current_user_can( 'import' ) ? 'import' : 'export';
 	}
 
 	public static function pageUrl(): string {
@@ -161,7 +171,7 @@ final class TemplateTransferPage {
 	}
 
 	public static function renderPage(): void {
-		if ( ! current_user_can( 'export' ) ) {
+		if ( ! current_user_can( 'export' ) && ! current_user_can( 'import' ) ) {
 			return;
 		}
 
@@ -171,7 +181,9 @@ final class TemplateTransferPage {
 		self::renderResult();
 
 		echo '<div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start;">';
-		self::renderExportCard();
+		if ( current_user_can( 'export' ) ) {
+			self::renderExportCard();
+		}
 		if ( current_user_can( 'import' ) ) {
 			self::renderImportCard();
 		}

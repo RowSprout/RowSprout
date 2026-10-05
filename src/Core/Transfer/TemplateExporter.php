@@ -58,48 +58,68 @@ final class TemplateExporter {
 	 * The templates an export of $templateIds contains, parents before
 	 * children. A child template only works together with its parent (its
 	 * groups point at the parent's groups), so a child brings its parent
-	 * along, and a selected parent brings its child templates. Templates the
-	 * current user cannot edit are left out.
+	 * along, and a selected parent brings its child templates; a parent that
+	 * only came along for a child does not bring that child's siblings. An
+	 * add-on can add templates that belong with any template in the set
+	 * (filter rowsprout_template_export_ids), and the same rules apply to
+	 * those, until nothing new is added. Templates the current user cannot
+	 * edit are left out.
 	 *
 	 * @param array<int, int|string> $templateIds
 	 * @return array<int, int>
 	 */
 	public static function resolveTemplateIds( array $templateIds ): array {
-		/**
-		 * The templates an export starts from, before child templates and
-		 * parents are added. An add-on can add templates that belong with
-		 * them, such as their translations.
-		 *
-		 * @param array<int, int|string> $templateIds
-		 */
-		$templateIds = (array) apply_filters( 'rowsprout_template_export_ids', $templateIds );
+		// [ template id, whether its child templates come along ]
+		$queue = [];
+		foreach ( $templateIds as $id ) {
+			$queue[] = [ absint( $id ), true ];
+		}
 
-		$parents  = [];
-		$children = [];
+		// Template id => whether its child templates come along.
+		$included = [];
+		while ( $queue !== [] ) {
+			[ $id, $bringsChildren ] = array_shift( $queue );
+			if ( isset( $included[ $id ] ) && ( $included[ $id ] || ! $bringsChildren ) ) {
+				continue;
+			}
 
-		foreach ( array_unique( array_map( 'absint', $templateIds ) ) as $id ) {
 			$post = self::exportablePost( $id );
 			if ( ! $post ) {
 				continue;
 			}
+			$included[ $id ] = $bringsChildren;
 
-			if ( (int) $post->post_parent > 0 ) {
-				$children[ $post->ID ] = true;
-				if ( self::exportablePost( (int) $post->post_parent ) ) {
-					$parents[ (int) $post->post_parent ] = true;
-				}
-				continue;
+			/**
+			 * Templates that belong with this one in an export, such as its
+			 * translations. They come along on the same terms (a selected
+			 * template's translation brings its child templates too).
+			 *
+			 * @param array<int, int|string> $templateIds This template's id; add others.
+			 */
+			foreach ( (array) apply_filters( 'rowsprout_template_export_ids', [ $id ] ) as $relatedId ) {
+				$queue[] = [ absint( $relatedId ), $bringsChildren ];
 			}
 
-			$parents[ $post->ID ] = true;
-			foreach ( self::childTemplateIds( $post->ID ) as $childId ) {
-				if ( self::exportablePost( $childId ) ) {
-					$children[ $childId ] = true;
+			if ( (int) $post->post_parent > 0 ) {
+				$queue[] = [ (int) $post->post_parent, false ];
+			} elseif ( $bringsChildren ) {
+				foreach ( self::childTemplateIds( $post->ID ) as $childId ) {
+					$queue[] = [ $childId, false ];
 				}
 			}
 		}
 
-		return array_merge( array_keys( $parents ), array_keys( array_diff_key( $children, $parents ) ) );
+		$parents  = [];
+		$children = [];
+		foreach ( array_keys( $included ) as $id ) {
+			if ( wp_get_post_parent_id( $id ) ) {
+				$children[] = $id;
+			} else {
+				$parents[] = $id;
+			}
+		}
+
+		return array_merge( $parents, $children );
 	}
 
 	/**
