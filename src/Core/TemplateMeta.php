@@ -53,7 +53,9 @@ final class TemplateMeta {
 
 		$normalized = ConfigNormalizer::normalizeConfig( $config );
 
-		update_post_meta( $postId, self::META_KEY, $normalized );
+		// update_post_meta() unslashes what it gets: slash first, or every
+		// backslash in a label or value ("C:\temp") is lost.
+		update_post_meta( $postId, self::META_KEY, wp_slash( $normalized ) );
 	}
 
 	/**

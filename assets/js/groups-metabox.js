@@ -48,7 +48,24 @@
 
 	function escHtml(str){ return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 	function generateNumericId(){ return Math.floor(Date.now() % 1000000000) + Math.floor(Math.random()*100000); }
-	function sanitizeCode(input){ return String(input||'').toLowerCase().replace(/[^a-z0-9_]+/g,'_').replace(/^_+|_+$/g,''); }
+	// Mirrors WordPress's remove_accents() for the site locale (see
+	// cfg.locale): Latin letters lose their accents, the German and Danish
+	// rules spell ä as ae and ø as oe, and other scripts are left alone.
+	var dpLocale = String(cfg.locale || '');
+	var dpAccentMap = { 'æ':'ae','Æ':'AE','ø':'o','Ø':'O','ð':'d','Ð':'D','þ':'th','Þ':'TH','ß':'s','ẞ':'SS','đ':'d','Đ':'D','ħ':'h','Ħ':'H','ı':'i','ĳ':'ij','Ĳ':'IJ','ĸ':'k','ŀ':'l','Ŀ':'L','ł':'l','Ł':'L','ŉ':'n','ŋ':'n','Ŋ':'N','œ':'oe','Œ':'OE','ŧ':'t','Ŧ':'T','ſ':'s','ə':'e','Ə':'E','ǝ':'e','ɑ':'a','ª':'a','º':'o','€':'E','£':'' };
+	if(dpLocale.indexOf('de')===0){ $.extend(dpAccentMap, { 'ä':'ae','Ä':'Ae','ö':'oe','Ö':'Oe','ü':'ue','Ü':'Ue','ß':'ss','ẞ':'SS' }); }
+	else if(dpLocale==='da_DK'){ $.extend(dpAccentMap, { 'æ':'ae','Æ':'Ae','ø':'oe','Ø':'Oe','å':'aa','Å':'Aa' }); }
+	else if(dpLocale==='sr_RS' || dpLocale==='bs_BA'){ $.extend(dpAccentMap, { 'đ':'dj','Đ':'DJ' }); }
+	function removeAccents(input){
+		var text=String(input||'').normalize('NFC');
+		if(dpLocale==='ca'){ text=text.replace(/l·l/g,'ll'); }
+		text=text.replace(/[^\x00-\x7f]/g, function(ch){ return Object.prototype.hasOwnProperty.call(dpAccentMap,ch) ? dpAccentMap[ch] : ch; });
+		// Only accents on Latin letters: "Αθήνα" keeps its tonos, as in WordPress.
+		return text.normalize('NFD').replace(/([A-Za-z])[\u0300-\u036f]+/g,'$1').normalize('NFC');
+	}
+	// Mirrors SavePayloadSanitizer::generateCodeFromTitle(): "Città" -> citta.
+	function sanitizeCode(input){ return removeAccents(input).toLowerCase().replace(/[^a-z0-9_]+/g,'_').replace(/^_+|_+$/g,''); }
+	function uniqueCode(code, used){ var candidate=code; for(var n=2; used[candidate]; n++){ candidate=code+'_'+n; } return candidate; }
 	function getTypeDefinition(type){ return dpFieldTypes[type] || {}; }
 	function requiresOptions(type){ var d=getTypeDefinition(type); return !!d.supports_options || d.type==='select'; }
 	function parseOptions(value){ if(Array.isArray(value)){return value;} if(typeof value!=='string'||!value){return [];} return value.split(/\r?\n/).map(function(x){return String(x).trim();}).filter(Boolean); }
@@ -528,10 +545,32 @@
 		});
 	}
 
-	function normalizeSlug(value){ return String(value||'').toLowerCase().trim().replace(/\s+/g,'-').replace(/[^a-z0-9\-]/g,'').replace(/\-+/g,'-').replace(/^\-+|\-+$/g,''); }
+	/**
+	 * Mirrors sanitize_title() (remove_accents() + sanitize_title_with_dashes(),
+	 * 'save' context), but readable: "Café Zürich 東京" -> cafe-zurich-東京,
+	 * which is also how HrefFieldType::sanitize() stores it.
+	 */
+	function normalizeSlug(value){
+		var text=String(value||'').replace(/<[^>]*>/g,'');
+		// An encoded slug (zurich-%e6%9d%b1) is decoded, as HrefFieldType does;
+		// octets that are not valid UTF-8 are dropped, as sanitize_text_field() does.
+		text=text.replace(/(%[0-9a-fA-F]{2})+/g, function(seq){ try{ return decodeURIComponent(seq); }catch(e){ return ''; } });
+		text=removeAccents(text).toLowerCase();
+		return text.replace(/\u00d7/g,'x')
+			.replace(/[\/\u00a0\u2011\u2013\u2014\u2000-\u200a\u2028\u2029\u202f]/g,'-')
+			.replace(/[\u00ad\u00a1\u00bf\u00ab\u00bb\u2039\u203a\u2018\u2019\u201a-\u201f\u2022\u00a9\u00ae\u00b0\u2026\u2122\u00b4\u02ca\u0300\u0301\u0304\u030c\u0341\u200b-\u200f\u202a-\u202e\ufeff\ufffc]/g,'')
+			.replace(/&.+?;/g,'')
+			.replace(/\./g,'-')
+			.replace(/[\x00-\x7f]/g, function(ch){ return /[a-z0-9 \t\n\r\f\v_\-]/.test(ch) ? ch : ''; })
+			.replace(/[ \t\n\r\f\v]+/g,'-')
+			.replace(/-+/g,'-')
+			.replace(/^-+|-+$/g,'');
+	}
 	function normalizeTitle(value){ return String(value||'').replace(/\s+/g,' ').trim(); }
 	function isValidUrl(value){ if(!value){return true;} try{ var p=new URL(value); return p.protocol==='http:'||p.protocol==='https:'; }catch(e){ return false; } }
-	function isValidEmail(value){ if(!value){return true;} return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value)); }
+	// The part before the @ must be plain ASCII (EmailFieldType refuses
+	// anything else); the domain may be internationalised (müller.de).
+	function isValidEmail(value){ if(!value){return true;} return /^[\x21-\x3f\x41-\x7e]+@[^\s@]+\.[^\s@]+$/.test(String(value)); }
 
 	function applyInputBehavior($input,eventType){
 		var mode=String(eventType||'').toLowerCase();
@@ -716,7 +755,12 @@
 		var type=String($('#dp-new-type').val()||'');
 		var d=getTypeDefinition(type);
 		var label=String($('#dp-new-label').val()||'').trim() || String(d.label||type);
-		var code=sanitizeCode(label || type) || String(d.default_code || 'veld');
+		// A label without Latin letters ("東京") falls back to the type's
+		// default code; either way the code must not repeat an existing one,
+		// or both properties would share one placeholder.
+		var usedCodes={};
+		$('#dp-columns-meta .dp-prop-meta').each(function(){ var c=String($(this).data('colCode')||''); if(c){ usedCodes[c]=true; } });
+		var code=uniqueCode(sanitizeCode(label) || sanitizeCode(d.default_code || type) || 'field', usedCodes);
 		var colKey='col_'+Date.now();
 		var fieldType=String(d.type || 'text');
 		var options=requiresOptions(type) ? parseOptions($('#dp-new-options').val()) : [];

@@ -93,7 +93,7 @@ final class GeneratedFieldMetaWriter {
 				continue;
 			}
 
-			update_post_meta( $targetPostId, $metaKey, $value );
+			update_post_meta( $targetPostId, $metaKey, wp_slash( $value ) );
 		}
 	}
 }

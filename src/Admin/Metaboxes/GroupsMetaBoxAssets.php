@@ -49,6 +49,7 @@ final class GroupsMetaBoxAssets {
 			// group-card inputs not locked read-only either — everything
 			// that sync normally does).
 			'parentId'           => (int) wp_get_post_parent_id( $postId ),
+			'locale'             => get_locale(),
 			'fieldTypes'         => $fieldTypeDefinitions,
 			'uiTypeKindMap'      => FieldUiResolver::getClientTypeKindMap(),
 			'uiValidationMap'    => FieldUiResolver::getClientValidationMap(),

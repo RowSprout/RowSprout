@@ -247,6 +247,8 @@ final class TemplateSaveActionControl {
 		}
 
 		$settings['rowsprout_page_save_action'] = $saveAction;
-		update_post_meta( $postId, '_elementor_page_settings', $settings );
+		// Slashed: the page settings hold Elementor's custom CSS, whose
+		// backslash escapes (content: "\f00c") update_post_meta() would strip.
+		update_post_meta( $postId, '_elementor_page_settings', wp_slash( $settings ) );
 	}
 }

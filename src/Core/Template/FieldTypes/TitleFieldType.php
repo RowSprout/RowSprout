@@ -47,7 +47,9 @@ final class TitleFieldType extends BaseFieldType {
 	public function sanitize( string $value, array $options ): string {
 		unset( $options );
 		$value = sanitize_text_field( $value );
-		$value = preg_replace( '/\s+/', ' ', trim( $value ) );
-		return is_string( $value ) ? $value : '';
+		// /u: without it, whether a byte such as 0xA0 (the second byte of "à")
+		// counts as whitespace depends on PHP's locale.
+		$collapsed = preg_replace( '/\s+/u', ' ', trim( $value ) );
+		return is_string( $collapsed ) ? $collapsed : $value;
 	}
 }

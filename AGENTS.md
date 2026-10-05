@@ -43,6 +43,8 @@ Keep this file short and true: change it in the same change that alters what it 
 5. The free plugin must work without Pro: guard Pro-owned columns with `supportsScheduling()` / `supportsGeneratedAt()` (schema changes only apply on `admin_init`).
 6. The free plugin enforces no usage limit anywhere (see "No usage limits" below); Pro's licence decides only which Pro features load.
 7. `assets/*/groups-metabox.min.*` are what production loads (unminified only when `WP_DEBUG` is true, `GroupsMetaBoxAssets::useUnminifiedAssets`). There is no build script in this repo: after editing the source JS/CSS, regenerate the `.min` file or production keeps serving old code — and a stale `.min` is invisible on a `WP_DEBUG` dev site.
+8. **A property keeps its stored code.** Placeholders on pages use it, so a save never re-derives it from the label (`PayloadConfigBuilder::storedCodes`). Only a new property gets one: `SavePayloadSanitizer::generateCodeFromTitle()` (`remove_accents()` for the site locale, `[a-z0-9_]`, the type's `default_code` when nothing is left, as with a label in another script) plus `uniqueCode()`. `sanitizeCode()`/`removeAccents()` in `groups-metabox.js` mirror it, and `normalizeSlug()` there mirrors `HrefFieldType::sanitize()` (`sanitize_title()`, stored decoded so other scripts stay readable); change them together.
+9. **Slash what you store.** `update_post_meta()`, `wp_insert_post()` and `wp_update_post()` unslash their input, so pass user text through `wp_slash()` or backslashes (paths, CSS escapes like `\f00c`) are lost; `update_option()` does not unslash.
 
 ## Code map (`src/`)
 

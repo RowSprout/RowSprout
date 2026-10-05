@@ -154,11 +154,40 @@ final class SavePayloadSanitizer {
 		return $id;
 	}
 
+	/**
+	 * The placeholder code for a property label: accents transliterated the
+	 * way WordPress does for slugs (remove_accents(), locale-aware), then
+	 * lowercase a-z, 0-9 and underscores ("Prijs per uur" → prijs_per_uur,
+	 * "Città" → citta). A label with nothing Latin in it ("東京") falls back
+	 * to $fallback — pass the property type's default code. Mirrored by
+	 * sanitizeCode() in assets/js/groups-metabox.js.
+	 */
 	public static function generateCodeFromTitle( string $title, string $fallback = 'field' ): string {
-		$code = sanitize_key( $title );
+		$code = self::codeFromText( $title );
 		if ( $code === '' ) {
-			$code = sanitize_key( $fallback );
+			$code = self::codeFromText( $fallback );
 		}
 		return $code !== '' ? $code : 'field';
+	}
+
+	private static function codeFromText( string $text ): string {
+		$text = strtolower( remove_accents( $text ) );
+		return trim( (string) preg_replace( '/[^a-z0-9_]+/', '_', $text ), '_' );
+	}
+
+	/**
+	 * $code, or $code_2, $code_3 … when it is already in $used; records the
+	 * result in $used. Two properties sharing a code would share one
+	 * placeholder, and the page would show one property's value for both.
+	 *
+	 * @param array<string, bool> $used
+	 */
+	public static function uniqueCode( string $code, array &$used ): string {
+		$candidate = $code;
+		for ( $n = 2; isset( $used[ $candidate ] ); $n++ ) {
+			$candidate = $code . '_' . $n;
+		}
+		$used[ $candidate ] = true;
+		return $candidate;
 	}
 }

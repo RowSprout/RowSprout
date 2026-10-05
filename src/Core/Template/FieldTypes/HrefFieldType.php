@@ -50,6 +50,14 @@ final class HrefFieldType extends BaseFieldType {
 
 	public function sanitize( string $value, array $options ): string {
 		unset( $options );
+		// sanitize_text_field() drops percent-encoded octets, which would turn
+		// an encoded slug (zurich-%e6%9d%b1%e4%ba%ac) into "zurich"; decode it
+		// first when that gives valid UTF-8 (normalizeSlug() in
+		// groups-metabox.js does the same).
+		$decoded = rawurldecode( $value );
+		if ( preg_match( '//u', $decoded ) === 1 ) {
+			$value = $decoded;
+		}
 		$value = sanitize_text_field( $value );
 		$value = trim( $value );
 
@@ -61,6 +69,9 @@ final class HrefFieldType extends BaseFieldType {
 			return $value;
 		}
 
-		return sanitize_title( $value );
+		// Stored readable (zurich-東京, not zurich-%e6%9d%b1%e4%ba%ac): the
+		// groups table shows this value, and PageBuilder's own sanitize_title()
+		// encodes it again for post_name.
+		return rawurldecode( sanitize_title( $value ) );
 	}
 }

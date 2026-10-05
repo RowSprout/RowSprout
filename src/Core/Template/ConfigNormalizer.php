@@ -99,7 +99,7 @@ final class ConfigNormalizer {
 				'key'              => $key,
 				'type'             => $type,
 				'label'            => $label,
-				'code'             => sanitize_key( (string) ( $ft['code'] ?? self::generateCodeFromTitle( $label, $key ) ) ),
+				'code'             => sanitize_key( (string) ( $ft['code'] ?? self::generateCodeFromTitle( $label, (string) ( $base['default_code'] ?? $type ) ) ) ),
 				'field_type'       => sanitize_key( (string) ( $ft['field_type'] ?? ( $base['type'] ?? 'text' ) ) ),
 				'options'          => self::normalizeFieldOptions( $ft['options'] ?? ( $base['default_options'] ?? [] ) ),
 				'can_be_overruled' => ! in_array( $type, [ 'title', 'href', 'slug' ], true ) && (bool) ( $ft['can_be_overruled'] ?? $base['can_be_overruled'] ?? true ),
@@ -133,10 +133,6 @@ final class ConfigNormalizer {
 	}
 
 	private static function generateCodeFromTitle( string $title, string $fallback = 'field' ): string {
-		$code = sanitize_key( $title );
-		if ( $code === '' ) {
-			$code = sanitize_key( $fallback );
-		}
-		return $code !== '' ? $code : 'field';
+		return SavePayloadSanitizer::generateCodeFromTitle( $title, $fallback );
 	}
 }

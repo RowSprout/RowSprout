@@ -155,24 +155,25 @@ final class PageGridRenderer {
 			return $overview;
 		}
 
-		usort( $overview, static function ( $a, $b ) use ( $sortOrder, $showTitleType ) {
-			if ( $showTitleType === 'parent' ) {
-				$titleA = strtolower( (string) ( $a['parent_title'] ?? '' ) );
-				$titleB = strtolower( (string) ( $b['parent_title'] ?? '' ) );
-			} else {
-				$titleA = strtolower( (string) ( $a['title_page'] ?? '' ) );
-				$titleB = strtolower( (string) ( $b['title_page'] ?? '' ) );
+		// The site language's alphabetical order (Ärzte next to apotheek, not
+		// after zahnarzt); without the intl extension, compare case- and
+		// accent-insensitively.
+		$collator = class_exists( '\Collator' ) ? new \Collator( get_locale() ) : null;
+		$compare  = static function ( string $x, string $y ) use ( $collator ): int {
+			if ( $collator instanceof \Collator ) {
+				$result = $collator->compare( $x, $y );
+				if ( is_int( $result ) ) {
+					return $result;
+				}
 			}
+			return strcasecmp( remove_accents( $x ), remove_accents( $y ) );
+		};
 
-			if ( $titleA === $titleB ) {
-				return 0;
-			}
+		usort( $overview, static function ( $a, $b ) use ( $sortOrder, $showTitleType, $compare ) {
+			$field  = $showTitleType === 'parent' ? 'parent_title' : 'title_page';
+			$result = $compare( (string) ( $a[ $field ] ?? '' ), (string) ( $b[ $field ] ?? '' ) );
 
-			if ( $sortOrder === 'asc' ) {
-				return $titleA < $titleB ? -1 : 1;
-			}
-
-			return $titleA > $titleB ? -1 : 1;
+			return $sortOrder === 'asc' ? $result : -$result;
 		} );
 
 		return $overview;

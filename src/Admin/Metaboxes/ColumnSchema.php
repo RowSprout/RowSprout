@@ -53,7 +53,7 @@ final class ColumnSchema {
 				'key'             => $key,
 				'type'            => $type,
 				'label'           => $label ?: $type,
-				'code'            => '',
+				'code'            => sanitize_key( (string) ( $ft['code'] ?? '' ) ),
 				'field_type'      => $fieldType ?: 'text',
 				'options'         => $options,
 				'locked'          => $locked,
@@ -92,8 +92,12 @@ final class ColumnSchema {
 			]] );
 		}
 
+		// The stored code is what the placeholders on the pages use; only a
+		// column without one (the implicit title/href) gets a derived code.
 		foreach ( $columns as $i => $column ) {
-			$columns[ $i ]['code'] = self::generateCodeFromTitle( (string) ( $column['label'] ?? '' ), (string) ( $column['key'] ?? '' ) );
+			if ( $column['code'] === '' ) {
+				$columns[ $i ]['code'] = self::generateCodeFromTitle( (string) ( $column['label'] ?? '' ), (string) ( $column['type'] ?? '' ) );
+			}
 		}
 
 		return $columns;
@@ -140,10 +144,6 @@ final class ColumnSchema {
 	}
 
 	public static function generateCodeFromTitle( string $title, string $fallback = 'field' ): string {
-		$code = sanitize_key( $title );
-		if ( $code === '' ) {
-			$code = sanitize_key( $fallback );
-		}
-		return $code !== '' ? $code : 'field';
+		return \RowSprout\Core\Template\SavePayloadSanitizer::generateCodeFromTitle( $title, $fallback );
 	}
 }
