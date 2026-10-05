@@ -46,6 +46,15 @@ final class MenuRegistrar {
 
 		add_submenu_page(
 			'rowsprout_home',
+			__( 'Import / Export', 'rowsprout' ),
+			__( 'Import / Export', 'rowsprout' ),
+			'export',
+			TemplateTransferPage::PAGE_SLUG,
+			[ TemplateTransferPage::class, 'renderPage' ]
+		);
+
+		add_submenu_page(
+			'rowsprout_home',
 			__( 'Settings', 'rowsprout' ),
 			__( 'Settings', 'rowsprout' ),
 			'manage_options',
@@ -85,6 +94,7 @@ final class MenuRegistrar {
 			'edit.php?post_type=' . PostTypes::TEMPLATE,  // Templates
 			'edit.php?post_type=' . PostTypes::PAGE,       // Pages
 			'rowsprout-batch-scheduling',        // Throttling (Pro)
+			TemplateTransferPage::PAGE_SLUG,     // Import / Export
 			'rowsprout_settings',                        // Settings
 			'rowsprout-license',                 // License (Pro)
 			'rowsprout-upgrade',                 // RowSprout Pro (info page; Pro removes it)

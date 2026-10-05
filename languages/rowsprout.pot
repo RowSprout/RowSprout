@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-04T11:04:50+00:00\n"
+"POT-Creation-Date: 2026-10-05T17:45:54+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: rowsprout\n"
@@ -147,6 +147,7 @@ msgid "You haven't created a template yet."
 msgstr ""
 
 #: src/Admin/Menu.php:125
+#: src/Admin/TemplateTransferPage.php:202
 msgid "(no title)"
 msgstr ""
 
@@ -207,13 +208,18 @@ msgstr ""
 
 #: src/Admin/MenuRegistrar.php:49
 #: src/Admin/MenuRegistrar.php:50
+msgid "Import / Export"
+msgstr ""
+
+#: src/Admin/MenuRegistrar.php:58
+#: src/Admin/MenuRegistrar.php:59
 #: src/ThirdParty/Elementor/Widgets/GridWidget.php:59
 #: assets/js/blocks.js:37
 msgid "Settings"
 msgstr ""
 
-#: src/Admin/MenuRegistrar.php:58
-#: src/Admin/MenuRegistrar.php:59
+#: src/Admin/MenuRegistrar.php:67
+#: src/Admin/MenuRegistrar.php:68
 #: src/Admin/UpgradeMenu.php:55
 msgid "RowSprout Pro"
 msgstr ""
@@ -242,18 +248,18 @@ msgid "Title"
 msgstr ""
 
 #: src/Admin/Metaboxes/GroupCardRenderer.php:47
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:57
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:58
 #: src/Admin/Metaboxes/RowRenderer.php:71
 msgid "Group"
 msgstr ""
 
 #: src/Admin/Metaboxes/GroupCardRenderer.php:55
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:58
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:59
 msgid "Expand"
 msgstr ""
 
 #: src/Admin/Metaboxes/GroupCardRenderer.php:57
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:62
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:63
 #: src/Admin/Metaboxes/RowRenderer.php:90
 msgid "Delete group"
 msgstr ""
@@ -263,101 +269,101 @@ msgid "Inherited from parent template"
 msgstr ""
 
 #: src/Admin/Metaboxes/GroupFieldInputRenderer.php:97
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:63
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:64
 #: src/Admin/Metaboxes/RowRenderer.php:119
 msgid "Select"
 msgstr ""
 
 #: src/Admin/Metaboxes/GroupFieldInputRenderer.php:98
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:64
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:65
 #: src/Admin/Metaboxes/RowRenderer.php:120
 msgid "Remove"
 msgstr ""
 
 #: src/Admin/Metaboxes/GroupFieldInputRenderer.php:110
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:65
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:66
 #: src/Admin/Metaboxes/RowRenderer.php:124
 #: src/ThirdParty/Elementor/Widgets/GridWidget.php:142
 #: src/ThirdParty/WPBakery/WPBakeryIntegration.php:147
 msgid "Yes"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:59
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:60
 msgid "Collapse"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:60
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:61
 #: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:161
 msgid "Expand all"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:61
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:62
 msgid "Collapse all"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:66
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:67
 #: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:126
 #: src/Admin/Metaboxes/PropertyTableRenderer.php:35
 msgid "Overridable"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:67
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:68
 #: src/Admin/Metaboxes/PropertyTableRenderer.php:35
 msgid "Fixed"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:68
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:69
 #: src/Admin/Metaboxes/PropertyTableRenderer.php:56
 msgid "Delete"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:69
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:70
 #: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:82
 #: src/Admin/Metaboxes/ParentSyncPayloadRenderer.php:34
 msgid "No properties added yet."
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:70
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:71
 msgid "Could not load parent template data."
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:71
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:72
 msgid "Enter a valid URL (http(s)://...)"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:72
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:73
 msgid "Enter a valid email address."
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:73
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:74
 msgid "This type can only be added once."
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:74
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:75
 msgid "Adding groups is not allowed in child templates."
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:75
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:76
 msgid "This property title already exists in this template."
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:76
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:77
 msgid "This URL/slug is already used by another group in this template."
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:77
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:78
 msgid "Select or upload an image"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:78
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:79
 msgid "Use this image"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:79
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:80
 msgid "Changing the parent replaces the current groups with groups inherited from the new parent. Your own group data (titles, hrefs, fields) will be lost. Continue?"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:80
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:81
 msgid "Removing the parent resets the groups to a single empty group. Your current group data (titles, hrefs, fields) will be lost. Continue?"
 msgstr ""
 
@@ -377,6 +383,7 @@ msgstr ""
 
 #: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:76
 #: src/Admin/TemplateStatusColumn.php:38
+#: src/Admin/TemplateTransferPage.php:196
 msgid "Status"
 msgstr ""
 
@@ -480,6 +487,7 @@ msgid "Properties"
 msgstr ""
 
 #: src/Admin/Metaboxes/TemplateTabsRenderer.php:131
+#: src/Admin/TemplateTransferPage.php:196
 msgid "Groups"
 msgstr ""
 
@@ -547,6 +555,101 @@ msgstr[1] ""
 #: src/Admin/TemplateStatusColumn.php:83
 #, php-format
 msgid "%1$d of %2$d up to date"
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:51
+#: src/Admin/TemplateTransferPage.php:97
+#: src/Admin/TemplateTransferPage.php:176
+msgid "Export"
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:96
+msgid "Export with parent"
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:106
+msgid "You are not allowed to export templates."
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:116
+msgid "Select at least one template to export."
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:125
+msgid "You are not allowed to import templates."
+msgstr ""
+
+#. translators: %s: maximum upload size, e.g. "8 MB".
+#: src/Admin/TemplateTransferPage.php:140
+#, php-format
+msgid "The file is larger than this server accepts (%s)."
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:143
+msgid "Choose an export file to import."
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:159
+msgid "Import / Export templates"
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:177
+msgid "Download templates as a file, with their properties, groups and page-builder layout, to add them to another site. A child template is always exported with its parent, and a parent with its child templates."
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:178
+msgid "Not included: the generated pages (the other site generates its own) and media files. Images keep pointing at this site."
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:181
+msgid "There are no templates to export yet."
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:195
+msgid "Select all"
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:196
+msgid "Template"
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:213
+msgid "Download selected"
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:220
+#: src/Admin/TemplateTransferPage.php:234
+msgid "Import"
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:221
+msgid "Choose a RowSprout export file. Every template in it is added as a new draft; existing templates are never changed."
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:222
+msgid "Check an imported template (above all its URL pattern), then publish it with \"Create & update pages\" to generate its pages."
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:227
+msgid "Export file"
+msgstr ""
+
+#. translators: %s: maximum upload size, e.g. "8 MB".
+#: src/Admin/TemplateTransferPage.php:231
+#, php-format
+msgid "Maximum file size: %s."
+msgstr ""
+
+#. translators: %d: number of templates.
+#: src/Admin/TemplateTransferPage.php:257
+#, php-format
+msgid "%d template was imported as a draft:"
+msgid_plural "%d templates were imported as drafts:"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Admin/TemplateTransferPage.php:284
+msgid "The export file could not be created."
 msgstr ""
 
 #: src/Admin/UpgradeMenu.php:23
@@ -888,6 +991,86 @@ msgstr ""
 
 #: src/Core/Template/TemplateStatusResolver.php:188
 msgid "Unknown"
+msgstr ""
+
+#: src/Core/Transfer/TemplateImporter.php:50
+msgid "This file is not a RowSprout export file: it does not contain valid JSON."
+msgstr ""
+
+#: src/Core/Transfer/TemplateImporter.php:64
+msgid "This file is not a RowSprout export file."
+msgstr ""
+
+#: src/Core/Transfer/TemplateImporter.php:70
+msgid "This export file was made by a newer version of RowSprout. Update RowSprout on this site and try again."
+msgstr ""
+
+#: src/Core/Transfer/TemplateImporter.php:76
+msgid "The export file contains no templates."
+msgstr ""
+
+#. translators: %s: comma-separated property types, e.g. "richtext, date".
+#: src/Core/Transfer/TemplateImporter.php:107
+#, php-format
+msgid "These property types are not available on this site: %s. Their values were imported unchanged; activate the plugin that adds them (such as RowSprout Pro) to edit and use them."
+msgstr ""
+
+#. translators: %d: number of skipped entries.
+#: src/Core/Transfer/TemplateImporter.php:148
+#, php-format
+msgid "%d entry in the file was skipped because it is incomplete."
+msgid_plural "%d entries in the file were skipped because they are incomplete."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %s: template title.
+#: src/Core/Transfer/TemplateImporter.php:184
+#, php-format
+msgid "\"%s\" is a child template, but its parent template could not be imported with it. It was imported as a template without a parent."
+msgstr ""
+
+#. translators: 1: template title, 2: error message.
+#: src/Core/Transfer/TemplateImporter.php:200
+#, php-format
+msgid "\"%1$s\" could not be imported: %2$s"
+msgstr ""
+
+#: src/Core/Transfer/TemplateImporter.php:202
+msgid "unknown error"
+msgstr ""
+
+#. translators: 1: template title, 2: error message.
+#: src/Core/Transfer/TemplateImporter.php:240
+#, php-format
+msgid "The content of \"%1$s\" could not be imported: %2$s"
+msgstr ""
+
+#. translators: %s: template title.
+#: src/Core/Transfer/TemplateImporter.php:252
+#, php-format
+msgid "In \"%s\" two or more groups share the same URL. Make every URL unique before you publish it."
+msgstr ""
+
+#. translators: %s: template title.
+#: src/Core/Transfer/TemplateImporter.php:411
+#, php-format
+msgid "The page-builder data and other settings of \"%s\" were not imported: your account is not allowed to add unfiltered HTML. Ask an administrator to import this file."
+msgstr ""
+
+#. translators: 1: template title, 2: image URL.
+#: src/Core/Transfer/TemplateImporter.php:452
+#, php-format
+msgid "The featured image of \"%1$s\" is not in this site's media library (%2$s). Upload it and set it again."
+msgstr ""
+
+#. translators: 1: imported template title, 2: existing template title.
+#: src/Core/Transfer/TemplateImporter.php:491
+#, php-format
+msgid "\"%1$s\" has the same URL pattern as the existing template \"%2$s\". Change one of them before publishing, or their pages get the same URLs."
+msgstr ""
+
+#: src/Core/Transfer/TemplateImporter.php:504
+msgid "Imported template"
 msgstr ""
 
 #: src/ThirdParty/Elementor/PageFieldResolver.php:284
