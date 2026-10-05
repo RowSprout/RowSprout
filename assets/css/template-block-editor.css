@@ -1,0 +1,18 @@
+/*
+ * Block editor, rowsprout_template screen only (enqueued by
+ * Admin\TemplateBlockEditor). Mirrors the classic Publish box, where a
+ * template's own publish date is hidden (Admin\Metaboxes): a template's
+ * visibility and publish date have no bearing on its generated pages, and
+ * the Save action is what decides what saving does. Core gives these panels
+ * no class of their own, so they are matched by what they contain.
+ */
+
+/* Pre-publish panel: the "Visibility:" and "Publish:" rows. */
+.editor-post-publish-panel__prepublish > .components-panel__body:has(.editor-post-publish-panel__link) {
+	display: none;
+}
+
+/* Document sidebar summary: the "Publish" (date) row. */
+.editor-post-panel__row:has(.editor-post-schedule__panel-dropdown) {
+	display: none;
+}

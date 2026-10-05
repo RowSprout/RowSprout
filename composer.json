@@ -1,0 +1,19 @@
+{
+    "name": "rowsprout/rowsprout",
+    "description": "Composer-managed third-party dependencies for the RowSprout WordPress plugin. The plugin's own PHP classes (RowSprout\\*) are not part of this autoloader — those use their own PSR-4-style loader.",
+    "homepage": "https://rowsprout.com",
+    "license": "GPL-2.0-or-later",
+    "support": {
+        "issues": "https://github.com/RowSprout/RowSprout/issues",
+        "source": "https://github.com/RowSprout/RowSprout"
+    },
+    "require": {
+        "php": "^7.4 || ^8.0",
+        "woocommerce/action-scheduler": "4.2.0"
+    },
+    "config": {
+        "sort-packages": true,
+        "optimize-autoloader": true
+    }
+}
+

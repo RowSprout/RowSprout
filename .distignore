@@ -1,0 +1,29 @@
+# Files excluded from the WordPress.org release zip, read by
+# bin/build-zip.php. A pattern without "/" matches that name at any depth
+# (so vendor/'s own AGENTS.md/README.md go too); a trailing "/" means a
+# directory; a leading "/" anchors to the plugin root.
+
+# Version control and build tooling.
+.git/
+.gitignore
+.gitattributes
+.distignore
+/bin/
+/build/
+
+# WordPress.org directory assets (icon, banners, screenshots and their
+# sources). They go to the SVN assets/ folder, not into the plugin.
+/.wordpress-org/
+composer.lock
+
+# Dev-only docs for AI coding agents and developers, not end-user
+# documentation — WP.org's Plugin Check flags them as "unexpected markdown
+# file". readme.txt is the end-user readme.
+AGENTS.md
+CLAUDE.md
+README.md
+
+# OS/editor clutter.
+.DS_Store
+Thumbs.db
+*.log

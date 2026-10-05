@@ -1,0 +1,1192 @@
+# Copyright (C) 2026 RowSprout
+# This file is distributed under the GPLv2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: RowSprout 3.1\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rowsprout\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-10-04T11:04:50+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: rowsprout\n"
+
+#. Plugin Name of the plugin
+#. Author of the plugin
+#: rowsprout.php
+#: src/Admin/Menu.php:29
+#: src/Admin/MenuRegistrar.php:15
+#: src/Admin/MenuRegistrar.php:16
+#: src/ThirdParty/Elementor/ElementorIntegration.php:147
+msgid "RowSprout"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: rowsprout.php
+msgid "https://rowsprout.com"
+msgstr ""
+
+#. Description of the plugin
+#: rowsprout.php
+msgid "Generate SEO landing pages at scale from reusable templates and structured data groups."
+msgstr ""
+
+#: rowsprout.php:38
+msgid "RowSprout requires PHP 7.4 or higher."
+msgstr ""
+
+#. translators: %s: template title.
+#: src/Admin/ChildTemplateAdminUx.php:77
+#, php-format
+msgid "Move &#8220;%s&#8221; and its child pages to the Trash"
+msgstr ""
+
+#: src/Admin/ChildTemplateAdminUx.php:80
+msgid "Trash with Child pages"
+msgstr ""
+
+#. translators: %s: template title.
+#: src/Admin/ChildTemplateAdminUx.php:95
+#, php-format
+msgid "Restore &#8220;%s&#8221; and its parent from the Trash"
+msgstr ""
+
+#: src/Admin/ChildTemplateAdminUx.php:98
+msgid "Restore with Parent"
+msgstr ""
+
+#: src/Admin/ChildTemplateAdminUx.php:113
+msgid "This template has child templates, so it cannot have a parent itself."
+msgstr ""
+
+#: src/Admin/ChildTemplateAdminUx.php:143
+msgid "This template is a child of a selected parent and will be trashed along with it."
+msgstr ""
+
+#: src/Admin/ChildTemplateAdminUx.php:144
+msgid "Restoring this child template also restores its parent."
+msgstr ""
+
+#: src/Admin/Menu.php:30
+msgid "Welcome to RowSprout"
+msgstr ""
+
+#: src/Admin/Menu.php:31
+msgid "RowSprout turns one template and a table of rows into as many pages as you need: for example a page for every service in every city you work in. Each page gets its own title, URL, texts and links, and stays a normal WordPress page."
+msgstr ""
+
+#: src/Admin/Menu.php:49
+msgid "Build a template"
+msgstr ""
+
+#: src/Admin/Menu.php:50
+msgid "Design the page once in your favorite editor, there are widgets for the block editor, Elementor and WPBakery. This is the layout every generated page shares."
+msgstr ""
+
+#: src/Admin/Menu.php:53
+msgid "Add properties"
+msgstr ""
+
+#: src/Admin/Menu.php:54
+msgid "Properties are the parts that differ per page: a title, a URL, a text, a link, an email address. Place a property in your design with its code (shown on the Properties tab, for example @code_city_123@) or with one with the widgets."
+msgstr ""
+
+#: src/Admin/Menu.php:57
+msgid "Add groups"
+msgstr ""
+
+#: src/Admin/Menu.php:58
+msgid "A group is one row of values for those properties, and every group becomes one page. Ten groups give you ten pages."
+msgstr ""
+
+#: src/Admin/Menu.php:61
+msgid "Save with \"Create & update pages\""
+msgstr ""
+
+#: src/Admin/Menu.php:62
+msgid "The pages are created in the background, usually within a minute. Change the template or a group later and save again to update them."
+msgstr ""
+
+#: src/Admin/Menu.php:67
+msgid "How it works"
+msgstr ""
+
+#: src/Admin/Menu.php:73
+msgid "Create your first template"
+msgstr ""
+
+#: src/Admin/Menu.php:83
+msgid "Save action: \"Save template only\" keeps the existing pages as they are and marks them as outdated; \"Create & update pages\" regenerates them."
+msgstr ""
+
+#: src/Admin/Menu.php:84
+msgid "Child templates: give a template a parent and it reuses the parent's groups, so you get a second set of pages (for example \"Roof repair Amsterdam\" next to \"Roofer Amsterdam\") without entering the rows again."
+msgstr ""
+
+#: src/Admin/Menu.php:85
+msgid "The Status column under Templates shows how many pages of each template are up to date."
+msgstr ""
+
+#: src/Admin/Menu.php:86
+msgid "Under Settings you choose whether the pages get a URL prefix (e.g. /pages/…) or live directly at the site root."
+msgstr ""
+
+#: src/Admin/Menu.php:90
+msgid "Good to know"
+msgstr ""
+
+#: src/Admin/Menu.php:115
+msgid "Your templates"
+msgstr ""
+
+#: src/Admin/Menu.php:118
+msgid "You haven't created a template yet."
+msgstr ""
+
+#: src/Admin/Menu.php:125
+msgid "(no title)"
+msgstr ""
+
+#: src/Admin/Menu.php:131
+msgid "Add new template"
+msgstr ""
+
+#: src/Admin/Menu.php:132
+msgid "All templates"
+msgstr ""
+
+#: src/Admin/Menu.php:142
+msgid "RowSprout Settings"
+msgstr ""
+
+#: src/Admin/Menu.php:146
+msgid "Page URL base"
+msgstr ""
+
+#: src/Admin/Menu.php:147
+msgid "Choose whether generated RowSprout Pages get a URL prefix."
+msgstr ""
+
+#: src/Admin/Menu.php:150
+msgid "URL structure"
+msgstr ""
+
+#: src/Admin/Menu.php:155
+msgid "No base — pages live directly at the site root (e.g. https://example.com/)"
+msgstr ""
+
+#: src/Admin/Menu.php:161
+msgid "Custom base:"
+msgstr ""
+
+#: src/Admin/Menu.php:163
+msgid "e.g. pages"
+msgstr ""
+
+#: src/Admin/Menu.php:165
+msgid "Example: with base \"pages\", a generated page lives at https://example.com/pages/."
+msgstr ""
+
+#: src/Admin/MenuRegistrar.php:25
+#: src/Admin/MenuRegistrar.php:26
+msgid "Home"
+msgstr ""
+
+#: src/Admin/MenuRegistrar.php:33
+#: src/Admin/MenuRegistrar.php:34
+msgid "Templates"
+msgstr ""
+
+#: src/Admin/MenuRegistrar.php:41
+#: src/Admin/MenuRegistrar.php:42
+msgid "Pages"
+msgstr ""
+
+#: src/Admin/MenuRegistrar.php:49
+#: src/Admin/MenuRegistrar.php:50
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:59
+#: assets/js/blocks.js:37
+msgid "Settings"
+msgstr ""
+
+#: src/Admin/MenuRegistrar.php:58
+#: src/Admin/MenuRegistrar.php:59
+#: src/Admin/UpgradeMenu.php:55
+msgid "RowSprout Pro"
+msgstr ""
+
+#: src/Admin/Metaboxes.php:34
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:150
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:230
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:67
+#: src/ThirdParty/WPBakery/WPBakeryIntegration.php:144
+#: assets/js/blocks.js:39
+msgid "RowSprout template"
+msgstr ""
+
+#: src/Admin/Metaboxes/ColumnSchema.php:48
+#: src/Admin/Metaboxes/ColumnSchema.php:85
+#: src/Admin/Metaboxes/GroupCardRenderer.php:51
+#: src/Admin/Metaboxes/TitleHrefMetaBoxRenderer.php:41
+msgid "Href"
+msgstr ""
+
+#: src/Admin/Metaboxes/ColumnSchema.php:69
+#: src/Admin/Metaboxes/GroupCardRenderer.php:48
+#: src/Core/Template/FieldTypes/TitleFieldType.php:16
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:295
+msgid "Title"
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupCardRenderer.php:47
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:57
+#: src/Admin/Metaboxes/RowRenderer.php:71
+msgid "Group"
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupCardRenderer.php:55
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:58
+msgid "Expand"
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupCardRenderer.php:57
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:62
+#: src/Admin/Metaboxes/RowRenderer.php:90
+msgid "Delete group"
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupFieldInputRenderer.php:94
+msgid "Inherited from parent template"
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupFieldInputRenderer.php:97
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:63
+#: src/Admin/Metaboxes/RowRenderer.php:119
+msgid "Select"
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupFieldInputRenderer.php:98
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:64
+#: src/Admin/Metaboxes/RowRenderer.php:120
+msgid "Remove"
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupFieldInputRenderer.php:110
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:65
+#: src/Admin/Metaboxes/RowRenderer.php:124
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:142
+#: src/ThirdParty/WPBakery/WPBakeryIntegration.php:147
+msgid "Yes"
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:59
+msgid "Collapse"
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:60
+#: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:161
+msgid "Expand all"
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:61
+msgid "Collapse all"
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:66
+#: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:126
+#: src/Admin/Metaboxes/PropertyTableRenderer.php:35
+msgid "Overridable"
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:67
+#: src/Admin/Metaboxes/PropertyTableRenderer.php:35
+msgid "Fixed"
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:68
+#: src/Admin/Metaboxes/PropertyTableRenderer.php:56
+msgid "Delete"
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:69
+#: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:82
+#: src/Admin/Metaboxes/ParentSyncPayloadRenderer.php:34
+msgid "No properties added yet."
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:70
+msgid "Could not load parent template data."
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:71
+msgid "Enter a valid URL (http(s)://...)"
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:72
+msgid "Enter a valid email address."
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:73
+msgid "This type can only be added once."
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:74
+msgid "Adding groups is not allowed in child templates."
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:75
+msgid "This property title already exists in this template."
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:76
+msgid "This URL/slug is already used by another group in this template."
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:77
+msgid "Select or upload an image"
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:78
+msgid "Use this image"
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:79
+msgid "Changing the parent replaces the current groups with groups inherited from the new parent. Your own group data (titles, hrefs, fields) will be lost. Continue?"
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:80
+msgid "Removing the parent resets the groups to a single empty group. Your current group data (titles, hrefs, fields) will be lost. Continue?"
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:73
+#: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:122
+msgid "Label"
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:74
+#: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:105
+msgid "Type"
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:75
+msgid "Token"
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:76
+#: src/Admin/TemplateStatusColumn.php:38
+msgid "Status"
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:92
+#: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:134
+msgid "Add property"
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:99
+msgid "Add new property"
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:100
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:231
+msgid "Close"
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:116
+msgid "Options"
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:118
+msgid "One option per line"
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:128
+msgid "A child template can override this property with its own value."
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:133
+msgid "Cancel"
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:174
+msgid "Add group"
+msgstr ""
+
+#: src/Admin/Metaboxes/ParentPayloadAjaxHandler.php:26
+msgid "You do not have permission to edit templates."
+msgstr ""
+
+#: src/Admin/Metaboxes/ParentPayloadAjaxHandler.php:33
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:181
+msgid "You do not have permission to edit this template."
+msgstr ""
+
+#: src/Admin/Metaboxes/ParentPayloadAjaxHandler.php:39
+msgid "Invalid parent template."
+msgstr ""
+
+#: src/Admin/Metaboxes/PropertyTableRenderer.php:40
+msgid "Drag to reorder"
+msgstr ""
+
+#: src/Admin/Metaboxes/PublishBoxRenderer.php:23
+#: src/Admin/TemplateBlockEditor.php:154
+#: src/Admin/TemplateBlockEditor.php:155
+#: src/ThirdParty/Elementor/TemplateSaveActionControl.php:90
+#: src/ThirdParty/Elementor/TemplateSaveActionControl.php:104
+msgid "Save action"
+msgstr ""
+
+#: src/Admin/Metaboxes/PublishBoxRenderer.php:107
+msgid "Save template only"
+msgstr ""
+
+#: src/Admin/Metaboxes/PublishBoxRenderer.php:108
+msgid "Only the template is saved. Existing pages are not updated immediately."
+msgstr ""
+
+#: src/Admin/Metaboxes/PublishBoxRenderer.php:113
+msgid "Create & update pages"
+msgstr ""
+
+#: src/Admin/Metaboxes/PublishBoxRenderer.php:114
+msgid "Pages are created for new groups and every existing page is regenerated immediately."
+msgstr ""
+
+#: src/Admin/Metaboxes/RowRenderer.php:47
+msgid "Code:"
+msgstr ""
+
+#: src/Admin/Metaboxes/RowRenderer.php:48
+msgid "Can be overridden"
+msgstr ""
+
+#: src/Admin/Metaboxes/RowRenderer.php:49
+msgid "Required"
+msgstr ""
+
+#: src/Admin/Metaboxes/RowRenderer.php:51
+msgid "Remove property"
+msgstr ""
+
+#: src/Admin/Metaboxes/TemplateTabsRenderer.php:129
+msgid "General"
+msgstr ""
+
+#: src/Admin/Metaboxes/TemplateTabsRenderer.php:130
+msgid "Properties"
+msgstr ""
+
+#: src/Admin/Metaboxes/TemplateTabsRenderer.php:131
+msgid "Groups"
+msgstr ""
+
+#. translators: 1: example href with only the href token, 2: example href with extra text around a token.
+#: src/Admin/Metaboxes/TitleHrefMetaBoxRenderer.php:21
+#, php-format
+msgid "The URL of each generated page. Use placeholder tokens so every page gets its own URL, for example %1$s or %2$s."
+msgstr ""
+
+#. translators: 1: example child href, 2: the resulting URL of a generated child page.
+#: src/Admin/Metaboxes/TitleHrefMetaBoxRenderer.php:27
+#, php-format
+msgid "The last part of the URL of each generated page. Every child page is placed under its parent page, so a fixed value such as %1$s already gives each page its own URL (e.g. %2$s)."
+msgstr ""
+
+#. translators: %s: the href placeholder token, e.g. @code_href_123@.
+#: src/Admin/Metaboxes/TitleHrefMetaBoxRenderer.php:33
+#, php-format
+msgid "This href does not contain the group's href token (%s), so the generated pages do not get a URL of their own: WordPress numbers them instead (e.g. offer, offer-2, offer-3), and with an empty href no pages are generated at all."
+msgstr ""
+
+#: src/Admin/PageEditNotice.php:34
+msgid "This page is generated from a template. Changes made here will be overwritten the next time the template is saved and its pages are regenerated."
+msgstr ""
+
+#: src/Admin/TemplateBlockEditor.php:156
+msgid "RowSprout could not refresh the template after saving. Reload the page before saving again."
+msgstr ""
+
+#: src/Admin/TemplateBlockEditor.php:157
+msgid "Saving is paused: fix the highlighted fields in the RowSprout template box first (for example a duplicate URL or an invalid email address)."
+msgstr ""
+
+#: src/Admin/TemplateBlockEditor.php:158
+#: src/ThirdParty/Elementor/TextEditorTokenButton.php:129
+msgid "Insert RowSprout property"
+msgstr ""
+
+#: src/Admin/TemplateBlockEditor.php:159
+msgid "as link"
+msgstr ""
+
+#: src/Admin/TemplateBlockEditor.php:160
+msgid "as email link"
+msgstr ""
+
+#: src/Admin/TemplateBlockEditor.php:161
+msgid "This template has no properties to insert yet. Add them in the RowSprout template box and save."
+msgstr ""
+
+#: src/Admin/TemplateBlockEditor.php:162
+#: src/Core/BlockBindings/PropertyBindingSource.php:57
+msgid "RowSprout property"
+msgstr ""
+
+#. translators: %d: number of pages of the template
+#: src/Admin/TemplateStatusColumn.php:80
+#, php-format
+msgid "%d page"
+msgid_plural "%d pages"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: 1: number of pages that are up to date, 2: total number of pages of the template
+#: src/Admin/TemplateStatusColumn.php:83
+#, php-format
+msgid "%1$d of %2$d up to date"
+msgstr ""
+
+#: src/Admin/UpgradeMenu.php:23
+msgid "Working with many pages"
+msgstr ""
+
+#: src/Admin/UpgradeMenu.php:25
+msgid "Smart Generate: a save only regenerates the pages affected by what you changed."
+msgstr ""
+
+#: src/Admin/UpgradeMenu.php:26
+msgid "A live-updating status bar on the Templates screen, a per-group status overview, and generating all pages of a template in one click."
+msgstr ""
+
+#: src/Admin/UpgradeMenu.php:27
+msgid "Per-group planning: choose when each page is generated."
+msgstr ""
+
+#: src/Admin/UpgradeMenu.php:28
+msgid "Throttling: limit the batch size and the hours in which pages are processed."
+msgstr ""
+
+#: src/Admin/UpgradeMenu.php:32
+msgid "Multiple languages"
+msgstr ""
+
+#: src/Admin/UpgradeMenu.php:34
+msgid "WPML: translate a template once and all of its pages are generated in that language."
+msgstr ""
+
+#: src/Admin/UpgradeMenu.php:38
+msgid "More field types and elements"
+msgstr ""
+
+#: src/Admin/UpgradeMenu.php:40
+msgid "Extra field types: Checkbox, Date, Date and time, Item list, Icon, Phone, Rich text, Thumbnail, Select, Color and File."
+msgstr ""
+
+#: src/Admin/UpgradeMenu.php:41
+msgid "Elementor: Date, Item List, Thumbnail and Sibling Links widgets, plus RowSprout Page Field and Page Link dynamic tags."
+msgstr ""
+
+#: src/Admin/UpgradeMenu.php:42
+msgid "Block editor: an Item List block."
+msgstr ""
+
+#: src/Admin/UpgradeMenu.php:43
+msgid "WPBakery: an Item List element."
+msgstr ""
+
+#: src/Admin/UpgradeMenu.php:47
+msgid "Automation"
+msgstr ""
+
+#: src/Admin/UpgradeMenu.php:49
+msgid "An MCP server and WP-CLI commands to manage templates and pages from scripts or AI agents."
+msgstr ""
+
+#: src/Admin/UpgradeMenu.php:59
+msgid "RowSprout works fully on its own: there are no limits on templates, groups or pages, and nothing in this plugin requires Pro."
+msgstr ""
+
+#: src/Admin/UpgradeMenu.php:62
+msgid "RowSprout Pro is a separate add-on, not distributed through WordPress.org and adds:"
+msgstr ""
+
+#: src/Admin/UpgradeMenu.php:76
+msgid "Learn more on rowsprout.com"
+msgstr ""
+
+#: src/Admin/UpgradeMenu.php:77
+msgid "(opens in a new tab)"
+msgstr ""
+
+#: src/Blocks/BlockRegistry.php:43
+#: src/ThirdParty/Elementor/ElementorIntegration.php:154
+#: src/ThirdParty/WPBakery/WPBakeryIntegration.php:140
+msgid "RowSprout pages"
+msgstr ""
+
+#: src/Blocks/BlockRegistry.php:67
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:37
+#: src/ThirdParty/WPBakery/WPBakeryIntegration.php:138
+msgid "Grid"
+msgstr ""
+
+#: src/Blocks/BlockRegistry.php:68
+msgid "The generated pages of one RowSprout template, as a list or as cards."
+msgstr ""
+
+#: src/Core/Grid/PageGridRenderer.php:43
+msgid "Select a page."
+msgstr ""
+
+#: src/Core/PageEditing.php:80
+msgid "Generated page editing"
+msgstr ""
+
+#: src/Core/PageEditing.php:81
+msgid "Generated pages are locked by default: they are overwritten the next time their template is saved and its pages are regenerated, so direct edits and deletions do not stick."
+msgstr ""
+
+#: src/Core/PageEditing.php:84
+msgid "Editing"
+msgstr ""
+
+#: src/Core/PageEditing.php:88
+msgid "Allow generated pages to be edited and deleted directly."
+msgstr ""
+
+#: src/Core/PageEditing.php:102
+msgid "Security check failed."
+msgstr ""
+
+#: src/Core/PageEditing.php:106
+msgid "You do not have permission to change this setting."
+msgstr ""
+
+#: src/Core/PageEditing.php:119
+msgid "Setting saved."
+msgstr ""
+
+#: src/Core/PermalinkSettings.php:67
+msgid "Page URL base removed. Generated pages now live directly at the site root."
+msgstr ""
+
+#. translators: %s: the configured URL base slug
+#: src/Core/PermalinkSettings.php:71
+#, php-format
+msgid "Page URL base set to \"%s\"."
+msgstr ""
+
+#: src/Core/PostTypes.php:52
+#: src/Core/PostTypes.php:55
+#: src/Core/PostTypes.php:57
+msgid "RowSprout Pages"
+msgstr ""
+
+#: src/Core/PostTypes.php:53
+msgid "All RowSprout Pages lives here"
+msgstr ""
+
+#: src/Core/PostTypes.php:56
+msgid "RowSprout Page"
+msgstr ""
+
+#: src/Core/PostTypes.php:58
+msgid "All Pages"
+msgstr ""
+
+#: src/Core/PostTypes.php:59
+msgid "View RowSprout Page"
+msgstr ""
+
+#: src/Core/PostTypes.php:60
+msgid "Add New Page"
+msgstr ""
+
+#: src/Core/PostTypes.php:61
+msgid "Add New"
+msgstr ""
+
+#: src/Core/PostTypes.php:62
+msgid "Edit Page"
+msgstr ""
+
+#: src/Core/PostTypes.php:63
+#: src/Core/PostTypes.php:104
+msgid "Update Page"
+msgstr ""
+
+#: src/Core/PostTypes.php:64
+msgid "Search in RowSprout Pages"
+msgstr ""
+
+#: src/Core/PostTypes.php:65
+#: src/Core/PostTypes.php:106
+msgid "Not Found"
+msgstr ""
+
+#: src/Core/PostTypes.php:66
+#: src/Core/PostTypes.php:107
+msgid "Not Found in Trash"
+msgstr ""
+
+#: src/Core/PostTypes.php:93
+msgid "RowSprout Template Pages"
+msgstr ""
+
+#: src/Core/PostTypes.php:94
+msgid "All RowSprout Template Pages lives here"
+msgstr ""
+
+#: src/Core/PostTypes.php:96
+#: src/Core/PostTypes.php:98
+msgid "RowSprout Templates"
+msgstr ""
+
+#: src/Core/PostTypes.php:97
+msgid "RowSprout Template"
+msgstr ""
+
+#: src/Core/PostTypes.php:99
+msgid "All Template Pages"
+msgstr ""
+
+#: src/Core/PostTypes.php:100
+msgid "View RowSprout Template Page"
+msgstr ""
+
+#: src/Core/PostTypes.php:101
+msgid "Add New Template Page"
+msgstr ""
+
+#: src/Core/PostTypes.php:102
+msgid "Add New Template"
+msgstr ""
+
+#: src/Core/PostTypes.php:103
+msgid "Edit Template"
+msgstr ""
+
+#: src/Core/PostTypes.php:105
+msgid "Search in RowSprout Template Pages"
+msgstr ""
+
+#: src/Core/SavePost.php:140
+msgid "This template was not saved: two or more groups share the same URL/slug. Every group's URL must be unique — fix the duplicate and save again."
+msgstr ""
+
+#: src/Core/SavePost.php:165
+msgid "This template was not saved: it is a child template, but its parent template has not generated any pages yet. Generate the parent's pages first (or set this save action to \"Save template only\"), then save again."
+msgstr ""
+
+#: src/Core/SavePost.php:186
+msgid "Properties and groups were not saved: this template was changed elsewhere (e.g. via the API) after this page was loaded. Reload the page and reapply your property/group changes. (Title, content, and status were saved normally.)"
+msgstr ""
+
+#: src/Core/SavePost.php:563
+msgid "The parent was not saved: the chosen parent is itself a child template. Templates can only be nested one level deep, so choose a template without a parent."
+msgstr ""
+
+#: src/Core/SavePost.php:565
+msgid "The parent was not saved: this template has child templates, so it cannot have a parent itself. Templates can only be nested one level deep."
+msgstr ""
+
+#: src/Core/Template/FieldTypes/EmailFieldType.php:16
+msgid "Email"
+msgstr ""
+
+#: src/Core/Template/FieldTypes/EmailFieldType.php:20
+msgid "For email addresses."
+msgstr ""
+
+#: src/Core/Template/FieldTypes/HrefFieldType.php:20
+msgid "URL / Slug"
+msgstr ""
+
+#: src/Core/Template/FieldTypes/HrefFieldType.php:24
+msgid "The URL slug for the page."
+msgstr ""
+
+#: src/Core/Template/FieldTypes/NumberFieldType.php:16
+msgid "Number"
+msgstr ""
+
+#: src/Core/Template/FieldTypes/NumberFieldType.php:20
+msgid "For numeric values."
+msgstr ""
+
+#: src/Core/Template/FieldTypes/TextareaFieldType.php:16
+#: src/ThirdParty/Elementor/Widgets/TextareaWidget.php:25
+msgid "Textarea"
+msgstr ""
+
+#: src/Core/Template/FieldTypes/TextareaFieldType.php:20
+msgid "Suitable for longer text or multiple lines."
+msgstr ""
+
+#: src/Core/Template/FieldTypes/TextfieldFieldType.php:16
+#: src/ThirdParty/Elementor/Widgets/HeadingWidget.php:57
+#: src/ThirdParty/Elementor/Widgets/TextareaWidget.php:52
+msgid "Text field"
+msgstr ""
+
+#: src/Core/Template/FieldTypes/TextfieldFieldType.php:20
+msgid "Suitable for short free text or a single word."
+msgstr ""
+
+#: src/Core/Template/FieldTypes/TitleFieldType.php:20
+msgid "Main title of the page."
+msgstr ""
+
+#: src/Core/Template/FieldTypes/UrlFieldType.php:16
+msgid "URL"
+msgstr ""
+
+#: src/Core/Template/FieldTypes/UrlFieldType.php:20
+msgid "For web addresses or links."
+msgstr ""
+
+#: src/Core/Template/HrefPatternValidator.php:84
+msgid "The href of this child template is empty, so no pages are generated for it. Enter the last part of the URL, for example /contact: every child page is placed under its parent page, so that already gives each page its own URL."
+msgstr ""
+
+#. translators: %s: the href placeholder token, e.g. @code_href_123@.
+#: src/Core/Template/HrefPatternValidator.php:93
+#, php-format
+msgid "The href of this template does not contain the group's href token (%s), so the generated pages do not get a URL of their own: WordPress numbers them instead (e.g. offer, offer-2, offer-3), and with an empty href no pages are generated at all. Add the token to the href and save again."
+msgstr ""
+
+#: src/Core/Template/TemplateStatusResolver.php:179
+msgid "No pages generated yet"
+msgstr ""
+
+#: src/Core/Template/TemplateStatusResolver.php:180
+msgid "Generating…"
+msgstr ""
+
+#: src/Core/Template/TemplateStatusResolver.php:181
+msgid "Queued"
+msgstr ""
+
+#: src/Core/Template/TemplateStatusResolver.php:182
+msgid "Scheduled"
+msgstr ""
+
+#: src/Core/Template/TemplateStatusResolver.php:183
+msgid "Changes not yet applied"
+msgstr ""
+
+#: src/Core/Template/TemplateStatusResolver.php:184
+msgid "Pages removed"
+msgstr ""
+
+#: src/Core/Template/TemplateStatusResolver.php:185
+msgid "Up to date"
+msgstr ""
+
+#: src/Core/Template/TemplateStatusResolver.php:188
+msgid "Unknown"
+msgstr ""
+
+#: src/ThirdParty/Elementor/PageFieldResolver.php:284
+#: src/ThirdParty/Elementor/PageFieldResolver.php:323
+msgid "-- Select --"
+msgstr ""
+
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:177
+msgid "Invalid template."
+msgstr ""
+
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:202
+msgid "Two or more groups share the same URL/slug. Every group's URL must be unique."
+msgstr ""
+
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:237
+msgid "Save"
+msgstr ""
+
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:273
+msgid "Preview group"
+msgstr ""
+
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:281
+msgid "Determines which group the widgets and tags show in this editor. After choosing, click \"Refresh preview\" to update the preview. Has no effect on the actual pages."
+msgstr ""
+
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:309
+msgid "Refresh preview"
+msgstr ""
+
+#: src/ThirdParty/Elementor/TextEditorTokenButton.php:130
+msgid "Insert as text"
+msgstr ""
+
+#: src/ThirdParty/Elementor/TextEditorTokenButton.php:131
+msgid "Insert as email link"
+msgstr ""
+
+#: src/ThirdParty/Elementor/TextEditorTokenButton.php:132
+msgid "Insert as link"
+msgstr ""
+
+#: src/ThirdParty/Elementor/TextEditorTokenButton.php:133
+msgid "This template has no properties yet"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ButtonWidget.php:58
+#: src/ThirdParty/Elementor/Widgets/ButtonWidget.php:129
+#: src/ThirdParty/Elementor/Widgets/ButtonWidget.php:142
+msgid "Button"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ButtonWidget.php:81
+msgid "Link"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ButtonWidget.php:89
+msgid "Link property"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ButtonWidget.php:93
+msgid "URL, Email (opens the mail app) or Phone (calls)."
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ButtonWidget.php:100
+msgid "Open in new tab"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ButtonWidget.php:108
+msgid "Add nofollow"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ButtonWidget.php:116
+msgid "Text property"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ButtonWidget.php:118
+msgid "-- Use the button text --"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ButtonWidget.php:120
+msgid "Optional: take the button text from a Text field property."
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:77
+msgid "Sort direction"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:81
+msgid "By row (horizontal)"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:82
+msgid "By column (vertical)"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:93
+#: src/ThirdParty/WPBakery/WPBakeryIntegration.php:146
+#: assets/js/blocks.js:56
+msgid "Columns"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:110
+msgid "Rows"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:127
+msgid "Layout Type"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:130
+msgid "Cart Layout"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:131
+msgid "List Layout"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:140
+#: src/ThirdParty/WPBakery/WPBakeryIntegration.php:147
+#: assets/js/blocks.js:64
+msgid "Show thumbnail"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:143
+msgid "No"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:153
+#: src/ThirdParty/WPBakery/WPBakeryIntegration.php:148
+#: assets/js/blocks.js:70
+msgid "Thumbnail size"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:156
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:334
+#: src/ThirdParty/WPBakery/WPBakeryIntegration.php:148
+#: assets/js/blocks.js:73
+msgid "Thumbnail"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:157
+#: src/ThirdParty/WPBakery/WPBakeryIntegration.php:148
+#: assets/js/blocks.js:74
+msgid "Medium"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:158
+#: src/ThirdParty/WPBakery/WPBakeryIntegration.php:148
+#: assets/js/blocks.js:75
+msgid "Large"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:159
+#: src/ThirdParty/WPBakery/WPBakeryIntegration.php:148
+#: assets/js/blocks.js:76
+msgid "Full"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:172
+#: src/ThirdParty/WPBakery/WPBakeryIntegration.php:149
+#: assets/js/blocks.js:82
+msgid "Show title"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:176
+#: src/ThirdParty/WPBakery/WPBakeryIntegration.php:149
+#: assets/js/blocks.js:85
+msgid "Parent title"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:177
+#: src/ThirdParty/WPBakery/WPBakeryIntegration.php:149
+#: assets/js/blocks.js:86
+msgid "Child title"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:185
+#: src/ThirdParty/WPBakery/WPBakeryIntegration.php:150
+#: assets/js/blocks.js:92
+msgid "Sort items"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:189
+#: src/ThirdParty/WPBakery/WPBakeryIntegration.php:150
+#: assets/js/blocks.js:95
+msgid "No sorting"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:190
+#: src/ThirdParty/WPBakery/WPBakeryIntegration.php:150
+#: assets/js/blocks.js:96
+msgid "Alphabetical (A-Z)"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:191
+#: src/ThirdParty/WPBakery/WPBakeryIntegration.php:150
+#: assets/js/blocks.js:97
+msgid "Alphabetical (Z-A)"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:201
+msgid "Item"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:237
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:365
+msgid "Border radius"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:249
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:320
+msgid "Padding"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:261
+msgid "Gap between columns"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:277
+msgid "Gap between rows"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:303
+msgid "Color"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:343
+msgid "Max width"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:354
+msgid "Height"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/HeadingWidget.php:30
+msgid "Heading"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/HeadingWidget.php:49
+#: src/ThirdParty/Elementor/Widgets/TextareaWidget.php:44
+msgid "Content"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/HeadingWidget.php:67
+msgid "HTML tag"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/HeadingWidget.php:84
+#: src/ThirdParty/Elementor/Widgets/TextareaWidget.php:62
+msgid "Fallback text"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/HeadingWidget.php:86
+msgid "Lorem ipsum dolor sit amet"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/HeadingWidget.php:95
+#: src/ThirdParty/Elementor/Widgets/TextareaWidget.php:74
+msgid "Text"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/HeadingWidget.php:111
+#: src/ThirdParty/Elementor/Widgets/TextareaWidget.php:90
+msgid "Text color"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/TextareaWidget.php:65
+msgid "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+msgstr ""
+
+#: src/ThirdParty/WPBakery/WPBakeryIntegration.php:86
+msgid "WPBakery Page Builder is turned off for RowSprout templates in its Role Manager, so you can't design this template with it yet."
+msgstr ""
+
+#: src/ThirdParty/WPBakery/WPBakeryIntegration.php:87
+msgid "Open WPBakery Role Manager"
+msgstr ""
+
+#: src/ThirdParty/WPBakery/WPBakeryIntegration.php:88
+msgid "under Post types, add \"RowSprout Template\"."
+msgstr ""
+
+#: src/ThirdParty/WPBakery/WPBakeryIntegration.php:141
+msgid "The generated pages of one RowSprout template."
+msgstr ""
+
+#: src/ThirdParty/WPBakery/WPBakeryIntegration.php:145
+#: assets/js/blocks.js:46
+msgid "Layout"
+msgstr ""
+
+#: src/ThirdParty/WPBakery/WPBakeryIntegration.php:145
+#: assets/js/blocks.js:49
+msgid "List"
+msgstr ""
+
+#: src/ThirdParty/WPBakery/WPBakeryIntegration.php:145
+#: assets/js/blocks.js:50
+msgid "Cards"
+msgstr ""
