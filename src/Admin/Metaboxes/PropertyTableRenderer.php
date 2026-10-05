@@ -22,7 +22,7 @@ final class PropertyTableRenderer {
 		$canBeOverruled = ! $locked && ! empty( $col['can_be_overruled'] );
 
 		if ( $code === '' ) {
-			$code = ColumnSchema::generateCodeFromTitle( $label, $type );
+			$code = ColumnSchema::codeForLabel( $label, $type );
 		}
 
 		$typeLabel   = (string) ( $fieldTypeDefinitions[ $type ]['label'] ?? $type );
@@ -73,7 +73,7 @@ final class PropertyTableRenderer {
 		$sourcePostId = absint( $col['source_post_id'] ?? 0 );
 
 		if ( $code === '' ) {
-			$code = ColumnSchema::generateCodeFromTitle( $label, $type );
+			$code = ColumnSchema::codeForLabel( $label, $type );
 		}
 
 		echo '<div class="dp-prop-meta"'

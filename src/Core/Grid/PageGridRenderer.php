@@ -157,16 +157,22 @@ final class PageGridRenderer {
 
 		// The site language's alphabetical order (Ärzte next to apotheek, not
 		// after zahnarzt); without the intl extension, compare case- and
-		// accent-insensitively.
+		// accent-insensitively. remove_accents() leaves other scripts alone
+		// and strcasecmp() only folds ASCII, hence mb_strtolower() (Αθήνα
+		// next to αθήνα).
 		$collator = class_exists( '\Collator' ) ? new \Collator( get_locale() ) : null;
-		$compare  = static function ( string $x, string $y ) use ( $collator ): int {
+		$fold     = static function ( string $text ): string {
+			$text = remove_accents( $text );
+			return function_exists( 'mb_strtolower' ) ? mb_strtolower( $text, 'UTF-8' ) : strtolower( $text );
+		};
+		$compare  = static function ( string $x, string $y ) use ( $collator, $fold ): int {
 			if ( $collator instanceof \Collator ) {
 				$result = $collator->compare( $x, $y );
 				if ( is_int( $result ) ) {
 					return $result;
 				}
 			}
-			return strcasecmp( remove_accents( $x ), remove_accents( $y ) );
+			return strcmp( $fold( $x ), $fold( $y ) );
 		};
 
 		usort( $overview, static function ( $a, $b ) use ( $sortOrder, $showTitleType, $compare ) {

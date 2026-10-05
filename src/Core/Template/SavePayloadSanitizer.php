@@ -170,7 +170,11 @@ final class SavePayloadSanitizer {
 		return $code !== '' ? $code : 'field';
 	}
 
-	private static function codeFromText( string $text ): string {
+	/**
+	 * $text as a code: transliterated, lowercase a-z, 0-9 and underscores;
+	 * '' when nothing is left. A valid code comes back unchanged.
+	 */
+	public static function codeFromText( string $text ): string {
 		$text = strtolower( remove_accents( $text ) );
 		return trim( (string) preg_replace( '/[^a-z0-9_]+/', '_', $text ), '_' );
 	}

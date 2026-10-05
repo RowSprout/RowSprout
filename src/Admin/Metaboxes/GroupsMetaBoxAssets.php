@@ -49,7 +49,7 @@ final class GroupsMetaBoxAssets {
 			// group-card inputs not locked read-only either — everything
 			// that sync normally does).
 			'parentId'           => (int) wp_get_post_parent_id( $postId ),
-			'locale'             => get_locale(),
+			'accentMap'          => self::accentMap(),
 			'fieldTypes'         => $fieldTypeDefinitions,
 			'uiTypeKindMap'      => FieldUiResolver::getClientTypeKindMap(),
 			'uiValidationMap'    => FieldUiResolver::getClientValidationMap(),
@@ -91,6 +91,46 @@ final class GroupsMetaBoxAssets {
 			'window.rowsproutGroupsMetaBoxConfig = ' . wp_json_encode( $config ) . ';',
 			'before'
 		);
+	}
+
+	/**
+	 * Character => what remove_accents() makes of it for the site locale,
+	 * for every character it changes, so removeAccents() in groups-metabox.js
+	 * derives the same codes and slugs as the server (SavePayloadSanitizer,
+	 * sanitize_title()). Taken from WordPress itself rather than copied into
+	 * the script: its table only covers some accented letters (Ǟ and Ḍ stay
+	 * as they are), differs per locale (ä → ae in German) and may change
+	 * between versions. The ranges cover every character the table had in
+	 * WordPress 7.1; 'l·l' is Catalan's one multi-character entry.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function accentMap( string $locale = '' ): array {
+		$chars = [];
+		foreach ( [ [ 0xA0, 0x2AF ], [ 0x1E00, 0x1EFF ], [ 0x20A0, 0x20CF ] ] as $range ) {
+			for ( $cp = $range[0]; $cp <= $range[1]; $cp++ ) {
+				$chars[] = $cp < 0x800
+					? chr( 0xC0 | ( $cp >> 6 ) ) . chr( 0x80 | ( $cp & 0x3F ) )
+					: chr( 0xE0 | ( $cp >> 12 ) ) . chr( 0x80 | ( ( $cp >> 6 ) & 0x3F ) ) . chr( 0x80 | ( $cp & 0x3F ) );
+			}
+		}
+		$chars[] = 'l·l';
+
+		// One call for all of them; none of these characters changes under
+		// the NFC normalisation remove_accents() starts with, so the lines
+		// stay aligned (checked below all the same).
+		$converted = explode( "\n", remove_accents( implode( "\n", $chars ), $locale ) );
+		if ( count( $converted ) !== count( $chars ) ) {
+			return [];
+		}
+
+		$map = [];
+		foreach ( $chars as $i => $char ) {
+			if ( $converted[ $i ] !== $char ) {
+				$map[ $char ] = $converted[ $i ];
+			}
+		}
+		return $map;
 	}
 
 	private static function useUnminifiedAssets(): bool {

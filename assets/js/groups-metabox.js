@@ -48,23 +48,23 @@
 
 	function escHtml(str){ return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 	function generateNumericId(){ return Math.floor(Date.now() % 1000000000) + Math.floor(Math.random()*100000); }
-	// Mirrors WordPress's remove_accents() for the site locale (see
-	// cfg.locale): Latin letters lose their accents, the German and Danish
-	// rules spell ä as ae and ø as oe, and other scripts are left alone.
-	var dpLocale = String(cfg.locale || '');
-	var dpAccentMap = { 'æ':'ae','Æ':'AE','ø':'o','Ø':'O','ð':'d','Ð':'D','þ':'th','Þ':'TH','ß':'s','ẞ':'SS','đ':'d','Đ':'D','ħ':'h','Ħ':'H','ı':'i','ĳ':'ij','Ĳ':'IJ','ĸ':'k','ŀ':'l','Ŀ':'L','ł':'l','Ł':'L','ŉ':'n','ŋ':'n','Ŋ':'N','œ':'oe','Œ':'OE','ŧ':'t','Ŧ':'T','ſ':'s','ə':'e','Ə':'E','ǝ':'e','ɑ':'a','ª':'a','º':'o','€':'E','£':'' };
-	if(dpLocale.indexOf('de')===0){ $.extend(dpAccentMap, { 'ä':'ae','Ä':'Ae','ö':'oe','Ö':'Oe','ü':'ue','Ü':'Ue','ß':'ss','ẞ':'SS' }); }
-	else if(dpLocale==='da_DK'){ $.extend(dpAccentMap, { 'æ':'ae','Æ':'Ae','ø':'oe','Ø':'Oe','å':'aa','Å':'Aa' }); }
-	else if(dpLocale==='sr_RS' || dpLocale==='bs_BA'){ $.extend(dpAccentMap, { 'đ':'dj','Đ':'DJ' }); }
+	// WordPress's remove_accents() for the site locale. cfg.accentMap is
+	// WordPress's own result per character (GroupsMetaBoxAssets::accentMap()),
+	// so only the letters in its table lose their accents ("Città" -> Citta,
+	// "Größe" -> Groesse in German) and other scripts are left alone.
+	var dpAccentMap = cfg.accentMap || {};
+	var dpAccentMulti = Object.keys(dpAccentMap).filter(function(k){ return k.length>1; });
 	function removeAccents(input){
 		var text=String(input||'').normalize('NFC');
-		if(dpLocale==='ca'){ text=text.replace(/l·l/g,'ll'); }
-		text=text.replace(/[^\x00-\x7f]/g, function(ch){ return Object.prototype.hasOwnProperty.call(dpAccentMap,ch) ? dpAccentMap[ch] : ch; });
-		// Only accents on Latin letters: "Αθήνα" keeps its tonos, as in WordPress.
-		return text.normalize('NFD').replace(/([A-Za-z])[\u0300-\u036f]+/g,'$1').normalize('NFC');
+		// Multi-character entries first, as strtr() prefers the longest match (Catalan l·l).
+		dpAccentMulti.forEach(function(k){ text=text.split(k).join(dpAccentMap[k]); });
+		return text.replace(/[^\x00-\x7f]/g, function(ch){ return Object.prototype.hasOwnProperty.call(dpAccentMap,ch) ? dpAccentMap[ch] : ch; });
 	}
 	// Mirrors SavePayloadSanitizer::generateCodeFromTitle(): "Città" -> citta.
-	function sanitizeCode(input){ return removeAccents(input).toLowerCase().replace(/[^a-z0-9_]+/g,'_').replace(/^_+|_+$/g,''); }
+	// Non-ASCII goes before lowercasing: strtolower() only folds A-Z, while
+	// toLowerCase() would turn the Kelvin sign into a k. A space, not "_", so
+	// it merges with its neighbours into one "_" as in PHP ("Ḍelhi Ǟrhus" -> elhi_rhus).
+	function sanitizeCode(input){ return removeAccents(input).replace(/[^\x00-\x7f]/g,' ').toLowerCase().replace(/[^a-z0-9_]+/g,'_').replace(/^_+|_+$/g,''); }
 	function uniqueCode(code, used){ var candidate=code; for(var n=2; used[candidate]; n++){ candidate=code+'_'+n; } return candidate; }
 	function getTypeDefinition(type){ return dpFieldTypes[type] || {}; }
 	function requiresOptions(type){ var d=getTypeDefinition(type); return !!d.supports_options || d.type==='select'; }

@@ -96,7 +96,7 @@ final class ColumnSchema {
 		// column without one (the implicit title/href) gets a derived code.
 		foreach ( $columns as $i => $column ) {
 			if ( $column['code'] === '' ) {
-				$columns[ $i ]['code'] = self::generateCodeFromTitle( (string) ( $column['label'] ?? '' ), (string) ( $column['type'] ?? '' ) );
+				$columns[ $i ]['code'] = self::codeForLabel( (string) ( $column['label'] ?? '' ), (string) ( $column['type'] ?? '' ) );
 			}
 		}
 
@@ -141,6 +141,17 @@ final class ColumnSchema {
 	 */
 	public static function generateNumericId(): int {
 		return (int) wp_rand( 100000000, 2147483647 );
+	}
+
+	/**
+	 * The code shown for a property that has none stored yet: what a save
+	 * would give it — derived from the label, else the type's default code
+	 * (text_field, not textfield), as PayloadConfigBuilder and
+	 * ConfigNormalizer do — so the token on screen is the one that is kept.
+	 */
+	public static function codeForLabel( string $label, string $type ): string {
+		$definition = TemplateMeta::getFieldTypeDefinition( $type );
+		return self::generateCodeFromTitle( $label, (string) ( $definition['default_code'] ?? $type ) );
 	}
 
 	public static function generateCodeFromTitle( string $title, string $fallback = 'field' ): string {

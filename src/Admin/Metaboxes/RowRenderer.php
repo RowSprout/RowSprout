@@ -23,7 +23,7 @@ final class RowRenderer {
 		$label      = (string) ( $col['label'] ?? $type );
 		$code       = sanitize_key( (string) ( $col['code'] ?? '' ) );
 		if ( $code === '' ) {
-			$code = ColumnSchema::generateCodeFromTitle( $label, $type );
+			$code = ColumnSchema::codeForLabel( $label, $type );
 		}
 		$fieldType  = sanitize_key( (string) ( $col['field_type'] ?? 'text' ) );
 		$options    = ColumnSchema::normalizeOptions( $col['options'] ?? [] );

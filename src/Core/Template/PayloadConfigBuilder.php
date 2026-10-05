@@ -23,15 +23,20 @@ final class PayloadConfigBuilder {
 	 * @return array<string, mixed>
 	 */
 	public static function build( string $templateHref, array $rawCols, array $rawAllCols, array $rawRows, array $existingConfig, int $postId = 0 ): array {
-		$storedCodes = self::storedCodes( $existingConfig, $postId );
-		$fieldTypes  = self::buildFieldTypes( $rawCols, $storedCodes );
+		// Property key => stored code. A child template shares its parent's
+		// properties; its own code for a shared key wins (see
+		// mergeInheritedFieldTypes()), and every parent code stays taken.
+		$parentId    = $postId > 0 ? (int) wp_get_post_parent_id( $postId ) : 0;
+		$parentCodes = $parentId > 0 ? self::codesByKey( (array) ( TemplateMeta::get( $parentId )['field_types'] ?? [] ) ) : [];
+		$storedCodes = self::codesByKey( (array) ( $existingConfig['field_types'] ?? [] ) ) + $parentCodes;
+		$fieldTypes  = self::buildFieldTypes( $rawCols, $storedCodes, $parentCodes );
 		$fieldTypes  = self::mergeInheritedFieldTypes( $fieldTypes, $postId, (array) ( $existingConfig['groups'] ?? [] ) );
 
 		// The codes just given to new properties count as stored for the second
 		// pass, so a property gets the same code in both.
 		$storedCodes        += array_filter( array_column( $fieldTypes, 'code', 'key' ), 'is_string' );
 		$aliasMap            = [];
-		$effectiveFieldTypes = ! empty( $rawAllCols ) ? self::buildFieldTypes( $rawAllCols, $storedCodes, $aliasMap ) : $fieldTypes;
+		$effectiveFieldTypes = ! empty( $rawAllCols ) ? self::buildFieldTypes( $rawAllCols, $storedCodes, $parentCodes, $aliasMap ) : $fieldTypes;
 		$groups              = self::buildGroups( $rawRows, $effectiveFieldTypes, $existingConfig, $aliasMap );
 
 		return [
@@ -44,30 +49,22 @@ final class PayloadConfigBuilder {
 	}
 
 	/**
-	 * Property key => stored code, from this template's config and (for a
-	 * child template) its parent's, whose properties it shares.
+	 * Property key => code, for every entry of a stored field_types[] that
+	 * has both.
 	 *
-	 * @param array<string, mixed> $existingConfig
+	 * @param array<int, mixed> $fieldTypes
 	 * @return array<string, string>
 	 */
-	private static function storedCodes( array $existingConfig, int $postId ): array {
-		$sources = [ (array) ( $existingConfig['field_types'] ?? [] ) ];
-		$parentId = $postId > 0 ? (int) wp_get_post_parent_id( $postId ) : 0;
-		if ( $parentId > 0 ) {
-			array_unshift( $sources, (array) ( TemplateMeta::get( $parentId )['field_types'] ?? [] ) );
-		}
-
+	private static function codesByKey( array $fieldTypes ): array {
 		$codes = [];
-		foreach ( $sources as $fieldTypes ) {
-			foreach ( $fieldTypes as $fieldType ) {
-				if ( ! is_array( $fieldType ) ) {
-					continue;
-				}
-				$key  = sanitize_key( (string) ( $fieldType['key'] ?? '' ) );
-				$code = sanitize_key( (string) ( $fieldType['code'] ?? '' ) );
-				if ( $key !== '' && $code !== '' ) {
-					$codes[ $key ] = $code;
-				}
+		foreach ( $fieldTypes as $fieldType ) {
+			if ( ! is_array( $fieldType ) ) {
+				continue;
+			}
+			$key  = sanitize_key( (string) ( $fieldType['key'] ?? '' ) );
+			$code = sanitize_key( (string) ( $fieldType['code'] ?? '' ) );
+			if ( $key !== '' && $code !== '' ) {
+				$codes[ $key ] = $code;
 			}
 		}
 		return $codes;
@@ -215,14 +212,25 @@ final class PayloadConfigBuilder {
 	 *        values on a real template).
 	 * @return array<int, array<string, mixed>>
 	 */
-	private static function buildFieldTypes( array $columns, array $storedCodes, array &$aliasMap = [] ): array {
+	private static function buildFieldTypes( array $columns, array $storedCodes, array $parentCodes, array &$aliasMap = [] ): array {
 		$fieldTypes = [];
 		$seenTitles = [];
 		// A property that already has a code keeps it, whatever its label says
 		// now: the placeholders in the template use that code. A new property
-		// gets a code derived from its label, made unique against every code
-		// in use, so two properties never share a placeholder.
-		$usedCodes = array_fill_keys( array_values( $storedCodes ), true );
+		// keeps the code the form showed for it (groups-metabox.js derives it
+		// from the label), or one derived here, made unique against the codes
+		// still in use so two properties never share a placeholder. "In use"
+		// means the properties in this submission plus the parent's, as in the
+		// browser: a property deleted before saving frees its code there, so
+		// it is free here too, or the token on screen would not be the one
+		// stored.
+		$usedCodes = array_fill_keys( array_values( $parentCodes ), true );
+		foreach ( $columns as $col ) {
+			$colKey = is_array( $col ) ? sanitize_key( (string) ( $col['key'] ?? ( $col['type'] ?? '' ) ) ) : '';
+			if ( isset( $storedCodes[ $colKey ] ) ) {
+				$usedCodes[ $storedCodes[ $colKey ] ] = true;
+			}
+		}
 
 		foreach ( $columns as $col ) {
 			if ( ! is_array( $col ) ) {
@@ -249,10 +257,11 @@ final class PayloadConfigBuilder {
 			if ( isset( $storedCodes[ $key ] ) ) {
 				$code = $storedCodes[ $key ];
 			} else {
-				$code = SavePayloadSanitizer::uniqueCode(
-					SavePayloadSanitizer::generateCodeFromTitle( $label, (string) ( $definition['default_code'] ?? $type ) ),
-					$usedCodes
-				);
+				$code = SavePayloadSanitizer::codeFromText( (string) ( $col['code'] ?? '' ) );
+				if ( $code === '' ) {
+					$code = SavePayloadSanitizer::generateCodeFromTitle( $label, (string) ( $definition['default_code'] ?? $type ) );
+				}
+				$code = SavePayloadSanitizer::uniqueCode( $code, $usedCodes );
 			}
 			$locked                  = in_array( $type, [ 'title', 'href', 'slug' ], true );
 			$required                = (bool) ( $col['required'] ?? ( $definition['required'] ?? false ) );
