@@ -7,8 +7,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * What a TemplateImporter run did: the templates it created, and the
- * warnings and errors to show the user. Add-ons hooked into the import
+ * What a TemplateImporter run did: the templates it created or updated, and
+ * the warnings and errors to show the user. Add-ons hooked into the import
  * receive it, so they can report their own warnings.
  */
 final class ImportResult {
@@ -17,6 +17,11 @@ final class ImportResult {
 	 * @var array<int, array{id:int, source_id:int}>
 	 */
 	private $created = [];
+
+	/**
+	 * @var array<int, array{id:int, source_id:int}> Existing templates the import updated.
+	 */
+	private $updated = [];
 
 	/**
 	 * @var array<int, string>
@@ -30,6 +35,13 @@ final class ImportResult {
 
 	public function addCreated( int $templateId, int $sourceId ): void {
 		$this->created[] = [
+			'id'        => $templateId,
+			'source_id' => $sourceId,
+		];
+	}
+
+	public function addUpdated( int $templateId, int $sourceId ): void {
+		$this->updated[] = [
 			'id'        => $templateId,
 			'source_id' => $sourceId,
 		];
@@ -55,6 +67,17 @@ final class ImportResult {
 	}
 
 	/**
+	 * @return array<int, array{id:int, source_id:int}>
+	 */
+	public function updated(): array {
+		return $this->updated;
+	}
+
+	public function wasUpdated( int $templateId ): bool {
+		return in_array( $templateId, array_column( $this->updated, 'id' ), true );
+	}
+
+	/**
 	 * @return array<int, string>
 	 */
 	public function warnings(): array {
@@ -69,11 +92,12 @@ final class ImportResult {
 	}
 
 	/**
-	 * @return array{created: array<int, array{id:int, source_id:int}>, warnings: array<int, string>, errors: array<int, string>}
+	 * @return array{created: array<int, array{id:int, source_id:int}>, updated: array<int, array{id:int, source_id:int}>, warnings: array<int, string>, errors: array<int, string>}
 	 */
 	public function toArray(): array {
 		return [
 			'created'  => $this->created,
+			'updated'  => $this->updated,
 			'warnings' => $this->warnings,
 			'errors'   => $this->errors,
 		];
@@ -87,6 +111,11 @@ final class ImportResult {
 		foreach ( (array) ( $data['created'] ?? [] ) as $created ) {
 			if ( is_array( $created ) ) {
 				$result->addCreated( (int) ( $created['id'] ?? 0 ), (int) ( $created['source_id'] ?? 0 ) );
+			}
+		}
+		foreach ( (array) ( $data['updated'] ?? [] ) as $updated ) {
+			if ( is_array( $updated ) ) {
+				$result->addUpdated( (int) ( $updated['id'] ?? 0 ), (int) ( $updated['source_id'] ?? 0 ) );
 			}
 		}
 		foreach ( (array) ( $data['warnings'] ?? [] ) as $warning ) {

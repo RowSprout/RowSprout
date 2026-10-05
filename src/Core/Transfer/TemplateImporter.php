@@ -7,6 +7,7 @@ use RowSprout\Core\PostMetaKeys;
 use RowSprout\Core\PostTypes;
 use RowSprout\Core\Template\FieldTypes\FieldTypeManager;
 use RowSprout\Core\Template\HrefUniquenessValidator;
+use RowSprout\Core\Template\Lifecycle\TemplateSyncMarker;
 use RowSprout\Core\Template\SavePayloadSanitizer;
 use RowSprout\Core\TemplateMeta;
 
@@ -17,10 +18,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Recreates the templates of a TemplateExporter file on this site.
  *
- * Every template becomes a NEW draft, never an update of an existing one:
- * nothing is generated until someone publishes it, which leaves room to
- * check the URL pattern first (importing on the site the file came from
- * gives two templates that produce the same URLs). Ids change on the way
+ * Every template becomes a NEW draft: nothing is generated until someone
+ * publishes it, which leaves room to check the URL pattern first (importing
+ * on the site the file came from gives two templates that produce the same
+ * URLs). An add-on can point an entry at an existing template instead
+ * (filter rowsprout_template_import_target); that template is updated in
+ * place, keeps its status and save action, generates nothing, and only has
+ * its affected pages marked outdated. Ids change on the way
  * in, so placeholder tokens and child→parent links are rewritten to the
  * new ids; group ids stay, which keeps a child's groups linked to its
  * parent's.
@@ -43,7 +47,12 @@ final class TemplateImporter {
 	 */
 	private static $knownTypes = [];
 
-	public static function importJson( string $json ): ImportResult {
+	/**
+	 * @param array<string, mixed> $options Import options (see the
+	 *        rowsprout_template_import_options filter); passed on to every
+	 *        import hook.
+	 */
+	public static function importJson( string $json, array $options = [] ): ImportResult {
 		$data = json_decode( $json, true );
 		if ( ! is_array( $data ) ) {
 			$result = new ImportResult();
@@ -51,13 +60,14 @@ final class TemplateImporter {
 			return $result;
 		}
 
-		return self::import( $data );
+		return self::import( $data, $options );
 	}
 
 	/**
-	 * @param array<string, mixed> $data A decoded export file.
+	 * @param array<string, mixed> $data    A decoded export file.
+	 * @param array<string, mixed> $options See importJson().
 	 */
-	public static function import( array $data ): ImportResult {
+	public static function import( array $data, array $options = [] ): ImportResult {
 		$result = new ImportResult();
 
 		if ( ( $data['format'] ?? '' ) !== TemplateExporter::FORMAT || ! isset( $data['templates'] ) || ! is_array( $data['templates'] ) ) {
@@ -80,25 +90,49 @@ final class TemplateImporter {
 		self::$knownTypes = [];
 		$unknownTypes     = [];
 
+		// The import writes the templates itself; the template save flow must
+		// not queue, mark or refuse anything halfway (an updated template is
+		// marked once below, against its config from before the import). By
+		// post id is not enough: save_post fires inside wp_insert_post(),
+		// before the new id is known here.
+		add_filter( 'rowsprout_skip_handle_save', '__return_true' );
+
 		// Two passes: a template's own content holds tokens with its own id,
 		// which is only known once the post exists.
-		$idMap = self::createPosts( $entries, $result );
+		$oldConfigs = [];
+		$idMap      = self::createPosts( $entries, $result, $options, $oldConfigs );
 
 		foreach ( $idMap as $sourceId => $newId ) {
-			$entry = $entries[ $sourceId ];
-			self::fillTemplate( $newId, $entry, $idMap, $result, $unknownTypes );
-			$result->addCreated( $newId, $sourceId );
+			$entry    = $entries[ $sourceId ];
+			$isUpdate = isset( $oldConfigs[ $newId ] );
+			self::fillTemplate( $newId, $entry, $idMap, $result, $unknownTypes, $options, $isUpdate );
+			if ( $isUpdate ) {
+				$result->addUpdated( $newId, $sourceId );
+			} else {
+				$result->addCreated( $newId, $sourceId );
+			}
 
 			/**
-			 * A template was imported (still a draft). For an add-on that put
-			 * data under $entry['extra'] at export time.
+			 * A template was imported: created as a draft, or an existing
+			 * template updated (ImportResult::wasUpdated()). For an add-on that
+			 * put data under $entry['extra'] at export time.
 			 *
 			 * @param int                  $newId
-			 * @param array<string, mixed> $entry  The template's entry in the file.
-			 * @param array<int, int>      $idMap  Source template id => new id, for every template of this import.
-			 * @param ImportResult         $result Add warnings here.
+			 * @param array<string, mixed> $entry   The template's entry in the file.
+			 * @param array<int, int>      $idMap   Source template id => this site's id, for every template of this import.
+			 * @param ImportResult         $result  Add warnings here.
+			 * @param array<string, mixed> $options The import options.
 			 */
-			do_action( 'rowsprout_template_imported', $newId, $entry, $idMap, $result );
+			do_action( 'rowsprout_template_imported', $newId, $entry, $idMap, $result, $options );
+		}
+
+		remove_filter( 'rowsprout_skip_handle_save', '__return_true' );
+
+		// Like "Save template only": rows for new groups, changed groups
+		// outdated, and nothing deleted (no pruning: a group missing from the
+		// file keeps its page until the template is saved).
+		foreach ( $oldConfigs as $templateId => $oldConfig ) {
+			TemplateSyncMarker::markStaleFromSmallAdjustments( $templateId, $oldConfig, false );
 		}
 
 		if ( $unknownTypes !== [] ) {
@@ -114,11 +148,12 @@ final class TemplateImporter {
 		/**
 		 * The whole import is done.
 		 *
-		 * @param array<int, int>      $idMap  Source template id => new id.
-		 * @param array<string, mixed> $data   The decoded export file.
+		 * @param array<int, int>      $idMap   Source template id => this site's id.
+		 * @param array<string, mixed> $data    The decoded export file.
 		 * @param ImportResult         $result
+		 * @param array<string, mixed> $options The import options.
 		 */
-		do_action( 'rowsprout_templates_imported', $idMap, $data, $result );
+		do_action( 'rowsprout_templates_imported', $idMap, $data, $result, $options );
 
 		return $result;
 	}
@@ -154,13 +189,16 @@ final class TemplateImporter {
 	}
 
 	/**
-	 * Inserts a draft per entry, parents first so a child can be linked to
-	 * its parent's new id.
+	 * Inserts a draft per entry (or picks the existing template an add-on
+	 * points it at), parents first so a child can be linked to its parent's
+	 * new id.
 	 *
 	 * @param array<int, array<string, mixed>> $entries
-	 * @return array<int, int> Source id => new id.
+	 * @param array<string, mixed>             $options
+	 * @param array<int, array<string, mixed>> $oldConfigs Out: updated template id => its config before the import.
+	 * @return array<int, int> Source id => this site's id.
 	 */
-	private static function createPosts( array $entries, ImportResult $result ): array {
+	private static function createPosts( array $entries, ImportResult $result, array $options, array &$oldConfigs ): array {
 		$roots    = [];
 		$children = [];
 		foreach ( $entries as $sourceId => $entry ) {
@@ -176,6 +214,13 @@ final class TemplateImporter {
 		foreach ( $roots + $children as $sourceId => $parent ) {
 			$entry = $entries[ $sourceId ];
 			$title = self::title( $entry );
+
+			$targetId = self::existingTarget( $entry, $options );
+			if ( $targetId > 0 ) {
+				$oldConfigs[ $targetId ] = TemplateMeta::get( $targetId );
+				$idMap[ $sourceId ]      = $targetId;
+				continue;
+			}
 
 			$newParent = isset( $children[ $sourceId ] ) ? ( $idMap[ $parent ] ?? 0 ) : 0;
 			if ( $parent > 0 && $newParent === 0 ) {
@@ -212,10 +257,64 @@ final class TemplateImporter {
 
 	/**
 	 * @param array<string, mixed> $entry
+	 * @param array<string, mixed> $options
+	 */
+	private static function existingTarget( array $entry, array $options ): int {
+		/**
+		 * An existing template to update with this entry instead of creating
+		 * a new one (0 = create). It must be a template the user can edit;
+		 * anything else is ignored.
+		 *
+		 * @param int                  $templateId
+		 * @param array<string, mixed> $entry   The template's entry in the file.
+		 * @param array<string, mixed> $options The import options.
+		 */
+		$targetId = (int) apply_filters( 'rowsprout_template_import_target', 0, $entry, $options );
+		if ( $targetId <= 0 ) {
+			return 0;
+		}
+
+		$post = get_post( $targetId );
+		if ( ! $post instanceof \WP_Post || $post->post_type !== PostTypes::TEMPLATE || in_array( $post->post_status, [ 'trash', 'auto-draft' ], true ) || ! current_user_can( 'edit_post', $targetId ) ) {
+			return 0;
+		}
+
+		return $targetId;
+	}
+
+	/**
+	 * The attachment on this site for a media URL from an import file, or 0.
+	 * Media is not part of the file; by default only a file that is already
+	 * in this site's media library is found (as on the site the export came
+	 * from).
+	 *
+	 * @param array<string, mixed> $options
+	 */
+	public static function findAttachment( string $url, int $templateId, array $options ): int {
+		$url = esc_url_raw( $url );
+		if ( $url === '' ) {
+			return 0;
+		}
+
+		/**
+		 * The attachment for a media URL from an import file. An add-on can
+		 * download a missing file here.
+		 *
+		 * @param int                  $attachmentId 0 when this site has no such file.
+		 * @param string               $url
+		 * @param int                  $templateId   The template being imported.
+		 * @param array<string, mixed> $options      The import options.
+		 */
+		return (int) apply_filters( 'rowsprout_template_import_attachment_id', (int) attachment_url_to_postid( $url ), $url, $templateId, $options );
+	}
+
+	/**
+	 * @param array<string, mixed> $entry
 	 * @param array<int, int>      $idMap
 	 * @param array<string, bool>  $unknownTypes
+	 * @param array<string, mixed> $options
 	 */
-	private static function fillTemplate( int $newId, array $entry, array $idMap, ImportResult $result, array &$unknownTypes ): void {
+	private static function fillTemplate( int $newId, array $entry, array $idMap, ImportResult $result, array &$unknownTypes, array $options, bool $isUpdate ): void {
 		/**
 		 * The template ids whose placeholder tokens are rewritten in this
 		 * template (old id => new id). By default every template of the
@@ -228,12 +327,20 @@ final class TemplateImporter {
 		 */
 		$map = (array) apply_filters( 'rowsprout_template_import_id_map', $idMap, $entry, $newId );
 
-		$updated = wp_update_post( wp_slash( [
+		$postUpdate = [
 			'ID'           => $newId,
 			'post_title'   => PlaceholderTokenIds::remap( self::title( $entry ), $map ),
 			'post_content' => PlaceholderTokenIds::remap( self::text( $entry['content'] ?? '' ), $map ),
 			'post_excerpt' => PlaceholderTokenIds::remap( self::text( $entry['excerpt'] ?? '' ), $map ),
-		] ), true );
+		];
+		// An updated template follows its parent when that came along in the
+		// file, and keeps its own parent otherwise.
+		$sourceParent = absint( $entry['parent'] ?? 0 );
+		if ( $isUpdate && $sourceParent > 0 && isset( $idMap[ $sourceParent ] ) ) {
+			$postUpdate['post_parent'] = $idMap[ $sourceParent ];
+		}
+
+		$updated = wp_update_post( wp_slash( $postUpdate ), true );
 		if ( is_wp_error( $updated ) ) {
 			$result->addWarning( sprintf(
 				/* translators: 1: template title, 2: error message. */
@@ -255,13 +362,13 @@ final class TemplateImporter {
 		}
 
 		self::importMeta( $newId, $entry, $map, $result );
-		self::importFeaturedImage( $newId, $entry, $result );
+		self::importFeaturedImage( $newId, $entry, $result, $options );
 
-		// Last: the post updates above stored the default save action. An
+		// An updated template keeps its own save action. For a new one, an
 		// action this site doesn't offer falls back to the default when the
 		// template is saved (SavePost::readTemplateSaveAction()).
 		$saveAction = sanitize_key( self::text( $entry['save_action'] ?? '' ) );
-		if ( $saveAction !== '' ) {
+		if ( ! $isUpdate && $saveAction !== '' ) {
 			update_post_meta( $newId, PostMetaKeys::SAVE_ACTION, $saveAction );
 		}
 	}
@@ -421,27 +528,60 @@ final class TemplateImporter {
 				continue;
 			}
 
+			$values = array_values( array_map(
+				static function ( $value ) use ( $map ) {
+					return PlaceholderTokenIds::remapRecursive( $value, $map );
+				},
+				is_array( $values ) ? $values : [ $values ]
+			) );
+
+			// An updated template: a key that already holds these values is
+			// left alone. Rewriting it anyway reads as a change to change
+			// tracking (RowSprout Pro's Smart Generate), which would then mark
+			// every page outdated.
+			if ( self::comparable( get_post_meta( $newId, $key ) ) === self::comparable( $values ) ) {
+				continue;
+			}
+
 			delete_post_meta( $newId, $key );
-			foreach ( is_array( $values ) ? $values : [ $values ] as $value ) {
-				add_post_meta( $newId, $key, wp_slash( PlaceholderTokenIds::remapRecursive( $value, $map ) ) );
+			foreach ( $values as $value ) {
+				add_post_meta( $newId, $key, wp_slash( $value ) );
 			}
 		}
 	}
 
 	/**
-	 * Media is not part of the file: the featured image is only set when
-	 * this site's media library has the same file (the URL matches, as on
-	 * the site the export came from).
+	 * Meta values as stored would read them back: scalars as strings (the
+	 * file has real numbers and booleans, the database only strings).
+	 *
+	 * @param mixed $value
+	 * @return mixed
+	 */
+	private static function comparable( $value ) {
+		if ( is_array( $value ) ) {
+			return array_map( [ self::class, 'comparable' ], $value );
+		}
+		if ( is_bool( $value ) ) {
+			return $value ? '1' : '';
+		}
+
+		return is_scalar( $value ) ? (string) $value : '';
+	}
+
+	/**
+	 * See findAttachment(). A featured image that cannot be found leaves the
+	 * template's current one (an updated template) or none.
 	 *
 	 * @param array<string, mixed> $entry
+	 * @param array<string, mixed> $options
 	 */
-	private static function importFeaturedImage( int $newId, array $entry, ImportResult $result ): void {
+	private static function importFeaturedImage( int $newId, array $entry, ImportResult $result, array $options ): void {
 		$url = is_array( $entry['featured_image'] ?? null ) ? esc_url_raw( self::text( $entry['featured_image']['url'] ?? '' ) ) : '';
 		if ( $url === '' ) {
 			return;
 		}
 
-		$attachmentId = attachment_url_to_postid( $url );
+		$attachmentId = self::findAttachment( $url, $newId, $options );
 		if ( $attachmentId > 0 ) {
 			set_post_thumbnail( $newId, $attachmentId );
 			return;

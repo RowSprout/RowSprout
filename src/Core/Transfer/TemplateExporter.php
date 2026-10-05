@@ -65,6 +65,15 @@ final class TemplateExporter {
 	 * @return array<int, int>
 	 */
 	public static function resolveTemplateIds( array $templateIds ): array {
+		/**
+		 * The templates an export starts from, before child templates and
+		 * parents are added. An add-on can add templates that belong with
+		 * them, such as their translations.
+		 *
+		 * @param array<int, int|string> $templateIds
+		 */
+		$templateIds = (array) apply_filters( 'rowsprout_template_export_ids', $templateIds );
+
 		$parents  = [];
 		$children = [];
 

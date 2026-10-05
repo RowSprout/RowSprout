@@ -147,7 +147,17 @@ final class TemplateTransferPage {
 
 		$json = file_get_contents( $tmpName ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- reading PHP's own temporary upload file.
 
-		self::redirectWithResult( TemplateImporter::importJson( is_string( $json ) ? $json : '' ) );
+		/**
+		 * Options for this import, from fields an add-on printed with the
+		 * rowsprout_template_import_form_fields action. Runs after the nonce
+		 * and capability checks, so a callback may read its own fields from
+		 * the request. The options reach every import hook.
+		 *
+		 * @param array<string, mixed> $options
+		 */
+		$options = (array) apply_filters( 'rowsprout_template_import_options', [] );
+
+		self::redirectWithResult( TemplateImporter::importJson( is_string( $json ) ? $json : '', $options ) );
 	}
 
 	public static function renderPage(): void {
@@ -165,6 +175,12 @@ final class TemplateTransferPage {
 		if ( current_user_can( 'import' ) ) {
 			self::renderImportCard();
 		}
+
+		/**
+		 * Prints extra cards on the Import / Export page (each a
+		 * <div class="card">).
+		 */
+		do_action( 'rowsprout_import_export_page_cards' );
 		echo '</div>';
 		echo '</div>';
 	}
@@ -231,6 +247,13 @@ final class TemplateTransferPage {
 			__( 'Maximum file size: %s.', 'rowsprout' ),
 			size_format( wp_max_upload_size() )
 		) ) . '</p>';
+
+		/**
+		 * Prints extra fields in the import form; read them back through the
+		 * rowsprout_template_import_options filter.
+		 */
+		do_action( 'rowsprout_template_import_form_fields' );
+
 		submit_button( __( 'Import', 'rowsprout' ), 'primary', 'submit', true );
 		echo '</form>';
 		echo '</div>';
@@ -258,6 +281,21 @@ final class TemplateTransferPage {
 				count( $created )
 			) ) . '</p><ul style="list-style: disc; margin-left: 20px;">';
 			foreach ( $created as $item ) {
+				$editUrl = get_edit_post_link( $item['id'] );
+				$title   = get_the_title( $item['id'] );
+				echo '<li>' . ( $editUrl ? '<a href="' . esc_url( $editUrl ) . '">' . esc_html( $title ) . '</a>' : esc_html( $title ) ) . '</li>';
+			}
+			echo '</ul></div>';
+		}
+
+		$updated = $result->updated();
+		if ( $updated !== [] ) {
+			echo '<div class="notice notice-success"><p>' . esc_html( sprintf(
+				/* translators: %d: number of templates. */
+				_n( '%d existing template was updated. Nothing was generated: its changed pages are marked as outdated until you save it with "Create & update pages".', '%d existing templates were updated. Nothing was generated: their changed pages are marked as outdated until you save them with "Create & update pages".', count( $updated ), 'rowsprout' ),
+				count( $updated )
+			) ) . '</p><ul style="list-style: disc; margin-left: 20px;">';
+			foreach ( $updated as $item ) {
 				$editUrl = get_edit_post_link( $item['id'] );
 				$title   = get_the_title( $item['id'] );
 				echo '<li>' . ( $editUrl ? '<a href="' . esc_url( $editUrl ) . '">' . esc_html( $title ) . '</a>' : esc_html( $title ) ) . '</li>';
