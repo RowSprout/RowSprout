@@ -5,6 +5,7 @@ namespace RowSprout\Core;
 use RowSprout\Core\Groups\GroupTableGateway;
 use RowSprout\Core\Template\HrefPatternValidator;
 use RowSprout\Core\Template\HrefUniquenessValidator;
+use RowSprout\Core\Template\UrlConflicts;
 use RowSprout\Core\Template\Lifecycle\TemplateSyncMarker;
 use RowSprout\Core\PostMetaKeys;
 use RowSprout\Core\PostTypes;
@@ -61,6 +62,7 @@ final class SavePost {
 
 		$sources = [
 			[ self::hrefDuplicateNoticeTransientKey( $userId ), 'error', '' ],
+			[ self::urlConflictNoticeTransientKey( $userId ), 'error', '' ],
 			[ self::parentNotGeneratedNoticeTransientKey( $userId ), 'error', '' ],
 			[ self::configConflictNoticeTransientKey( $userId ), 'warning', '' ],
 			[ self::hrefTokenMissingNoticeTransientKey( $userId ), 'warning', '' ],
@@ -84,6 +86,25 @@ final class SavePost {
 
 	private static function hrefDuplicateNoticeTransientKey( int $userId ): string {
 		return 'rowsprout_href_duplicate_notice_' . $userId;
+	}
+
+	private static function urlConflictNoticeTransientKey( int $userId ): string {
+		return 'rowsprout_url_conflict_notice_' . $userId;
+	}
+
+	/**
+	 * See UrlConflicts: a URL that another template's group, a generated
+	 * page or (without a URL base) another post already has.
+	 *
+	 * @param array<int, array<string, mixed>> $conflicts
+	 */
+	private static function persistUrlConflictNotice( array $conflicts ): void {
+		$userId = get_current_user_id();
+		if ( ! $userId ) {
+			return;
+		}
+
+		set_transient( self::urlConflictNoticeTransientKey( $userId ), UrlConflicts::message( $conflicts ), MINUTE_IN_SECONDS );
 	}
 
 	private static function parentNotGeneratedNoticeTransientKey( int $userId ): string {
@@ -373,6 +394,15 @@ final class SavePost {
 				return;
 			}
 
+			// Refused like a duplicate within the template, but nothing is
+			// queued either: the stored config may have the same URLs (a draft
+			// is not checked), and publishing it now would generate them.
+			$urlConflicts = UrlConflicts::find( $postId, $config );
+			if ( $urlConflicts !== [] ) {
+				self::persistUrlConflictNotice( $urlConflicts );
+				return;
+			}
+
 			TemplateMeta::save( $postId, $config );
 			$hrefWarning = HrefPatternValidator::saveWarning( $config, $postId );
 			if ( $hrefWarning !== '' ) {
@@ -380,6 +410,16 @@ final class SavePost {
 			}
 			self::handlePostSaveQueue( $postId, $existingConfig, $input );
 			return;
+		}
+
+		// A save without the template form (quick edit, REST, a translation
+		// saved back) can publish a template whose stored URLs collide.
+		if ( ! ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) ) {
+			$urlConflicts = UrlConflicts::find( $postId, $existingConfig );
+			if ( $urlConflicts !== [] ) {
+				self::persistUrlConflictNotice( $urlConflicts );
+				return;
+			}
 		}
 
 		self::handlePostSaveQueue( $postId, $existingConfig, $input );

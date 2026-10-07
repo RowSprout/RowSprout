@@ -7,6 +7,7 @@ use RowSprout\Core\Helpers;
 use RowSprout\Core\PostTypes;
 use RowSprout\Core\Template\HrefPatternValidator;
 use RowSprout\Core\Template\HrefUniquenessValidator;
+use RowSprout\Core\Template\UrlConflicts;
 use RowSprout\Core\Template\Lifecycle\TemplateSyncMarker;
 use RowSprout\Core\Template\PayloadConfigBuilder;
 use RowSprout\Core\TemplateMeta;
@@ -200,6 +201,14 @@ final class TemplateEditorTab {
 			wp_send_json_error( [
 				'code'    => 'duplicate_href',
 				'message' => __( 'Two or more groups share the same URL/slug. Every group\'s URL must be unique.', 'rowsprout' ),
+			], 422 );
+		}
+
+		$urlConflicts = UrlConflicts::find( $postId, $config );
+		if ( $urlConflicts !== [] ) {
+			wp_send_json_error( [
+				'code'    => 'url_conflict',
+				'message' => UrlConflicts::message( $urlConflicts ),
 			], 422 );
 		}
 

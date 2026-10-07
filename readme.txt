@@ -30,7 +30,7 @@ A plumbing company works in 30 towns. With RowSprout it designs one "Plumber in 
 = Features =
 
 * **Real pages, not virtual ones.** Every generated page is a normal WordPress post with its own permalink, so search engines, caching plugins and your theme treat it like any other page.
-* **Your own URL pattern.** Build each page's address from its properties, for example `/plumber-amsterdam/`, `/plumber-utrecht/` and so on, under the site root or a prefix of your choice. RowSprout warns you before two pages would get the same URL.
+* **Your own URL pattern.** Build each page's address from its properties, for example `/plumber-amsterdam/`, `/plumber-utrecht/` and so on, under the site root or a prefix of your choice. RowSprout stops you before two pages would get the same URL, also across templates and, without a prefix, against your other pages and posts.
 * **Every language and alphabet.** Accents, Greek, Cyrillic, Arabic, Hebrew, Chinese, Japanese and emoji are fully supported in your rows, titles, content and URLs. Addresses follow WordPress's own rules: *Zürich* becomes `/plumber-zurich/`, while other alphabets stay as they are (`/plumber-αθήνα/`).
 * **Pages stay in sync.** Change the design or a row, save, and every page of the template is regenerated from it, so no page is ever out of date.
 * **Status at a glance.** The Templates screen shows per template how many of its pages are up to date.
@@ -126,6 +126,9 @@ No. The free plugin works entirely on your own site. RowSprout Pro, a separate p
 5. A generated page: a real WordPress page with its own URL, title and content.
 
 == Changelog ==
+
+= 3.2 =
+* New: a template is no longer saved when one of its URLs is already in use on the site, by another template's page or, without a URL prefix, by a regular page, post or another plugin's content. The notice lists the URLs and what has them. Before, one of the two pages could no longer be reached, without any warning.
 
 = 3.1 =
 * Initial public release.
