@@ -29,10 +29,19 @@ final class TemplateTransferPage {
 	private const IMPORT_ACTION = 'rowsprout_import_templates';
 	private const BULK_ACTION   = 'rowsprout_export';
 	private const FILE_FIELD    = 'rowsprout_import_file';
+	private const SAMPLE_ACTION = 'rowsprout_import_sample_data';
+
+	/**
+	 * Two example templates (city breaks and food tours in European cities,
+	 * with accented names and typographic quotes) in the export format,
+	 * relative to the plugin folder.
+	 */
+	public const SAMPLE_FILE = 'sample-data/rowsprout-sample-templates.json';
 
 	public static function register(): void {
 		add_action( 'admin_post_' . self::EXPORT_ACTION, [ self::class, 'handleExport' ] );
 		add_action( 'admin_post_' . self::IMPORT_ACTION, [ self::class, 'handleImport' ] );
+		add_action( 'admin_post_' . self::SAMPLE_ACTION, [ self::class, 'handleImportSample' ] );
 		add_filter( 'bulk_actions-edit-' . PostTypes::TEMPLATE, [ self::class, 'addBulkAction' ] );
 		add_filter( 'handle_bulk_actions-edit-' . PostTypes::TEMPLATE, [ self::class, 'handleBulkAction' ], 10, 3 );
 		// Templates are hierarchical, so their list uses page_row_actions.
@@ -195,7 +204,10 @@ final class TemplateTransferPage {
 			self::renderExportCard();
 		}
 		if ( current_user_can( 'import' ) ) {
+			echo '<div style="flex: 1 1 320px; max-width: 480px; display: flex; flex-direction: column; gap: 20px;">';
 			self::renderImportCard();
+			self::renderSampleCard();
+			echo '</div>';
 		}
 
 		/**
@@ -240,8 +252,11 @@ final class TemplateTransferPage {
 			$title       = get_the_title( $post ) !== '' ? get_the_title( $post ) : __( '(no title)', 'rowsprout' );
 
 			echo '<tr>';
-			$parentAttr  = (int) $post->post_parent > 0 ? ' data-parent="' . esc_attr( (string) $post->post_parent ) . '"' : '';
-			echo '<th scope="row" class="check-column"><input type="checkbox" name="template_ids[]" value="' . esc_attr( (string) $post->ID ) . '" id="' . esc_attr( $inputId ) . '"' . $parentAttr . '></th>';
+			echo '<th scope="row" class="check-column"><input type="checkbox" name="template_ids[]" value="' . esc_attr( (string) $post->ID ) . '" id="' . esc_attr( $inputId ) . '"';
+			if ( (int) $post->post_parent > 0 ) {
+				echo ' data-parent="' . esc_attr( (string) $post->post_parent ) . '"';
+			}
+			echo '></th>';
 			echo '<td><label for="' . esc_attr( $inputId ) . '">' . ( $template['child'] ? '&#8212; ' : '' ) . esc_html( $title ) . '</label></td>';
 			echo '<td>' . esc_html( $statusLabel ? (string) $statusLabel->label : $post->post_status ) . '</td>';
 			echo '<td>' . esc_html( number_format_i18n( count( (array) ( TemplateMeta::get( $post->ID )['groups'] ?? [] ) ) ) ) . '</td>';
@@ -294,7 +309,7 @@ final class TemplateTransferPage {
 	}
 
 	private static function renderImportCard(): void {
-		echo '<div class="card" style="flex: 1 1 320px; max-width: 480px; margin-top: 0;">';
+		echo '<div class="card" style="max-width: none; margin-top: 0;">';
 		echo '<h2>' . esc_html__( 'Import', 'rowsprout' ) . '</h2>';
 		echo '<p>' . esc_html__( 'Choose a RowSprout export file. Every template in it is added as a new draft; existing templates are never changed.', 'rowsprout' ) . '</p>';
 		echo '<p class="description">' . esc_html__( 'Check an imported template (above all its URL pattern), then publish it with "Create & update pages" to generate its pages.', 'rowsprout' ) . '</p>';
@@ -319,6 +334,41 @@ final class TemplateTransferPage {
 		submit_button( __( 'Import', 'rowsprout' ), 'primary', 'submit', true );
 		echo '</form>';
 		echo '</div>';
+	}
+
+	private static function renderSampleCard(): void {
+		echo '<div class="card" style="max-width: none; margin-top: 0;">';
+		echo '<h2>' . esc_html__( 'Sample data', 'rowsprout' ) . '</h2>';
+		echo '<p>' . esc_html__( 'Add two example templates to see how RowSprout works: city breaks in 12 European cities and food tours in 6, with their properties and groups. They are added as drafts; publish one with "Create & update pages" to generate its pages.', 'rowsprout' ) . '</p>';
+		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
+		echo '<input type="hidden" name="action" value="' . esc_attr( self::SAMPLE_ACTION ) . '">';
+		wp_nonce_field( self::SAMPLE_ACTION );
+		submit_button( __( 'Import sample data', 'rowsprout' ), 'secondary', 'submit', false );
+		echo '</form>';
+		echo '</div>';
+	}
+
+	/**
+	 * Imports the bundled sample file (SAMPLE_FILE) like an uploaded one.
+	 */
+	public static function handleImportSample(): void {
+		if ( ! current_user_can( 'import' ) || ! current_user_can( 'edit_posts' ) ) {
+			wp_die( esc_html__( 'You are not allowed to import templates.', 'rowsprout' ), 403 );
+		}
+		check_admin_referer( self::SAMPLE_ACTION );
+
+		$path = ROWSPROUT_PATH . self::SAMPLE_FILE;
+		$json = is_readable( $path ) ? file_get_contents( $path ) : false; // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- a file that ships with the plugin.
+		if ( ! is_string( $json ) || $json === '' ) {
+			$result = new ImportResult();
+			$result->addError( __( 'The sample data file is missing. Reinstall RowSprout and try again.', 'rowsprout' ) );
+			self::redirectWithResult( $result );
+		}
+
+		/** This filter is documented in handleImport(). */
+		$options = (array) apply_filters( 'rowsprout_template_import_options', [] );
+
+		self::redirectWithResult( TemplateImporter::importJson( $json, $options ) );
 	}
 
 	private static function renderResult(): void {

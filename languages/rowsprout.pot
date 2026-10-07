@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-07T11:08:44+00:00\n"
+"POT-Creation-Date: 2026-10-07T12:01:50+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: rowsprout\n"
@@ -139,7 +139,7 @@ msgid "You haven't created a template yet."
 msgstr ""
 
 #: src/Admin/Menu.php:125
-#: src/Admin/TemplateTransferPage.php:240
+#: src/Admin/TemplateTransferPage.php:252
 msgid "(no title)"
 msgstr ""
 
@@ -375,7 +375,7 @@ msgstr ""
 
 #: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:76
 #: src/Admin/TemplateStatusColumn.php:38
-#: src/Admin/TemplateTransferPage.php:234
+#: src/Admin/TemplateTransferPage.php:246
 msgid "Status"
 msgstr ""
 
@@ -479,7 +479,7 @@ msgid "Properties"
 msgstr ""
 
 #: src/Admin/Metaboxes/TemplateTabsRenderer.php:131
-#: src/Admin/TemplateTransferPage.php:234
+#: src/Admin/TemplateTransferPage.php:246
 msgid "Groups"
 msgstr ""
 
@@ -549,91 +549,108 @@ msgstr[1] ""
 msgid "%1$d of %2$d up to date"
 msgstr ""
 
-#: src/Admin/TemplateTransferPage.php:61
-#: src/Admin/TemplateTransferPage.php:107
-#: src/Admin/TemplateTransferPage.php:214
+#: src/Admin/TemplateTransferPage.php:70
+#: src/Admin/TemplateTransferPage.php:116
+#: src/Admin/TemplateTransferPage.php:226
 msgid "Export"
 msgstr ""
 
-#: src/Admin/TemplateTransferPage.php:106
+#: src/Admin/TemplateTransferPage.php:115
 msgid "Export with parent"
 msgstr ""
 
-#: src/Admin/TemplateTransferPage.php:116
+#: src/Admin/TemplateTransferPage.php:125
 msgid "You are not allowed to export templates."
 msgstr ""
 
-#: src/Admin/TemplateTransferPage.php:136
+#: src/Admin/TemplateTransferPage.php:145
 msgid "Select at least one template to export."
 msgstr ""
 
-#: src/Admin/TemplateTransferPage.php:145
+#: src/Admin/TemplateTransferPage.php:154
+#: src/Admin/TemplateTransferPage.php:356
 msgid "You are not allowed to import templates."
 msgstr ""
 
 #. translators: %s: maximum upload size, e.g. "8 MB".
-#: src/Admin/TemplateTransferPage.php:160
+#: src/Admin/TemplateTransferPage.php:169
 #, php-format
 msgid "The file is larger than this server accepts (%s)."
 msgstr ""
 
-#: src/Admin/TemplateTransferPage.php:163
+#: src/Admin/TemplateTransferPage.php:172
 msgid "Choose an export file to import."
 msgstr ""
 
-#: src/Admin/TemplateTransferPage.php:189
+#: src/Admin/TemplateTransferPage.php:198
 msgid "Import / Export templates"
 msgstr ""
 
-#: src/Admin/TemplateTransferPage.php:215
+#: src/Admin/TemplateTransferPage.php:227
 msgid "Download templates as a file, with their properties, groups and page-builder layout, to add them to another site. A child template is always exported with its parent."
 msgstr ""
 
-#: src/Admin/TemplateTransferPage.php:216
+#: src/Admin/TemplateTransferPage.php:228
 msgid "Not included: the generated pages (the other site generates its own) and media files. Images keep pointing at this site."
 msgstr ""
 
-#: src/Admin/TemplateTransferPage.php:219
+#: src/Admin/TemplateTransferPage.php:231
 msgid "There are no templates to export yet."
 msgstr ""
 
-#: src/Admin/TemplateTransferPage.php:233
+#: src/Admin/TemplateTransferPage.php:245
 msgid "Select all"
 msgstr ""
 
-#: src/Admin/TemplateTransferPage.php:234
+#: src/Admin/TemplateTransferPage.php:246
 msgid "Template"
 msgstr ""
 
-#: src/Admin/TemplateTransferPage.php:252
+#: src/Admin/TemplateTransferPage.php:267
 msgid "Download selected"
 msgstr ""
 
-#: src/Admin/TemplateTransferPage.php:298
-#: src/Admin/TemplateTransferPage.php:319
+#: src/Admin/TemplateTransferPage.php:313
+#: src/Admin/TemplateTransferPage.php:334
 msgid "Import"
 msgstr ""
 
-#: src/Admin/TemplateTransferPage.php:299
+#: src/Admin/TemplateTransferPage.php:314
 msgid "Choose a RowSprout export file. Every template in it is added as a new draft; existing templates are never changed."
 msgstr ""
 
-#: src/Admin/TemplateTransferPage.php:300
+#: src/Admin/TemplateTransferPage.php:315
 msgid "Check an imported template (above all its URL pattern), then publish it with \"Create & update pages\" to generate its pages."
 msgstr ""
 
-#: src/Admin/TemplateTransferPage.php:305
+#: src/Admin/TemplateTransferPage.php:320
 msgid "Export file"
 msgstr ""
 
 #. translators: %s: maximum upload size, e.g. "8 MB".
-#: src/Admin/TemplateTransferPage.php:309
+#: src/Admin/TemplateTransferPage.php:324
 #, php-format
 msgid "Maximum file size: %s."
 msgstr ""
 
-#. translators: %d: number of templates.
+#: src/Admin/TemplateTransferPage.php:341
+msgid "Sample data"
+msgstr ""
+
 #: src/Admin/TemplateTransferPage.php:342
+msgid "Add two example templates to see how RowSprout works: city breaks in 12 European cities and food tours in 6, with their properties and groups. They are added as drafts; publish one with \"Create & update pages\" to generate its pages."
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:346
+msgid "Import sample data"
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:364
+msgid "The sample data file is missing. Reinstall RowSprout and try again."
+msgstr ""
+
+#. translators: %d: number of templates.
+#: src/Admin/TemplateTransferPage.php:392
 #, php-format
 msgid "%d template was imported as a draft:"
 msgid_plural "%d templates were imported as drafts:"
@@ -641,14 +658,14 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of templates.
-#: src/Admin/TemplateTransferPage.php:357
+#: src/Admin/TemplateTransferPage.php:407
 #, php-format
 msgid "%d existing template was updated. Nothing was generated: its changed pages are marked as outdated until you save it with \"Create & update pages\"."
 msgid_plural "%d existing templates were updated. Nothing was generated: their changed pages are marked as outdated until you save them with \"Create & update pages\"."
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Admin/TemplateTransferPage.php:384
+#: src/Admin/TemplateTransferPage.php:434
 msgid "The export file could not be created."
 msgstr ""
 

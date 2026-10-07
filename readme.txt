@@ -130,6 +130,7 @@ No. The free plugin works entirely on your own site. RowSprout Pro, a separate p
 
 = 3.2 =
 * New: RowSprout → Import / Export. Download templates (with their properties, groups and page-builder layout) as a file and import them on another site as drafts. The Templates list gets an Export action too.
+* New: sample data. One click on the Import / Export page adds two example templates (city breaks and food tours in European cities) to try RowSprout with.
 
 = 3.1 =
 * Initial public release.
