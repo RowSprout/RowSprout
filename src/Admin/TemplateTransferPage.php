@@ -127,7 +127,17 @@ final class TemplateTransferPage {
 			self::redirectWithResult( $result );
 		}
 
-		self::sendDownload( TemplateExporter::build( $ids ) );
+		/**
+		 * Options for this export, from fields an add-on adds to the export
+		 * form. Runs after the nonce and capability checks, so a callback may
+		 * read its own fields from the request. The options reach
+		 * rowsprout_template_export_data.
+		 *
+		 * @param array<string, mixed> $options
+		 */
+		$options = (array) apply_filters( 'rowsprout_template_export_options', [] );
+
+		self::sendDownload( TemplateExporter::build( $ids, $options ) );
 	}
 
 	public static function handleImport(): void {
@@ -211,7 +221,7 @@ final class TemplateTransferPage {
 			return;
 		}
 
-		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
+		echo '<form method="post" id="rowsprout-export-form" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
 		echo '<input type="hidden" name="action" value="' . esc_attr( self::EXPORT_ACTION ) . '">';
 		wp_nonce_field( self::EXPORT_ACTION );
 

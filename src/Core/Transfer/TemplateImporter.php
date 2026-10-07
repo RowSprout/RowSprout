@@ -358,7 +358,21 @@ final class TemplateImporter {
 		}
 
 		$config = self::sanitizeConfig( PlaceholderTokenIds::remapRecursive( $entry['config'] ?? [], $map ), $unknownTypes );
-		TemplateMeta::save( $newId, $config );
+
+		/**
+		 * The config about to be stored for an imported template (already
+		 * sanitized and with token ids rewritten). For an updated template the
+		 * stored config is still the one from before the import here, so an
+		 * add-on can, for example, merge a partial export into it.
+		 *
+		 * @param array<string, mixed> $config
+		 * @param array<string, mixed> $entry    The template's entry in the file.
+		 * @param int                  $newId    The template on this site.
+		 * @param bool                 $isUpdate Whether an existing template is updated.
+		 * @param array<string, mixed> $options  The import options.
+		 */
+		$filtered = apply_filters( 'rowsprout_template_import_config', $config, $entry, $newId, $isUpdate, $options );
+		TemplateMeta::save( $newId, is_array( $filtered ) ? $filtered : $config );
 
 		if ( ! empty( HrefUniquenessValidator::findDuplicateGroups( TemplateMeta::get( $newId ) ) ) ) {
 			$result->addWarning( sprintf(

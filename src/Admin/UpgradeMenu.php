@@ -26,7 +26,6 @@ final class UpgradeMenu {
 					__( 'A live-updating status bar on the Templates screen, a per-group status overview, and generating all pages of a template in one click.', 'rowsprout' ),
 					__( 'Per-group planning: choose when each page is generated.', 'rowsprout' ),
 					__( 'Throttling: limit the batch size and the hours in which pages are processed.', 'rowsprout' ),
-					__( 'Groups as CSV: edit a template\'s groups in Excel or Google Sheets and import them again.', 'rowsprout' ),
 				],
 			],
 			[
@@ -50,6 +49,7 @@ final class UpgradeMenu {
 				'items' => [
 					__( 'An MCP server and WP-CLI commands to manage templates and pages from scripts or AI agents.', 'rowsprout' ),
 					__( 'Import that updates templates already on the site (for example from staging to live) and downloads missing images.', 'rowsprout' ),
+					__( 'Export only the properties and groups you choose.', 'rowsprout' ),
 				],
 			],
 		];

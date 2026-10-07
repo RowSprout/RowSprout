@@ -115,15 +115,18 @@ final class TemplateExporter {
 	 * The export file's contents for $templateIds (run them through
 	 * resolveTemplateIds() first).
 	 *
-	 * @param array<int, int> $templateIds
+	 * @param array<int, int>      $templateIds
+	 * @param array<string, mixed> $options Export options (see the
+	 *        rowsprout_template_export_options filter); passed on to
+	 *        rowsprout_template_export_data.
 	 * @return array<string, mixed>
 	 */
-	public static function build( array $templateIds ): array {
+	public static function build( array $templateIds, array $options = [] ): array {
 		$templates = [];
 		foreach ( $templateIds as $id ) {
 			$post = self::exportablePost( (int) $id );
 			if ( $post ) {
-				$templates[] = self::exportTemplate( $post );
+				$templates[] = self::exportTemplate( $post, $options );
 			}
 		}
 
@@ -176,7 +179,7 @@ final class TemplateExporter {
 	/**
 	 * @return array<string, mixed>
 	 */
-	private static function exportTemplate( \WP_Post $post ): array {
+	private static function exportTemplate( \WP_Post $post, array $options ): array {
 		$config = TemplateMeta::get( $post->ID );
 
 		$thumbnailId   = (int) get_post_thumbnail_id( $post );
@@ -209,8 +212,9 @@ final class TemplateExporter {
 		 *
 		 * @param array<string, mixed> $data
 		 * @param \WP_Post             $post
+		 * @param array<string, mixed> $options The export options.
 		 */
-		$data = apply_filters( 'rowsprout_template_export_data', $data, $post );
+		$data = apply_filters( 'rowsprout_template_export_data', $data, $post, $options );
 
 		return is_array( $data ) ? $data : [];
 	}
