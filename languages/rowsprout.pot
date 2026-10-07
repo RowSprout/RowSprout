@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-07T12:32:13+00:00\n"
+"POT-Creation-Date: 2026-10-07T14:34:33+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: rowsprout\n"
@@ -891,25 +891,25 @@ msgid "Unknown"
 msgstr ""
 
 #. translators: %s: list of URLs with what already uses them.
-#: src/Core/Template/UrlConflicts.php:133
+#: src/Core/Template/UrlConflicts.php:241
 #, php-format
 msgid "This template was not saved and no pages were generated: some of its URLs are already in use: %s. Every URL must be unique on the site; change these groups (or the URL pattern) and save again."
 msgstr ""
 
 #. translators: %s: template title.
-#: src/Core/Template/UrlConflicts.php:149
+#: src/Core/Template/UrlConflicts.php:257
 #, php-format
 msgid "template \"%s\""
 msgstr ""
 
 #. translators: 1: post type name, e.g. "Page", 2: post title.
-#: src/Core/Template/UrlConflicts.php:151
+#: src/Core/Template/UrlConflicts.php:259
 #, php-format
 msgid "%1$s \"%2$s\""
 msgstr ""
 
 #. translators: 1: list of URLs, 2: number of further URLs.
-#: src/Core/Template/UrlConflicts.php:158
+#: src/Core/Template/UrlConflicts.php:266
 #, php-format
 msgid "%1$s and %2$d more"
 msgstr ""

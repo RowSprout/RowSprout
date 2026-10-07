@@ -93,22 +93,14 @@ final class UrlConflicts {
 		$ids          = Helpers::getCodeIds( $post->ID );
 		$aliasCodeIds = apply_filters( 'rowsprout_group_placeholder_alias_code_ids', [], $post->ID, $post );
 		$aliasCodeIds = is_array( $aliasCodeIds ) ? $aliasCodeIds : [];
-		$isChild      = (int) $post->post_parent > 0;
 
 		$paths = [];
 		foreach ( (array) ( $config['groups'] ?? [] ) as $group ) {
 			if ( ! is_array( $group ) || ! isset( $group['id'] ) ) {
 				continue;
 			}
-			$guid         = (string) $group['id'];
-			$parentPageId = 0;
-
-			if ( $isChild ) {
-				/** This filter is documented in PageBuildContextResolver::resolve(). */
-				$context      = apply_filters( 'rowsprout_resolve_child_template_context', [ 'group' => $group, 'parent_id' => null ], $guid, $post->ID, $post );
-				$group        = is_array( $context['group'] ?? null ) ? $context['group'] : $group;
-				$parentPageId = (int) ( $context['parent_id'] ?? 0 );
-			}
+			$guid                     = (string) $group['id'];
+			[ $group, $parentPageId ] = self::resolveGroup( $post, $group );
 
 			$slug = sanitize_title( PageBuilder::replacePlaceholders( $pattern, $group, $ids['code_id'], $ids['parent_code_id'], $aliasCodeIds ) );
 			if ( $slug === '' ) {
@@ -120,6 +112,122 @@ final class UrlConflicts {
 		}
 
 		return $paths;
+	}
+
+	/**
+	 * A free href/slug value for each colliding group, the way WordPress makes
+	 * a slug unique ("amsterdam" → "amsterdam-2"), checked against the same
+	 * URLs (and the same rowsprout_url_conflicts filter) as find() and against
+	 * this template's own other groups. A group whose URL does not come from
+	 * its href value (a pattern without that placeholder) gets none.
+	 *
+	 * @param array<string, mixed>             $config
+	 * @param array<int, array<string, mixed>> $conflicts From find().
+	 * @return array<string, string> Group guid => suggested href value.
+	 */
+	public static function suggestions( int $templateId, array $config, array $conflicts ): array {
+		$post = get_post( $templateId );
+		if ( ! $post instanceof \WP_Post || $conflicts === [] ) {
+			return [];
+		}
+
+		$own    = self::paths( $post, $config );
+		$groups = [];
+		foreach ( (array) ( $config['groups'] ?? [] ) as $group ) {
+			if ( is_array( $group ) && isset( $group['id'] ) ) {
+				$groups[ (string) $group['id'] ] = $group;
+			}
+		}
+
+		// Group guid => [ candidate value => its path ].
+		$candidates = [];
+		foreach ( array_unique( array_map( 'strval', array_column( $conflicts, 'guid' ) ) ) as $guid ) {
+			$group = $groups[ $guid ] ?? null;
+			if ( $group === null || ! isset( $own[ $guid ] ) ) {
+				continue;
+			}
+			$hrefKey = self::hrefKey( $group );
+			$base    = $hrefKey !== '' ? (string) ( self::resolveGroup( $post, $group )[0]['fields'][ $hrefKey ]['value'] ?? '' ) : '';
+			if ( $base === '' ) {
+				continue;
+			}
+			for ( $n = 2; $n <= 20; $n++ ) {
+				$candidate                                = $group;
+				$candidate['fields'][ $hrefKey ]          = (array) ( $candidate['fields'][ $hrefKey ] ?? [] );
+				$candidate['fields'][ $hrefKey ]['type']  = 'href';
+				$candidate['fields'][ $hrefKey ]['value'] = $base . '-' . $n;
+				$path = self::paths( $post, [ 'rowsprout_page_href' => $config['rowsprout_page_href'] ?? '', 'groups' => [ $candidate ] ] )[ $guid ] ?? '';
+				if ( $path === '' || $path === $own[ $guid ] ) {
+					continue 2;
+				}
+				$candidates[ $guid ][ $base . '-' . $n ] = $path;
+			}
+		}
+		if ( $candidates === [] ) {
+			return [];
+		}
+
+		$wanted = [];
+		foreach ( $candidates as $paths ) {
+			$wanted += array_fill_keys( array_values( $paths ), true );
+		}
+		$taken = [];
+		foreach ( self::takenPaths( $templateId, $wanted ) as $path => $owner ) {
+			$taken[] = [ 'guid' => '', 'path' => $path ] + $owner;
+		}
+		/** This filter is documented in find(). */
+		$taken = apply_filters( 'rowsprout_url_conflicts', $taken, $templateId );
+		$used  = array_fill_keys( array_values( $own ), true ) + array_fill_keys( array_column( array_filter( (array) $taken, 'is_array' ), 'path' ), true );
+
+		$suggestions = [];
+		foreach ( $candidates as $guid => $paths ) {
+			foreach ( $paths as $value => $path ) {
+				if ( ! isset( $used[ $path ] ) ) {
+					$suggestions[ $guid ] = (string) $value;
+					$used[ $path ]        = true;
+					break;
+				}
+			}
+		}
+
+		return $suggestions;
+	}
+
+	/**
+	 * The group as its page is built from it (a child template's group with
+	 * its parent group's values filled in) and the id of the page it goes
+	 * under (0 for a top-level template).
+	 *
+	 * @param array<string, mixed> $group
+	 * @return array{0: array<string, mixed>, 1: int}
+	 */
+	private static function resolveGroup( \WP_Post $post, array $group ): array {
+		if ( (int) $post->post_parent <= 0 ) {
+			return [ $group, 0 ];
+		}
+
+		/** This filter is documented in PageBuildContextResolver::resolve(). */
+		$context = apply_filters( 'rowsprout_resolve_child_template_context', [ 'group' => $group, 'parent_id' => null ], (string) $group['id'], $post->ID, $post );
+
+		return [
+			is_array( $context['group'] ?? null ) ? $context['group'] : $group,
+			(int) ( $context['parent_id'] ?? 0 ),
+		];
+	}
+
+	/**
+	 * The key of the group's href/slug field ('' when it has none).
+	 *
+	 * @param array<string, mixed> $group
+	 */
+	private static function hrefKey( array $group ): string {
+		foreach ( (array) ( $group['fields'] ?? [] ) as $key => $field ) {
+			if ( is_array( $field ) && ( $field['type'] ?? '' ) === 'href' ) {
+				return (string) $key;
+			}
+		}
+
+		return isset( $group['fields']['href'] ) ? 'href' : '';
 	}
 
 	/**
