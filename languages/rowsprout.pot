@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-07T09:47:00+00:00\n"
+"POT-Creation-Date: 2026-10-07T11:08:44+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: rowsprout\n"
@@ -39,35 +39,27 @@ msgid "RowSprout requires PHP 7.4 or higher."
 msgstr ""
 
 #. translators: %s: template title.
-#: src/Admin/ChildTemplateAdminUx.php:77
+#: src/Admin/ChildTemplateAdminUx.php:126
 #, php-format
 msgid "Move &#8220;%s&#8221; and its child pages to the Trash"
 msgstr ""
 
-#: src/Admin/ChildTemplateAdminUx.php:80
+#: src/Admin/ChildTemplateAdminUx.php:129
 msgid "Trash with Child pages"
 msgstr ""
 
 #. translators: %s: template title.
-#: src/Admin/ChildTemplateAdminUx.php:95
+#: src/Admin/ChildTemplateAdminUx.php:144
 #, php-format
 msgid "Restore &#8220;%s&#8221; and its parent from the Trash"
 msgstr ""
 
-#: src/Admin/ChildTemplateAdminUx.php:98
+#: src/Admin/ChildTemplateAdminUx.php:147
 msgid "Restore with Parent"
 msgstr ""
 
-#: src/Admin/ChildTemplateAdminUx.php:113
+#: src/Admin/ChildTemplateAdminUx.php:162
 msgid "This template has child templates, so it cannot have a parent itself."
-msgstr ""
-
-#: src/Admin/ChildTemplateAdminUx.php:143
-msgid "This template is a child of a selected parent and will be trashed along with it."
-msgstr ""
-
-#: src/Admin/ChildTemplateAdminUx.php:144
-msgid "Restoring this child template also restores its parent."
 msgstr ""
 
 #: src/Admin/Menu.php:30
@@ -571,7 +563,7 @@ msgstr ""
 msgid "You are not allowed to export templates."
 msgstr ""
 
-#: src/Admin/TemplateTransferPage.php:126
+#: src/Admin/TemplateTransferPage.php:136
 msgid "Select at least one template to export."
 msgstr ""
 

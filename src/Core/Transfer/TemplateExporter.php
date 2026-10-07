@@ -66,9 +66,11 @@ final class TemplateExporter {
 	 * edit are left out.
 	 *
 	 * @param array<int, int|string> $templateIds
+	 * @param array<string, mixed>   $options Export options (see
+	 *        rowsprout_template_export_options), passed on to the filter.
 	 * @return array<int, int>
 	 */
-	public static function resolveTemplateIds( array $templateIds ): array {
+	public static function resolveTemplateIds( array $templateIds, array $options = [] ): array {
 		$queue    = array_map( 'absint', $templateIds );
 		$included = [];
 		while ( $queue !== [] ) {
@@ -88,8 +90,9 @@ final class TemplateExporter {
 			 * translations.
 			 *
 			 * @param array<int, int|string> $templateIds This template's id; add others.
+			 * @param array<string, mixed>   $options     The export options.
 			 */
-			foreach ( (array) apply_filters( 'rowsprout_template_export_ids', [ $id ] ) as $relatedId ) {
+			foreach ( (array) apply_filters( 'rowsprout_template_export_ids', [ $id ], $options ) as $relatedId ) {
 				$queue[] = absint( $relatedId );
 			}
 

@@ -120,22 +120,22 @@ final class TemplateTransferPage {
 		$raw       = isset( $_REQUEST['template_ids'] ) ? wp_unslash( $_REQUEST['template_ids'] ) : []; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- every id goes through absint() in resolveTemplateIds().
 		$requested = is_array( $raw ) ? $raw : explode( ',', (string) $raw );
 
-		$ids = TemplateExporter::resolveTemplateIds( $requested );
+		/**
+		 * Options for this export, from fields an add-on adds to the export
+		 * form. Runs after the nonce and capability checks, so a callback may
+		 * read its own fields from the request. The options reach
+		 * rowsprout_template_export_ids and rowsprout_template_export_data.
+		 *
+		 * @param array<string, mixed> $options
+		 */
+		$options = (array) apply_filters( 'rowsprout_template_export_options', [] );
+
+		$ids = TemplateExporter::resolveTemplateIds( $requested, $options );
 		if ( $ids === [] ) {
 			$result = new ImportResult();
 			$result->addError( __( 'Select at least one template to export.', 'rowsprout' ) );
 			self::redirectWithResult( $result );
 		}
-
-		/**
-		 * Options for this export, from fields an add-on adds to the export
-		 * form. Runs after the nonce and capability checks, so a callback may
-		 * read its own fields from the request. The options reach
-		 * rowsprout_template_export_data.
-		 *
-		 * @param array<string, mixed> $options
-		 */
-		$options = (array) apply_filters( 'rowsprout_template_export_options', [] );
 
 		self::sendDownload( TemplateExporter::build( $ids, $options ) );
 	}
