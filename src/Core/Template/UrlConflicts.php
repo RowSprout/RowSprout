@@ -59,27 +59,39 @@ final class UrlConflicts {
 		$taken     = self::takenPaths( $templateId, $wanted );
 		$conflicts = [];
 		foreach ( $own as $guid => $path ) {
-			if ( isset( $taken[ $path ] ) ) {
-				$conflicts[] = [ 'guid' => (string) $guid, 'path' => $path ] + $taken[ $path ];
+			// Every owner of the path, so a filter that drops one (another
+			// language) still sees the others.
+			foreach ( $taken[ $path ] ?? [] as $owner ) {
+				$conflicts[] = [ 'guid' => (string) $guid, 'path' => $path ] + $owner;
 			}
 		}
 
 		/**
-		 * The URL conflicts found for a template about to be saved. Each names
-		 * what already has the URL (post_id, kind 'template', 'page' or a post
-		 * type). A multilingual add-on removes the ones in another language.
+		 * The URL conflicts found for a template about to be saved: one per
+		 * group and thing that already has its URL (post_id, kind 'template',
+		 * 'page' or a post type). A multilingual add-on removes the ones in
+		 * another language. One conflict per group is kept afterwards.
 		 *
 		 * @param array<int, array<string, mixed>> $conflicts
 		 * @param int                              $templateId
 		 */
 		$conflicts = apply_filters( 'rowsprout_url_conflicts', $conflicts, $templateId );
 
-		return array_values( array_filter( (array) $conflicts, 'is_array' ) );
+		$perGroup = [];
+		foreach ( (array) $conflicts as $conflict ) {
+			if ( is_array( $conflict ) && ! isset( $perGroup[ (string) ( $conflict['guid'] ?? '' ) ] ) ) {
+				$perGroup[ (string) ( $conflict['guid'] ?? '' ) ] = $conflict;
+			}
+		}
+
+		return array_values( $perGroup );
 	}
 
 	/**
 	 * Group guid => the path its page would get ("slug", or
-	 * "parent-path/slug" for a child template), for $config of $post.
+	 * "parent-path/slug" for a child template), for $config of $post. A
+	 * pattern that comes out empty gets the slug WordPress then derives from
+	 * the page title.
 	 *
 	 * @param array<string, mixed> $config
 	 * @return array<string, string>
@@ -99,15 +111,17 @@ final class UrlConflicts {
 			if ( ! is_array( $group ) || ! isset( $group['id'] ) ) {
 				continue;
 			}
-			$guid                     = (string) $group['id'];
-			[ $group, $parentPageId ] = self::resolveGroup( $post, $group );
+			$guid                   = (string) $group['id'];
+			[ $group, $parentPath ] = self::resolveGroup( $post, $group );
 
 			$slug = sanitize_title( PageBuilder::replacePlaceholders( $pattern, $group, $ids['code_id'], $ids['parent_code_id'], $aliasCodeIds ) );
+			if ( $slug === '' ) {
+				$slug = sanitize_title( PageBuilder::replacePlaceholders( $post->post_title, $group, $ids['code_id'], $ids['parent_code_id'], $aliasCodeIds ) );
+			}
 			if ( $slug === '' ) {
 				continue;
 			}
 
-			$parentPath     = $parentPageId > 0 ? trim( (string) get_page_uri( $parentPageId ), '/' ) : '';
 			$paths[ $guid ] = $parentPath !== '' ? $parentPath . '/' . $slug : $slug;
 		}
 
@@ -172,8 +186,10 @@ final class UrlConflicts {
 			$wanted += array_fill_keys( array_values( $paths ), true );
 		}
 		$taken = [];
-		foreach ( self::takenPaths( $templateId, $wanted ) as $path => $owner ) {
-			$taken[] = [ 'guid' => '', 'path' => $path ] + $owner;
+		foreach ( self::takenPaths( $templateId, $wanted ) as $path => $owners ) {
+			foreach ( $owners as $owner ) {
+				$taken[] = [ 'guid' => '', 'path' => $path ] + $owner;
+			}
 		}
 		/** This filter is documented in find(). */
 		$taken = apply_filters( 'rowsprout_url_conflicts', $taken, $templateId );
@@ -195,24 +211,41 @@ final class UrlConflicts {
 
 	/**
 	 * The group as its page is built from it (a child template's group with
-	 * its parent group's values filled in) and the id of the page it goes
-	 * under (0 for a top-level template).
+	 * its parent group's values filled in) and the path of the page it goes
+	 * under ('' for a top-level template). While the parent group has no page
+	 * yet, that is the path the parent group's page will get: a child group
+	 * is only generated after its parent's (QueueProcessor).
 	 *
 	 * @param array<string, mixed> $group
-	 * @return array{0: array<string, mixed>, 1: int}
+	 * @return array{0: array<string, mixed>, 1: string}
 	 */
 	private static function resolveGroup( \WP_Post $post, array $group ): array {
 		if ( (int) $post->post_parent <= 0 ) {
-			return [ $group, 0 ];
+			return [ $group, '' ];
 		}
 
 		/** This filter is documented in PageBuildContextResolver::resolve(). */
-		$context = apply_filters( 'rowsprout_resolve_child_template_context', [ 'group' => $group, 'parent_id' => null ], (string) $group['id'], $post->ID, $post );
+		$context  = apply_filters( 'rowsprout_resolve_child_template_context', [ 'group' => $group, 'parent_id' => null ], (string) $group['id'], $post->ID, $post );
+		$resolved = is_array( $context['group'] ?? null ) ? $context['group'] : $group;
+		$pageId   = (int) ( $context['parent_id'] ?? 0 );
+		if ( $pageId > 0 ) {
+			return [ $resolved, trim( (string) get_page_uri( $pageId ), '/' ) ];
+		}
 
-		return [
-			is_array( $context['group'] ?? null ) ? $context['group'] : $group,
-			(int) ( $context['parent_id'] ?? 0 ),
-		];
+		$parentGuid = (string) ( $group['parent_id'] ?? '' );
+		$parent     = get_post( (int) $post->post_parent );
+		if ( $parentGuid === '' || $parentGuid === '0' || ! $parent instanceof \WP_Post || (int) $parent->post_parent > 0 ) {
+			return [ $resolved, '' ];
+		}
+
+		static $parentPaths = [];
+		$parentConfig = TemplateMeta::get( $parent->ID );
+		$cacheKey     = $parent->ID . '|' . md5( (string) wp_json_encode( $parentConfig ) );
+		if ( ! isset( $parentPaths[ $cacheKey ] ) ) {
+			$parentPaths[ $cacheKey ] = self::paths( $parent, $parentConfig );
+		}
+
+		return [ $resolved, $parentPaths[ $cacheKey ][ $parentGuid ] ?? '' ];
 	}
 
 	/**
@@ -275,14 +308,26 @@ final class UrlConflicts {
 	public static function displayPath( string $path ): string {
 		$base = PermalinkSettings::getBase();
 
-		return '/' . ( $base !== '' ? trim( $base, '/' ) . '/' : '' ) . $path . '/';
+		return '/' . implode( '/', array_filter( [ self::front(), trim( $base, '/' ), $path ], 'strlen' ) ) . '/';
 	}
 
 	/**
-	 * Of the paths in $wanted, those something else already has.
+	 * The fixed start of the permalink structure ("blog" for
+	 * /blog/%postname%/), which generated pages get too (their rewrite rule has
+	 * with_front, see PostTypes); '' when there is none.
+	 */
+	private static function front(): string {
+		global $wp_rewrite;
+
+		return $wp_rewrite instanceof \WP_Rewrite ? trim( (string) $wp_rewrite->front, '/' ) : '';
+	}
+
+	/**
+	 * Of the paths in $wanted, those something else already has, with every
+	 * owner of each.
 	 *
 	 * @param array<string, bool> $wanted
-	 * @return array<string, array{post_id:int, kind:string, title:string}>
+	 * @return array<string, array<int, array{post_id:int, kind:string, title:string}>>
 	 */
 	private static function takenPaths( int $templateId, array $wanted ): array {
 		$slugs = [];
@@ -293,24 +338,26 @@ final class UrlConflicts {
 		$slugs = array_keys( $slugs );
 
 		$taken = [];
+		$add   = static function ( string $path, int $postId, string $kind, string $title ) use ( &$taken ): void {
+			$taken[ $path ][ $kind . '#' . $postId ] = [ 'post_id' => $postId, 'kind' => $kind, 'title' => $title ];
+		};
 
 		// Pages other templates already generated.
 		foreach ( self::postsWithSlugs( [ PostTypes::PAGE ], $slugs ) as $page ) {
 			$sourceTemplate = (int) get_post_meta( $page->ID, PostMetaKeys::SOURCE_TEMPLATE_ID, true );
 			$path           = trim( (string) get_page_uri( $page ), '/' );
-			if ( $sourceTemplate !== $templateId && isset( $wanted[ $path ] ) && ! isset( $taken[ $path ] ) ) {
-				$taken[ $path ] = [
-					'post_id' => $sourceTemplate > 0 ? $sourceTemplate : $page->ID,
-					'kind'    => 'template',
-					'title'   => get_the_title( $sourceTemplate > 0 ? $sourceTemplate : $page->ID ),
-				];
+			if ( $sourceTemplate !== $templateId && isset( $wanted[ $path ] ) ) {
+				$owner = $sourceTemplate > 0 ? $sourceTemplate : $page->ID;
+				$add( $path, $owner, 'template', get_the_title( $owner ) );
 			}
 		}
 
 		// Groups of other templates without an up-to-date page: new, outdated,
-		// planned or failed ones. A group whose page is generated and current
-		// has exactly that page's URL, which the query above already covers;
-		// computing every group of every template on each save is far too slow.
+		// planned or failed ones, or one whose page is gone (deleted or trashed
+		// once pages were unlocked). A group whose page is generated, current
+		// and still there has exactly that page's URL, which the query above
+		// already covers; computing every group of every template on each save
+		// is far too slow.
 		$others = get_posts( [
 			'post_type'        => PostTypes::TEMPLATE,
 			'post_status'      => self::GENERATING_STATUSES,
@@ -319,32 +366,40 @@ final class UrlConflicts {
 			// phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.SuppressFilters_suppress_filters -- every language: a multilingual add-on decides through rowsprout_url_conflicts which ones count, not the current admin language.
 			'suppress_filters' => true,
 		] );
+		$completed = [];
+		$pageIds   = [];
 		foreach ( $others as $other ) {
 			if ( $other->ID === $templateId ) {
 				continue;
 			}
-
-			$current = [];
+			$completed[ $other->ID ] = [];
 			foreach ( GroupTableGateway::getRowsByPostId( $other->ID ) as $row ) {
-				if ( (int) ( $row['rowsprout_page_id'] ?? 0 ) > 0 && ( $row['status'] ?? '' ) === GroupTableGateway::STATUS_COMPLETED ) {
-					$current[ (string) $row['guid'] ] = true;
+				$pageId = (int) ( $row['rowsprout_page_id'] ?? 0 );
+				if ( $pageId > 0 && ( $row['status'] ?? '' ) === GroupTableGateway::STATUS_COMPLETED ) {
+					$completed[ $other->ID ][ (string) $row['guid'] ] = $pageId;
+					$pageIds[]                                         = $pageId;
 				}
 			}
+		}
+		$existing = self::existingPages( $pageIds );
+
+		foreach ( $others as $other ) {
+			if ( ! isset( $completed[ $other->ID ] ) ) {
+				continue;
+			}
+			$current          = $completed[ $other->ID ];
 			$config           = TemplateMeta::get( $other->ID );
-			$config['groups'] = array_values( array_filter( (array) ( $config['groups'] ?? [] ), static function ( $group ) use ( $current ): bool {
-				return is_array( $group ) && ! isset( $current[ (string) ( $group['id'] ?? '' ) ] );
+			$config['groups'] = array_values( array_filter( (array) ( $config['groups'] ?? [] ), static function ( $group ) use ( $current, $existing ): bool {
+				$pageId = is_array( $group ) ? ( $current[ (string) ( $group['id'] ?? '' ) ] ?? 0 ) : 0;
+				return is_array( $group ) && ! isset( $existing[ $pageId ] );
 			} ) );
 			if ( $config['groups'] === [] ) {
 				continue;
 			}
 
 			foreach ( self::paths( $other, $config ) as $path ) {
-				if ( isset( $wanted[ $path ] ) && ! isset( $taken[ $path ] ) ) {
-					$taken[ $path ] = [
-						'post_id' => $other->ID,
-						'kind'    => 'template',
-						'title'   => get_the_title( $other ),
-					];
+				if ( isset( $wanted[ $path ] ) ) {
+					$add( $path, $other->ID, 'template', get_the_title( $other ) );
 				}
 			}
 		}
@@ -353,26 +408,60 @@ final class UrlConflicts {
 		// everything else: pages, posts and the content of other plugins. What
 		// counts is the address such a post really has (its permalink), so a
 		// post type with a base of its own (/product/amsterdam/) does not
-		// clash, and one without does.
+		// clash, and one without does. With a fixed start in the permalink
+		// structure (/blog/%postname%/), generated pages are under it too, as
+		// are posts, but regular pages are not.
 		if ( PermalinkSettings::getBase() === '' ) {
+			$front     = self::front();
 			$postTypes = array_values( array_diff(
 				get_post_types( [ 'public' => true ] ),
 				[ PostTypes::PAGE, PostTypes::TEMPLATE, 'attachment' ]
 			) );
 			foreach ( self::postsWithSlugs( $postTypes, $slugs ) as $post ) {
 				$path = self::sitePath( (string) get_permalink( $post ) );
-				if ( $path !== '' && isset( $wanted[ $path ] ) && ! isset( $taken[ $path ] ) ) {
-					$typeObject     = get_post_type_object( $post->post_type );
-					$taken[ $path ] = [
-						'post_id' => $post->ID,
-						'kind'    => $typeObject ? (string) $typeObject->labels->singular_name : $post->post_type,
-						'title'   => get_the_title( $post ),
-					];
+				if ( $front !== '' ) {
+					if ( strpos( $path . '/', $front . '/' ) !== 0 ) {
+						continue;
+					}
+					$path = trim( (string) substr( $path, strlen( $front ) ), '/' );
+				}
+				if ( $path !== '' && isset( $wanted[ $path ] ) ) {
+					$typeObject = get_post_type_object( $post->post_type );
+					$add( $path, $post->ID, $typeObject ? (string) $typeObject->labels->singular_name : $post->post_type, get_the_title( $post ) );
 				}
 			}
 		}
 
-		return $taken;
+		return array_map( 'array_values', $taken );
+	}
+
+	/**
+	 * Of $pageIds, the generated pages that still exist with a status that
+	 * is visible (not trashed or deleted), as a set.
+	 *
+	 * @param array<int, int> $pageIds
+	 * @return array<int, bool>
+	 */
+	private static function existingPages( array $pageIds ): array {
+		global $wpdb;
+
+		$pageIds = array_values( array_unique( array_filter( array_map( 'intval', $pageIds ) ) ) );
+		if ( $pageIds === [] ) {
+			return [];
+		}
+
+		$found = [];
+		$statusPlaceholders = implode( ', ', array_fill( 0, count( self::GENERATING_STATUSES ), '%s' ) );
+		foreach ( array_chunk( $pageIds, 1000 ) as $chunk ) {
+			$idPlaceholders = implode( ', ', array_fill( 0, count( $chunk ), '%d' ) );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- one query for every page of every template; the IN lists are placeholders.
+			$ids = $wpdb->get_col( $wpdb->prepare( "SELECT ID FROM {$wpdb->posts} WHERE post_type = %s AND ID IN ({$idPlaceholders}) AND post_status IN ({$statusPlaceholders})", array_merge( [ PostTypes::PAGE ], $chunk, self::GENERATING_STATUSES ) ) );
+			foreach ( $ids as $id ) {
+				$found[ (int) $id ] = true;
+			}
+		}
+
+		return $found;
 	}
 
 	/**

@@ -378,7 +378,9 @@ final class SavePost {
 			$currentVersion   = (string) ( $existingConfig['config_updated_at'] ?? '' );
 			if ( $submittedVersion !== '' && $currentVersion !== '' && $submittedVersion !== $currentVersion ) {
 				self::persistConfigConflictNotice();
-				self::handlePostSaveQueue( $postId, $existingConfig, $input );
+				if ( ! self::refuseStoredUrlConflicts( $postId, $existingConfig ) ) {
+					self::handlePostSaveQueue( $postId, $existingConfig, $input );
+				}
 				return;
 			}
 
@@ -390,7 +392,9 @@ final class SavePost {
 
 			if ( ! empty( HrefUniquenessValidator::findDuplicateGroups( $config ) ) ) {
 				self::persistHrefDuplicateNotice();
-				self::handlePostSaveQueue( $postId, $existingConfig, $input );
+				if ( ! self::refuseStoredUrlConflicts( $postId, $existingConfig ) ) {
+					self::handlePostSaveQueue( $postId, $existingConfig, $input );
+				}
 				return;
 			}
 
@@ -414,15 +418,28 @@ final class SavePost {
 
 		// A save without the template form (quick edit, REST, a translation
 		// saved back) can publish a template whose stored URLs collide.
-		if ( ! ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) ) {
-			$urlConflicts = UrlConflicts::find( $postId, $existingConfig );
-			if ( $urlConflicts !== [] ) {
-				self::persistUrlConflictNotice( $urlConflicts );
-				return;
-			}
+		if ( ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) || ! self::refuseStoredUrlConflicts( $postId, $existingConfig ) ) {
+			self::handlePostSaveQueue( $postId, $existingConfig, $input );
+		}
+	}
+
+	/**
+	 * Whenever a save falls back to queueing the STORED config (a stale form,
+	 * a duplicate URL within the template, a save without the form), that
+	 * config may have URLs in use elsewhere: a draft is not checked, and
+	 * publishing it now would generate them. Then nothing is queued and the
+	 * notice says why.
+	 *
+	 * @param array<string, mixed> $storedConfig
+	 */
+	private static function refuseStoredUrlConflicts( int $postId, array $storedConfig ): bool {
+		$conflicts = UrlConflicts::find( $postId, $storedConfig );
+		if ( $conflicts === [] ) {
+			return false;
 		}
 
-		self::handlePostSaveQueue( $postId, $existingConfig, $input );
+		self::persistUrlConflictNotice( $conflicts );
+		return true;
 	}
 
 	/**
