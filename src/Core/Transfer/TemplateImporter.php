@@ -372,7 +372,11 @@ final class TemplateImporter {
 		 * @param array<string, mixed> $options  The import options.
 		 */
 		$filtered = apply_filters( 'rowsprout_template_import_config', $config, $entry, $newId, $isUpdate, $options );
-		TemplateMeta::save( $newId, is_array( $filtered ) ? $filtered : $config );
+		$config   = is_array( $filtered ) ? $filtered : $config;
+		if ( $isUpdate ) {
+			$config = self::keepEquivalentValues( $config, TemplateMeta::get( $newId ) );
+		}
+		TemplateMeta::save( $newId, $config );
 
 		if ( ! empty( HrefUniquenessValidator::findDuplicateGroups( TemplateMeta::get( $newId ) ) ) ) {
 			$result->addWarning( sprintf(
@@ -499,6 +503,61 @@ final class TemplateImporter {
 		}
 
 		return $groups;
+	}
+
+	/**
+	 * An updated template keeps a stored value that the import's sanitizing
+	 * turns into the value from the file (a trailing space, line endings):
+	 * otherwise the change detection sees a change nobody made and outdates
+	 * the group.
+	 *
+	 * @param array<string, mixed> $config  The config about to be stored.
+	 * @param array<string, mixed> $current The template's config before the import.
+	 * @return array<string, mixed>
+	 */
+	private static function keepEquivalentValues( array $config, array $current ): array {
+		$properties = [];
+		foreach ( (array) ( $config['field_types'] ?? [] ) as $fieldType ) {
+			if ( is_array( $fieldType ) && isset( $fieldType['key'] ) ) {
+				$properties[ (string) $fieldType['key'] ] = $fieldType;
+			}
+		}
+		$currentGroups = [];
+		foreach ( (array) ( $current['groups'] ?? [] ) as $group ) {
+			if ( is_array( $group ) && isset( $group['id'] ) ) {
+				$currentGroups[ (string) $group['id'] ] = $group;
+			}
+		}
+
+		foreach ( (array) ( $config['groups'] ?? [] ) as $g => $group ) {
+			$old = $currentGroups[ (string) ( $group['id'] ?? '' ) ] ?? null;
+			if ( ! is_array( $group ) || $old === null ) {
+				continue;
+			}
+			foreach ( (array) ( $group['fields'] ?? [] ) as $key => $field ) {
+				$oldField = $old['fields'][ $key ] ?? null;
+				if ( ! is_array( $field ) || ! is_array( $oldField ) || ( $oldField['type'] ?? '' ) !== ( $field['type'] ?? '' ) || ! is_scalar( $oldField['value'] ?? null ) ) {
+					continue;
+				}
+				$oldValue = (string) $oldField['value'];
+				$newValue = (string) ( $field['value'] ?? '' );
+				if ( $oldValue === $newValue ) {
+					continue;
+				}
+				$property  = $properties[ (string) $key ] ?? [];
+				$sanitized = self::sanitizeValue(
+					(string) $field['type'],
+					sanitize_key( self::text( $property['field_type'] ?? '' ) ),
+					$oldValue,
+					SavePayloadSanitizer::normalizeOptions( $property['options'] ?? [] )
+				);
+				if ( $sanitized === $newValue ) {
+					$config['groups'][ $g ]['fields'][ $key ]['value'] = $oldValue;
+				}
+			}
+		}
+
+		return $config;
 	}
 
 	/**
