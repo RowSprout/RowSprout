@@ -56,30 +56,24 @@ final class TemplateExporter {
 
 	/**
 	 * The templates an export of $templateIds contains, parents before
-	 * children. A child template only works together with its parent (its
-	 * groups point at the parent's groups), so a child brings its parent
-	 * along, and a selected parent brings its child templates; a parent that
-	 * only came along for a child does not bring that child's siblings. An
-	 * add-on can add templates that belong with any template in the set
-	 * (filter rowsprout_template_export_ids), and the same rules apply to
-	 * those, until nothing new is added. Templates the current user cannot
+	 * children: the chosen ones, plus the parent of every child template
+	 * among them, since a child only works together with its parent (its
+	 * groups point at the parent's groups). A parent does not bring its
+	 * child templates: the export holds what was chosen. An add-on can add
+	 * templates that belong with any template in the set (filter
+	 * rowsprout_template_export_ids); a child among those brings its parent
+	 * too, until nothing new is added. Templates the current user cannot
 	 * edit are left out.
 	 *
 	 * @param array<int, int|string> $templateIds
 	 * @return array<int, int>
 	 */
 	public static function resolveTemplateIds( array $templateIds ): array {
-		// [ template id, whether its child templates come along ]
-		$queue = [];
-		foreach ( $templateIds as $id ) {
-			$queue[] = [ absint( $id ), true ];
-		}
-
-		// Template id => whether its child templates come along.
+		$queue    = array_map( 'absint', $templateIds );
 		$included = [];
 		while ( $queue !== [] ) {
-			[ $id, $bringsChildren ] = array_shift( $queue );
-			if ( isset( $included[ $id ] ) && ( $included[ $id ] || ! $bringsChildren ) ) {
+			$id = array_shift( $queue );
+			if ( isset( $included[ $id ] ) ) {
 				continue;
 			}
 
@@ -87,25 +81,20 @@ final class TemplateExporter {
 			if ( ! $post ) {
 				continue;
 			}
-			$included[ $id ] = $bringsChildren;
+			$included[ $id ] = true;
 
 			/**
 			 * Templates that belong with this one in an export, such as its
-			 * translations. They come along on the same terms (a selected
-			 * template's translation brings its child templates too).
+			 * translations.
 			 *
 			 * @param array<int, int|string> $templateIds This template's id; add others.
 			 */
 			foreach ( (array) apply_filters( 'rowsprout_template_export_ids', [ $id ] ) as $relatedId ) {
-				$queue[] = [ absint( $relatedId ), $bringsChildren ];
+				$queue[] = absint( $relatedId );
 			}
 
 			if ( (int) $post->post_parent > 0 ) {
-				$queue[] = [ (int) $post->post_parent, false ];
-			} elseif ( $bringsChildren ) {
-				foreach ( self::childTemplateIds( $post->ID ) as $childId ) {
-					$queue[] = [ $childId, false ];
-				}
+				$queue[] = (int) $post->post_parent;
 			}
 		}
 
@@ -287,19 +276,4 @@ final class TemplateExporter {
 		return $post;
 	}
 
-	/**
-	 * @return array<int, int>
-	 */
-	private static function childTemplateIds( int $parentId ): array {
-		return array_map( 'intval', get_posts( [
-			'post_type'      => PostTypes::TEMPLATE,
-			'post_parent'    => $parentId,
-			'post_status'    => [ 'publish', 'draft', 'pending', 'future', 'private' ],
-			'posts_per_page' => -1,
-			'orderby'        => 'menu_order title',
-			'order'          => 'ASC',
-			'fields'         => 'ids',
-			'no_found_rows'  => true,
-		] ) );
-	}
 }

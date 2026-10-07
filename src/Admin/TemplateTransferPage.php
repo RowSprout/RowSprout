@@ -202,7 +202,7 @@ final class TemplateTransferPage {
 
 		echo '<div class="card" style="flex: 2 1 420px; max-width: 760px; margin-top: 0;">';
 		echo '<h2>' . esc_html__( 'Export', 'rowsprout' ) . '</h2>';
-		echo '<p>' . esc_html__( 'Download templates as a file, with their properties, groups and page-builder layout, to add them to another site. A child template is always exported with its parent, and a parent with its child templates.', 'rowsprout' ) . '</p>';
+		echo '<p>' . esc_html__( 'Download templates as a file, with their properties, groups and page-builder layout, to add them to another site. A child template is always exported with its parent.', 'rowsprout' ) . '</p>';
 		echo '<p class="description">' . esc_html__( 'Not included: the generated pages (the other site generates its own) and media files. Images keep pointing at this site.', 'rowsprout' ) . '</p>';
 
 		if ( $templates === [] ) {
@@ -218,7 +218,7 @@ final class TemplateTransferPage {
 		// List-table markup: WordPress's own common.js makes the header
 		// checkbox select every row (shift-click selects a range), as on the
 		// Templates list.
-		echo '<table class="wp-list-table widefat striped" style="margin: 12px 0;">';
+		echo '<table class="wp-list-table widefat striped" id="rowsprout-export-templates" style="margin: 12px 0;">';
 		echo '<thead><tr>';
 		echo '<td class="manage-column column-cb check-column"><label class="screen-reader-text" for="rowsprout-export-select-all">' . esc_html__( 'Select all', 'rowsprout' ) . '</label><input type="checkbox" id="rowsprout-export-select-all"></td>';
 		echo '<th scope="col">' . esc_html__( 'Template', 'rowsprout' ) . '</th><th scope="col">' . esc_html__( 'Status', 'rowsprout' ) . '</th><th scope="col">' . esc_html__( 'Groups', 'rowsprout' ) . '</th>';
@@ -230,7 +230,8 @@ final class TemplateTransferPage {
 			$title       = get_the_title( $post ) !== '' ? get_the_title( $post ) : __( '(no title)', 'rowsprout' );
 
 			echo '<tr>';
-			echo '<th scope="row" class="check-column"><input type="checkbox" name="template_ids[]" value="' . esc_attr( (string) $post->ID ) . '" id="' . esc_attr( $inputId ) . '"></th>';
+			$parentAttr  = (int) $post->post_parent > 0 ? ' data-parent="' . esc_attr( (string) $post->post_parent ) . '"' : '';
+			echo '<th scope="row" class="check-column"><input type="checkbox" name="template_ids[]" value="' . esc_attr( (string) $post->ID ) . '" id="' . esc_attr( $inputId ) . '"' . $parentAttr . '></th>';
 			echo '<td><label for="' . esc_attr( $inputId ) . '">' . ( $template['child'] ? '&#8212; ' : '' ) . esc_html( $title ) . '</label></td>';
 			echo '<td>' . esc_html( $statusLabel ? (string) $statusLabel->label : $post->post_status ) . '</td>';
 			echo '<td>' . esc_html( number_format_i18n( count( (array) ( TemplateMeta::get( $post->ID )['groups'] ?? [] ) ) ) ) . '</td>';
@@ -241,6 +242,45 @@ final class TemplateTransferPage {
 		submit_button( __( 'Download selected', 'rowsprout' ), 'primary', 'export_selected', true );
 		echo '</form>';
 		echo '</div>';
+
+		self::enqueueExportTableScript();
+	}
+
+	/**
+	 * The export always includes a chosen child's parent, so the table shows
+	 * it: ticking a child ticks its parent, and unticking a parent unticks
+	 * its children. A parent does not tick its children (it is exported on
+	 * its own).
+	 */
+	private static function enqueueExportTableScript(): void {
+		wp_register_script( 'rowsprout-template-transfer', false, [], ROWSPROUT_VERSION, true );
+		wp_enqueue_script( 'rowsprout-template-transfer' );
+		wp_add_inline_script( 'rowsprout-template-transfer', "
+		(function () {
+			var table = document.getElementById('rowsprout-export-templates');
+			if (!table) {
+				return;
+			}
+			table.addEventListener('change', function (event) {
+				var box = event.target;
+				if (!box.matches || !box.matches('input[name=\"template_ids[]\"]')) {
+					return;
+				}
+				var parentId = box.getAttribute('data-parent');
+				if (parentId && box.checked) {
+					var parent = table.querySelector('input[name=\"template_ids[]\"][value=\"' + parentId + '\"]');
+					if (parent) {
+						parent.checked = true;
+					}
+				}
+				if (!parentId && !box.checked) {
+					table.querySelectorAll('input[data-parent=\"' + box.value + '\"]').forEach(function (child) {
+						child.checked = false;
+					});
+				}
+			});
+		})();
+		" );
 	}
 
 	private static function renderImportCard(): void {

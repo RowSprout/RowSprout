@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-05T19:04:16+00:00\n"
+"POT-Creation-Date: 2026-10-07T09:26:20+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: rowsprout\n"
@@ -594,7 +594,7 @@ msgid "Import / Export templates"
 msgstr ""
 
 #: src/Admin/TemplateTransferPage.php:205
-msgid "Download templates as a file, with their properties, groups and page-builder layout, to add them to another site. A child template is always exported with its parent, and a parent with its child templates."
+msgid "Download templates as a file, with their properties, groups and page-builder layout, to add them to another site. A child template is always exported with its parent."
 msgstr ""
 
 #: src/Admin/TemplateTransferPage.php:206
@@ -613,35 +613,35 @@ msgstr ""
 msgid "Template"
 msgstr ""
 
-#: src/Admin/TemplateTransferPage.php:241
+#: src/Admin/TemplateTransferPage.php:242
 msgid "Download selected"
 msgstr ""
 
-#: src/Admin/TemplateTransferPage.php:248
-#: src/Admin/TemplateTransferPage.php:269
+#: src/Admin/TemplateTransferPage.php:288
+#: src/Admin/TemplateTransferPage.php:309
 msgid "Import"
 msgstr ""
 
-#: src/Admin/TemplateTransferPage.php:249
+#: src/Admin/TemplateTransferPage.php:289
 msgid "Choose a RowSprout export file. Every template in it is added as a new draft; existing templates are never changed."
 msgstr ""
 
-#: src/Admin/TemplateTransferPage.php:250
+#: src/Admin/TemplateTransferPage.php:290
 msgid "Check an imported template (above all its URL pattern), then publish it with \"Create & update pages\" to generate its pages."
 msgstr ""
 
-#: src/Admin/TemplateTransferPage.php:255
+#: src/Admin/TemplateTransferPage.php:295
 msgid "Export file"
 msgstr ""
 
 #. translators: %s: maximum upload size, e.g. "8 MB".
-#: src/Admin/TemplateTransferPage.php:259
+#: src/Admin/TemplateTransferPage.php:299
 #, php-format
 msgid "Maximum file size: %s."
 msgstr ""
 
 #. translators: %d: number of templates.
-#: src/Admin/TemplateTransferPage.php:292
+#: src/Admin/TemplateTransferPage.php:332
 #, php-format
 msgid "%d template was imported as a draft:"
 msgid_plural "%d templates were imported as drafts:"
@@ -649,14 +649,14 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of templates.
-#: src/Admin/TemplateTransferPage.php:307
+#: src/Admin/TemplateTransferPage.php:347
 #, php-format
 msgid "%d existing template was updated. Nothing was generated: its changed pages are marked as outdated until you save it with \"Create & update pages\"."
 msgid_plural "%d existing templates were updated. Nothing was generated: their changed pages are marked as outdated until you save them with \"Create & update pages\"."
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Admin/TemplateTransferPage.php:334
+#: src/Admin/TemplateTransferPage.php:374
 msgid "The export file could not be created."
 msgstr ""
 
