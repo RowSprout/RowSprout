@@ -683,7 +683,9 @@ final class TemplateImporter {
 
 	/**
 	 * Two templates with the same URL pattern generate pages with the same
-	 * URLs. Patterns are compared without the template ids in their tokens.
+	 * URLs. Patterns are compared without the template ids in their tokens and
+	 * the way the slug is made (sanitize_title() in PageBuilder), so patterns
+	 * that differ only in case or punctuation count as the same.
 	 *
 	 * @param array<int, int> $idMap
 	 */
@@ -700,14 +702,14 @@ final class TemplateImporter {
 			if ( in_array( (int) $otherId, $idMap, true ) ) {
 				continue;
 			}
-			$pattern = PlaceholderTokenIds::strip( TemplateMeta::getHref( (int) $otherId ) );
+			$pattern = self::comparablePattern( TemplateMeta::getHref( (int) $otherId ) );
 			if ( $pattern !== '' ) {
 				$existing[ $pattern ] = (int) $otherId;
 			}
 		}
 
 		foreach ( $idMap as $newId ) {
-			$pattern = PlaceholderTokenIds::strip( TemplateMeta::getHref( $newId ) );
+			$pattern = self::comparablePattern( TemplateMeta::getHref( $newId ) );
 			if ( $pattern === '' || ! isset( $existing[ $pattern ] ) ) {
 				continue;
 			}
@@ -719,6 +721,10 @@ final class TemplateImporter {
 				get_the_title( $existing[ $pattern ] )
 			) );
 		}
+	}
+
+	private static function comparablePattern( string $pattern ): string {
+		return sanitize_title( PlaceholderTokenIds::strip( $pattern ) );
 	}
 
 	/**
