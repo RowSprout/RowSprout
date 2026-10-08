@@ -11,6 +11,35 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 final class TemplateDeletionManager {
 
+	/**
+	 * Templates the current request trashes, deletes or restores itself.
+	 *
+	 * @var array<int, true>
+	 */
+	private static $leftToCaller = [];
+
+	/**
+	 * Keeps the parent/child cascades away from templates the caller handles
+	 * itself in the same request. A wp-admin bulk action loops over its ids
+	 * and wp_die()s as soon as one call fails, and core's trash, delete and
+	 * restore calls all fail on a template a cascade already handled ("Error
+	 * in moving the item to Trash.").
+	 *
+	 * @param array<int, int> $templateIds
+	 */
+	public static function leaveToCaller( array $templateIds ): void {
+		foreach ( $templateIds as $templateId ) {
+			$templateId = (int) $templateId;
+			if ( $templateId > 0 ) {
+				self::$leftToCaller[ $templateId ] = true;
+			}
+		}
+	}
+
+	public static function resetLeftToCaller(): void {
+		self::$leftToCaller = [];
+	}
+
 	public static function restoreGeneratedPagesAndStatuses( int $templateId ): void {
 		// Validate that template post exists
 		if ( get_post_status( $templateId ) === false ) {
@@ -123,6 +152,10 @@ final class TemplateDeletionManager {
 	 */
 	private static function trashChildTemplates( int $templateId ): void {
 		foreach ( self::getChildTemplateIds( $templateId ) as $childId ) {
+			if ( isset( self::$leftToCaller[ $childId ] ) ) {
+				continue;
+			}
+
 			if ( get_post_status( $childId ) !== 'trash' ) {
 				wp_trash_post( $childId );
 			}
@@ -134,6 +167,10 @@ final class TemplateDeletionManager {
 	 */
 	private static function deleteChildTemplates( int $templateId ): void {
 		foreach ( self::getChildTemplateIds( $templateId ) as $childId ) {
+			if ( isset( self::$leftToCaller[ $childId ] ) ) {
+				continue;
+			}
+
 			if ( get_post_status( $childId ) !== false ) {
 				wp_delete_post( $childId, true );
 			}
@@ -149,7 +186,7 @@ final class TemplateDeletionManager {
 	 */
 	private static function restoreParentTemplate( int $templateId ): void {
 		$parentId = wp_get_post_parent_id( $templateId );
-		if ( $parentId && get_post_status( $parentId ) === 'trash' ) {
+		if ( $parentId && ! isset( self::$leftToCaller[ $parentId ] ) && get_post_status( $parentId ) === 'trash' ) {
 			wp_untrash_post( $parentId );
 		}
 	}

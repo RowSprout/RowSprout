@@ -4,6 +4,7 @@ namespace RowSprout\Admin;
 
 use RowSprout\Core\PostTypes;
 use RowSprout\Core\SavePost;
+use RowSprout\Core\Template\Lifecycle\TemplateDeletionManager;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -11,9 +12,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Admin-screen UX for child templates on the template edit and list
- * screens: the "Parent" dropdown only offers valid parents, and the list's
- * trash/restore actions and bulk checkboxes follow the parent/child pairs
- * (TemplateDeletionManager trashes and restores them together).
+ * screens: the "Parent" dropdown only offers valid parents, the list's
+ * trash/restore row actions say that the parent/child pairs go together
+ * (TemplateDeletionManager trashes and restores them together), and bulk
+ * actions on a selection holding both a parent and its children succeed.
  */
 final class ChildTemplateAdminUx {
 
@@ -22,18 +24,65 @@ final class ChildTemplateAdminUx {
 		add_action( 'page_attributes_misc_attributes', [ self::class, 'explainMissingParentField' ] );
 		// Templates are hierarchical, so their list uses page_row_actions.
 		add_filter( 'page_row_actions', [ self::class, 'filterRowActions' ], 20, 2 );
-		add_action( 'admin_enqueue_scripts', [ self::class, 'enqueueListScreenAssets' ] );
+		// Fires before wp-admin/edit.php runs its bulk action loop.
+		add_action( 'load-edit.php', [ self::class, 'leaveBulkSelectionToCore' ] );
 	}
 
-	public static function enqueueListScreenAssets(): void {
-		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
-		if ( ! $screen || $screen->id !== 'edit-' . PostTypes::TEMPLATE ) {
+	/**
+	 * A bulk trash, delete or restore that holds a parent and its children
+	 * (select all, Empty Trash, Undo) would otherwise end in a 500: the
+	 * parent's cascade handles the children first, then core's loop fails
+	 * on them. Core handles every selected template itself, so the cascades
+	 * skip those. Mirrors how wp-admin/edit.php picks the action and ids.
+	 */
+	public static function leaveBulkSelectionToCore(): void {
+		global $typenow, $wpdb;
+
+		if ( $typenow !== PostTypes::TEMPLATE ) {
 			return;
 		}
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only: which list view (Trash or not) is shown.
-		$isTrashView = isset( $_GET['post_status'] ) && sanitize_key( wp_unslash( $_GET['post_status'] ) ) === 'trash';
-		self::enqueueCascadeCheckboxScript( $isTrashView );
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only: edit.php checks the bulk-posts nonce before it acts on these ids.
+		if ( ! empty( $_REQUEST['filter_action'] ) ) {
+			return;
+		}
+
+		// No action2 fallback: since WordPress 5.7 core reads only 'action'
+		// (common.js keeps the bottom selector in sync with the top one).
+		$action = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : '';
+		if ( isset( $_REQUEST['delete_all'] ) || isset( $_REQUEST['delete_all2'] ) ) {
+			$action = 'delete_all';
+		}
+
+		if ( ! in_array( $action, [ 'trash', 'untrash', 'delete', 'delete_all' ], true ) ) {
+			return;
+		}
+
+		$ids = [];
+		if ( $action === 'delete_all' ) {
+			$status = isset( $_REQUEST['post_status'] ) ? sanitize_key( wp_unslash( $_REQUEST['post_status'] ) ) : '';
+			if ( $status !== '' ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- the same query edit.php runs for Empty Trash.
+				$ids = $wpdb->get_col( $wpdb->prepare( "SELECT ID FROM {$wpdb->posts} WHERE post_type = %s AND post_status = %s", PostTypes::TEMPLATE, $status ) );
+			}
+		} elseif ( isset( $_REQUEST['ids'] ) ) {
+			$ids = explode( ',', sanitize_text_field( wp_unslash( $_REQUEST['ids'] ) ) );
+		} elseif ( ! empty( $_REQUEST['post'] ) ) {
+			$ids = array_map( 'absint', (array) wp_unslash( $_REQUEST['post'] ) );
+		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		$ids = array_filter( array_map( 'intval', $ids ) );
+
+		// Core skips a locked post when trashing, so the cascade must still
+		// take a locked child along with its parent.
+		if ( $action === 'trash' && function_exists( 'wp_check_post_lock' ) ) {
+			$ids = array_filter( $ids, static function ( int $id ): bool {
+				return ! wp_check_post_lock( $id );
+			} );
+		}
+
+		TemplateDeletionManager::leaveToCaller( $ids );
 	}
 
 	/**
@@ -127,130 +176,5 @@ final class ChildTemplateAdminUx {
 		] );
 
 		return ! empty( $children );
-	}
-
-	/**
-	 * Auto-select child row checkboxes when a parent row is selected (and
-	 * vice versa on the Trash list). No-ops entirely if there are no child
-	 * templates at all, so this is harmless to run unconditionally.
-	 */
-	public static function enqueueCascadeCheckboxScript( bool $isTrashView ): void {
-		$childrenMap = self::buildTemplateChildrenMap();
-		if ( empty( $childrenMap ) ) {
-			return;
-		}
-
-		$lockedTitle         = __( 'This template is a child of a selected parent and will be trashed along with it.', 'rowsprout' );
-		$parentRequiredTitle = __( 'Restoring this child template also restores its parent.', 'rowsprout' );
-
-		wp_add_inline_script( 'jquery-core', '
-			jQuery(document).ready(function($) {
-				var dpTemplateChildrenMap = ' . wp_json_encode( $childrenMap ) . ';
-				var dpChildToParentMap = {};
-				Object.keys(dpTemplateChildrenMap).forEach(function(parentId) {
-					dpTemplateChildrenMap[parentId].forEach(function(childId) {
-						dpChildToParentMap[childId] = parseInt(parentId, 10);
-					});
-				});
-
-				var dpIsTrashView = ' . wp_json_encode( $isTrashView ) . ';
-				var dpLockedTitle = ' . wp_json_encode( $lockedTitle ) . ';
-				var dpParentRequiredTitle = ' . wp_json_encode( $parentRequiredTitle ) . ';
-
-				function dpSetChildCheckboxes(parentId, checked) {
-					var children = dpTemplateChildrenMap[parentId];
-					if (!children) { return; }
-					children.forEach(function(childId) {
-						var $cb = $("#cb-select-" + childId);
-						if (!$cb.length) { return; }
-						$cb.prop("checked", checked);
-						$cb.attr("title", checked ? dpLockedTitle : "");
-					});
-				}
-
-				if (dpIsTrashView) {
-					// On the Trash list, a parent may be restored on its own, but
-					// restoring a child always requires its parent too (checking a
-					// child auto-checks its parent; the parent can\'t be unchecked
-					// again while a child is still checked).
-					$(document).on("change", "#the-list input[type=\'checkbox\'][name=\'post[]\']", function() {
-						var id = parseInt($(this).val(), 10);
-						if (!id) { return; }
-						var parentId = dpChildToParentMap[id];
-						if (!parentId || !this.checked) { return; }
-						var $parentCb = $("#cb-select-" + parentId);
-						if ($parentCb.length) {
-							$parentCb.prop("checked", true).attr("title", dpParentRequiredTitle);
-						}
-					});
-
-					$(document).on("click", "#the-list input[type=\'checkbox\'][name=\'post[]\']", function(e) {
-						var id = parseInt($(this).val(), 10);
-						if (!id || this.checked) { return; }
-						var children = dpTemplateChildrenMap[id];
-						if (!children) { return; }
-						var hasCheckedChild = children.some(function(childId) {
-							var $cb = $("#cb-select-" + childId);
-							return $cb.length && $cb.is(":checked");
-						});
-						if (hasCheckedChild) {
-							// Block unchecking a parent while one of its children is
-							// still selected; uncheck the child(ren) first instead.
-							e.preventDefault();
-						}
-					});
-				} else {
-					$(document).on("change", "#the-list input[type=\'checkbox\'][name=\'post[]\']", function() {
-						var id = parseInt($(this).val(), 10);
-						if (!id) { return; }
-						dpSetChildCheckboxes(id, this.checked);
-					});
-
-					$(document).on("click", "#the-list input[type=\'checkbox\'][name=\'post[]\']", function(e) {
-						var id = parseInt($(this).val(), 10);
-						if (!id) { return; }
-						var parentId = dpChildToParentMap[id];
-						if (!parentId) { return; }
-						var $parentCb = $("#cb-select-" + parentId);
-						if ($parentCb.length && $parentCb.is(":checked") && !this.checked) {
-							// Block unchecking a child while its parent is still selected;
-							// uncheck the parent instead to release its children.
-							e.preventDefault();
-						}
-					});
-				}
-			});
-		' );
-	}
-
-	/**
-	 * Map of parent template ID => array of its direct child template IDs.
-	 *
-	 * @return array<int, array<int, int>>
-	 */
-	private static function buildTemplateChildrenMap(): array {
-		// 'any' excludes 'trash', but this map also needs to reflect
-		// parent/child relationships on the Trash list itself, so list
-		// statuses explicitly.
-		$idToParent = get_posts( [
-			'post_type'           => PostTypes::TEMPLATE,
-			'post_status'         => [ 'publish', 'draft', 'pending', 'future', 'private', 'trash' ],
-			'posts_per_page'      => -1,
-			'fields'              => 'id=>parent',
-			'post_parent__not_in' => [ 0 ],
-			'no_found_rows'       => true,
-		] );
-
-		$childrenMap = [];
-		foreach ( (array) $idToParent as $childId => $parentId ) {
-			$parentId = (int) $parentId;
-			if ( $parentId <= 0 ) {
-				continue;
-			}
-
-			$childrenMap[ $parentId ][] = (int) $childId;
-		}
-
-		return $childrenMap;
 	}
 }
