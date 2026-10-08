@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-08T08:12:35+00:00\n"
+"POT-Creation-Date: 2026-10-08T08:30:51+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: rowsprout\n"
@@ -774,18 +774,18 @@ msgid "Search in RowSprout Template Pages"
 msgstr ""
 
 #: src/Core/SavePost.php:158
-msgid "This template was not saved: it is a child template, but its parent template has not generated any pages yet. Generate the parent's pages first (or set this save action to \"Save template only\"), then save again."
+msgid "The template is saved, but its pages are not generated: it is a child template, and its parent template has not generated any pages yet. Generate the parent's pages first, then save this template again to generate its pages."
 msgstr ""
 
 #: src/Core/SavePost.php:179
 msgid "Properties and groups were not saved: this template was changed elsewhere (e.g. via the API) after this page was loaded. Reload the page and reapply your property/group changes. (Title, content, and status were saved normally.)"
 msgstr ""
 
-#: src/Core/SavePost.php:577
+#: src/Core/SavePost.php:589
 msgid "The parent was not saved: the chosen parent is itself a child template. Templates can only be nested one level deep, so choose a template without a parent."
 msgstr ""
 
-#: src/Core/SavePost.php:579
+#: src/Core/SavePost.php:591
 msgid "The parent was not saved: this template has child templates, so it cannot have a parent itself. Templates can only be nested one level deep."
 msgstr ""
 
@@ -887,29 +887,29 @@ msgid "Unknown"
 msgstr ""
 
 #. translators: %s: list of URLs with what already uses them.
-#: src/Core/Template/UrlConflicts.php:405
+#: src/Core/Template/UrlConflicts.php:364
 #, php-format
 msgid "The template is saved, but these pages are not generated because their URL is already in use: %s. Every URL must be unique on the site; change these groups (or the URL pattern) and save again to generate them."
 msgstr ""
 
-#: src/Core/Template/UrlConflicts.php:421
+#: src/Core/Template/UrlConflicts.php:380
 msgid "another group of this template"
 msgstr ""
 
 #. translators: %s: template title.
-#: src/Core/Template/UrlConflicts.php:424
+#: src/Core/Template/UrlConflicts.php:383
 #, php-format
 msgid "template \"%s\""
 msgstr ""
 
 #. translators: 1: post type name, e.g. "Page", 2: post title.
-#: src/Core/Template/UrlConflicts.php:427
+#: src/Core/Template/UrlConflicts.php:386
 #, php-format
 msgid "%1$s \"%2$s\""
 msgstr ""
 
 #. translators: 1: list of URLs, 2: number of further URLs.
-#: src/Core/Template/UrlConflicts.php:435
+#: src/Core/Template/UrlConflicts.php:394
 #, php-format
 msgid "%1$s and %2$d more"
 msgstr ""

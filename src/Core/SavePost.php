@@ -3,6 +3,7 @@
 namespace RowSprout\Core;
 
 use RowSprout\Core\Groups\GroupTableGateway;
+use RowSprout\Core\Groups\QueueHold;
 use RowSprout\Core\Template\HrefPatternValidator;
 use RowSprout\Core\Template\UrlConflicts;
 use RowSprout\Core\Template\Lifecycle\TemplateSyncMarker;
@@ -61,7 +62,7 @@ final class SavePost {
 
 		$sources = [
 			[ self::urlConflictNoticeTransientKey( $userId ), 'warning', '' ],
-			[ self::parentNotGeneratedNoticeTransientKey( $userId ), 'error', '' ],
+			[ self::parentNotGeneratedNoticeTransientKey( $userId ), 'warning', '' ],
 			[ self::configConflictNoticeTransientKey( $userId ), 'warning', '' ],
 			[ self::hrefTokenMissingNoticeTransientKey( $userId ), 'warning', '' ],
 			[ self::parentRejectedNoticeTransientKey( $userId ), 'warning', '' ],
@@ -143,9 +144,8 @@ final class SavePost {
 	 * generated any pages (still sitting on "Save template only"), that
 	 * lookup finds nothing and the child's page silently ends up orphaned
 	 * (post_parent = 0, no inherited naam/href/thumb) instead of erroring.
-	 * Blocking the save here — same pattern as the href-duplicate check
-	 * above — surfaces that as a clear message instead of a page that's
-	 * quietly wrong.
+	 * So the template is saved, but its groups are not queued
+	 * (queueHoldingConflicts()), and this notice says why.
 	 */
 	private static function persistParentNotGeneratedNotice(): void {
 		$userId = get_current_user_id();
@@ -155,7 +155,7 @@ final class SavePost {
 
 		set_transient(
 			self::parentNotGeneratedNoticeTransientKey( $userId ),
-			__( 'This template was not saved: it is a child template, but its parent template has not generated any pages yet. Generate the parent\'s pages first (or set this save action to "Save template only"), then save again.', 'rowsprout' ),
+			__( 'The template is saved, but its pages are not generated: it is a child template, and its parent template has not generated any pages yet. Generate the parent\'s pages first, then save this template again to generate its pages.', 'rowsprout' ),
 			MINUTE_IN_SECONDS
 		);
 	}
@@ -312,10 +312,9 @@ final class SavePost {
 
 		$saveActions = self::getTemplateSaveActions();
 		$saveAction  = self::readTemplateSaveAction( $postId, $saveActions, $input );
-		if ( self::childTemplateParentHasNoGeneratedPages( $postId, $saveActions, $saveAction ) ) {
-			self::persistParentNotGeneratedNotice();
-			return;
-		}
+		// A child template whose parent has no pages yet is saved like any
+		// other, but none of its groups is queued (queueHoldingConflicts()).
+		$parentWaits = self::childTemplateParentHasNoGeneratedPages( $postId, $saveActions, $saveAction );
 
 		if ( ( isset( $input['dp_columns'] ) && is_array( $input['dp_columns'] ) ) || ( isset( $input['dp_all_columns'] ) && is_array( $input['dp_all_columns'] ) ) ) {
 			// Optimistic-concurrency guard: dp_config_version is whatever
@@ -350,7 +349,7 @@ final class SavePost {
 			$currentVersion   = (string) ( $existingConfig['config_updated_at'] ?? '' );
 			if ( $submittedVersion !== '' && $currentVersion !== '' && $submittedVersion !== $currentVersion ) {
 				self::persistConfigConflictNotice();
-				self::queueHoldingConflicts( $postId, $existingConfig, $input );
+				self::queueHoldingConflicts( $postId, $existingConfig, $input, $parentWaits );
 				return;
 			}
 
@@ -368,17 +367,17 @@ final class SavePost {
 			if ( $hrefWarning !== '' ) {
 				self::persistHrefTokenMissingNotice( $hrefWarning );
 			}
-			self::queueHoldingConflicts( $postId, $existingConfig, $input );
+			self::queueHoldingConflicts( $postId, $existingConfig, $input, $parentWaits );
 			return;
 		}
 
 		// A save without the template form (quick edit, REST, a translation
 		// saved back) can publish a template whose stored URLs collide.
-		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE && ! $parentWaits ) {
 			self::handlePostSaveQueue( $postId, $existingConfig, $input );
 			return;
 		}
-		self::queueHoldingConflicts( $postId, $existingConfig, $input );
+		self::queueHoldingConflicts( $postId, $existingConfig, $input, $parentWaits );
 	}
 
 	/**
@@ -387,13 +386,26 @@ final class SavePost {
 	 * queueWithout(), against the config as stored now); the notice names
 	 * them.
 	 *
+	 * While $parentWaits (a child template whose parent has no pages yet),
+	 * every group of the template is held instead: its pages would be built
+	 * without the parent page they belong under.
+	 *
 	 * @param array<string, mixed> $oldConfig
 	 * @param array<string, mixed> $input
 	 */
-	private static function queueHoldingConflicts( int $postId, array $oldConfig, array $input ): void {
-		$held = UrlConflicts::queueWithout( $postId, static function () use ( $postId, $oldConfig, $input ): void {
+	private static function queueHoldingConflicts( int $postId, array $oldConfig, array $input, bool $parentWaits = false ): void {
+		$queue = static function () use ( $postId, $oldConfig, $input ): void {
 			self::handlePostSaveQueue( $postId, $oldConfig, $input );
-		} );
+		};
+
+		if ( $parentWaits ) {
+			$guids = array_map( 'strval', array_column( array_filter( (array) ( TemplateMeta::get( $postId )['groups'] ?? [] ), 'is_array' ), 'id' ) );
+			QueueHold::run( [ $postId => QueueHold::rowsOf( $postId, $guids ) ], $queue );
+			self::persistParentNotGeneratedNotice();
+			return;
+		}
+
+		$held = UrlConflicts::queueWithout( $postId, $queue );
 		if ( $held !== [] ) {
 			self::persistUrlConflictNotice( $held );
 		}

@@ -3,6 +3,7 @@
 namespace RowSprout\Core\Template;
 
 use RowSprout\Core\Groups\GroupTableGateway;
+use RowSprout\Core\Groups\QueueHold;
 use RowSprout\Core\Helpers;
 use RowSprout\Core\Page\PageBuilder;
 use RowSprout\Core\PermalinkSettings;
@@ -127,12 +128,9 @@ final class UrlConflicts {
 
 	/**
 	 * Runs $queue (whatever queues the template's groups: a save, a generate
-	 * action), then puts every blocked group (blocking()) back the way it
-	 * was: a planned group gets its plan back, one that was queued already or
-	 * had no row yet becomes outdated. Covers the template and its child
-	 * templates, whose groups a template-wide save or generate queues too.
-	 * One transaction, so a queue run never picks such a group up in
-	 * between; rolled back when anything in it fails.
+	 * action) while keeping every blocked group (blocking()) out of it, see
+	 * QueueHold. Covers the template and its child templates, whose groups a
+	 * template-wide save or generate queues too.
 	 *
 	 * @param array<int, string>|null $guids Only these groups of the template
 	 *                                       (a call that queues a subset): no
@@ -167,52 +165,13 @@ final class UrlConflicts {
 			if ( $found === [] ) {
 				continue;
 			}
-			$held = [];
-			foreach ( array_unique( array_map( 'strval', array_column( $found, 'guid' ) ) ) as $guid ) {
-				// The whole row: getRowsByPostId() leaves scheduled_at out.
-				$held[ $guid ] = GroupTableGateway::getRowByGuidAndPostId( $guid, $id );
-			}
-			$before[ $id ] = $held;
+			$before[ $id ] = QueueHold::rowsOf( $id, array_column( $found, 'guid' ) );
 			foreach ( $found as $conflict ) {
 				$conflicts[] = [ 'template_id' => $id ] + $conflict;
 			}
 		}
 
-		if ( $conflicts === [] ) {
-			$queue();
-			return [];
-		}
-
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- a transaction around the queueing, nothing to cache.
-		$wpdb->query( 'START TRANSACTION' );
-		try {
-			$queue();
-
-			foreach ( $before as $id => $held ) {
-				foreach ( $held as $guid => $previous ) {
-					$guid = (string) $guid;
-					$row  = GroupTableGateway::getRowByGuidAndPostId( $guid, (int) $id );
-					if ( $row === null || ( $row['status'] ?? '' ) !== GroupTableGateway::STATUS_PENDING ) {
-						continue;
-					}
-					$status = $previous !== null ? (string) $previous['status'] : GroupTableGateway::STATUS_STALE;
-					if ( GroupTableGateway::isActiveQueueStatus( $status ) ) {
-						$status = GroupTableGateway::STATUS_STALE;
-					}
-					$data = [ 'status' => $status ];
-					if ( GroupTableGateway::supportsScheduling() ) {
-						$data['scheduled_at'] = $previous['scheduled_at'] ?? null;
-					}
-					GroupTableGateway::updateByGuidAndPostId( $guid, (int) $id, $data );
-				}
-			}
-		} catch ( \Throwable $error ) {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- see START TRANSACTION.
-			$wpdb->query( 'ROLLBACK' );
-			throw $error;
-		}
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- see START TRANSACTION.
-		$wpdb->query( 'COMMIT' );
+		QueueHold::run( $before, $queue );
 
 		return $conflicts;
 	}

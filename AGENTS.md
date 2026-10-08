@@ -52,7 +52,7 @@ Keep this file short and true: change it in the same change that alters what it 
 |---|---|
 | `Plugin.php`, `Support/Autoloader.php` | bootstrap; own PSR-4-style loader (Composer only manages `vendor/`: Action Scheduler) |
 | `Core/SavePost.php`, `Core/Template/Lifecycle/*` | save flow, change tracking, stale/queue marking, trash/restore/delete |
-| `Core/Groups/*` | `GroupTableGateway` (every query on the group table), repository/row store/deletion |
+| `Core/Groups/*` | `GroupTableGateway` (every query on the group table), repository/row store/deletion, `QueueHold` (queue a template while keeping some groups out: URLs in use, or a child template whose parent has no pages yet — saved anyway, nothing of it queued, warning notice) |
 | `Core/Scheduler*`, `Compat/functions/scheduler.php` | queue registration (`QueueManager`), tick (`QueueProcessor`), cleanup; helper `rowsprout_queue_groups()` |
 | `Core/Page/*` | building one page: `PageBuilder`, context/tokens (`MarkupTokenReplacer` for markup), upsert, meta replication, generated field meta |
 | `Blocks/BlockRegistry.php` + `assets/js/blocks.js` | dynamic block `rowsprout/page-grid` ("Grid", category `rowsprout-pages`, any post type); editor preview via ServerSideRender. The Item List block (`rowsprout/item-list`, category `rowsprout`) belongs to Pro, with the Item-list type. `Core/Grid/PageGridRenderer` is the Grid markup shared with the Elementor `GridWidget` — keep their output identical |

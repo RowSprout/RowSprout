@@ -129,6 +129,7 @@ No. The free plugin works entirely on your own site. RowSprout Pro, a separate p
 
 = 3.2 =
 * New: a page whose URL is already in use on the site is not generated: by another template's page or, without a URL prefix, by a regular page, post or another plugin's content. The template is still saved and its other pages are generated; a notice lists the URLs and what has them. Before, one of the two pages could no longer be reached, without any warning.
+* Change: a child template whose parent has no pages yet is now saved; its pages are generated once the parent has its own. Before, the save was refused.
 
 = 3.1 =
 * Initial public release.
