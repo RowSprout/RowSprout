@@ -1,0 +1,1445 @@
+{
+    "format": "rowsprout-templates",
+    "format_version": 1,
+    "plugin_version": "3.1",
+    "exported_at": "",
+    "site_url": "",
+    "templates": [
+        {
+            "id": 97,
+            "parent": 0,
+            "title": "City break in @code_city_97@",
+            "content": "<!-- wp:paragraph {\"style\":{\"typography\":{\"textTransform\":\"uppercase\",\"letterSpacing\":\"0.08em\"}},\"fontSize\":\"small\"} -->\n<p class=\"has-small-font-size\" style=\"letter-spacing:0.08em;text-transform:uppercase\">@code_country_97@ · @code_nights_97@ nights · from €@code_price_97@</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph {\"fontSize\":\"large\"} -->\n<p class=\"has-large-font-size\">@code_intro_97@</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:list -->\n<ul class=\"wp-block-list\"><!-- wp:list-item -->\n<li><strong>Language:</strong> @code_language_97@</li>\n<!-- /wp:list-item -->\n\n<!-- wp:list-item -->\n<li><strong>Best time to visit:</strong> @code_season_97@</li>\n<!-- /wp:list-item -->\n\n<!-- wp:list-item -->\n<li><strong>Price:</strong> from €@code_price_97@ per person, @code_nights_97@ nights including hotel and city pass</li>\n<!-- /wp:list-item --></ul>\n<!-- /wp:list -->\n\n<!-- wp:heading -->\n<h2 class=\"wp-block-heading\">Plan your city break in @code_city_97@</h2>\n<!-- /wp:heading -->\n\n<!-- wp:paragraph -->\n<p>Our team for @code_city_97@ knows the city inside out and puts together a trip that fits your dates and budget. Send us a message at <a href=\"mailto:@code_email_97@\">@code_email_97@</a> and you will hear from us within one working day.</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:buttons -->\n<div class=\"wp-block-buttons\"><!-- wp:button -->\n<div class=\"wp-block-button\"><a class=\"wp-block-button__link wp-element-button\" href=\"mailto:@code_email_97@\">Request a quote</a></div>\n<!-- /wp:button --></div>\n<!-- /wp:buttons -->",
+            "excerpt": "",
+            "status": "draft",
+            "menu_order": 0,
+            "config": {
+                "rowsprout_page_href": "/city-break-@code_slug_97@",
+                "field_types": [
+                    {
+                        "key": "title",
+                        "type": "title",
+                        "label": "City",
+                        "code": "city",
+                        "field_type": "text",
+                        "options": [],
+                        "can_be_overruled": false,
+                        "required": true
+                    },
+                    {
+                        "key": "href",
+                        "type": "href",
+                        "label": "Slug",
+                        "code": "slug",
+                        "field_type": "text",
+                        "options": [],
+                        "can_be_overruled": false,
+                        "required": true
+                    },
+                    {
+                        "key": "country",
+                        "type": "textfield",
+                        "label": "Country",
+                        "code": "country",
+                        "field_type": "text",
+                        "options": [],
+                        "can_be_overruled": true,
+                        "required": false
+                    },
+                    {
+                        "key": "language",
+                        "type": "textfield",
+                        "label": "Language",
+                        "code": "language",
+                        "field_type": "text",
+                        "options": [],
+                        "can_be_overruled": true,
+                        "required": false
+                    },
+                    {
+                        "key": "season",
+                        "type": "textfield",
+                        "label": "Best time to visit",
+                        "code": "season",
+                        "field_type": "text",
+                        "options": [],
+                        "can_be_overruled": true,
+                        "required": false
+                    },
+                    {
+                        "key": "nights",
+                        "type": "number",
+                        "label": "Nights",
+                        "code": "nights",
+                        "field_type": "number",
+                        "options": [],
+                        "can_be_overruled": true,
+                        "required": false
+                    },
+                    {
+                        "key": "price",
+                        "type": "number",
+                        "label": "Price from (EUR)",
+                        "code": "price",
+                        "field_type": "number",
+                        "options": [],
+                        "can_be_overruled": true,
+                        "required": false
+                    },
+                    {
+                        "key": "intro",
+                        "type": "textarea",
+                        "label": "Introduction",
+                        "code": "intro",
+                        "field_type": "textarea",
+                        "options": [],
+                        "can_be_overruled": true,
+                        "required": false
+                    },
+                    {
+                        "key": "email",
+                        "type": "email",
+                        "label": "Contact email",
+                        "code": "email",
+                        "field_type": "email",
+                        "options": [],
+                        "can_be_overruled": true,
+                        "required": false
+                    }
+                ],
+                "groups": [
+                    {
+                        "index": 1,
+                        "id": 395161570,
+                        "parent_id": 0,
+                        "fields": {
+                            "title": {
+                                "type": "title",
+                                "value": "Lisbon",
+                                "code": "city",
+                                "id": 1214368708,
+                                "can_be_overruled": false
+                            },
+                            "href": {
+                                "type": "href",
+                                "value": "lisbon",
+                                "code": "slug",
+                                "id": 316913498,
+                                "can_be_overruled": false
+                            },
+                            "country": {
+                                "type": "textfield",
+                                "value": "Portugal",
+                                "code": "country",
+                                "id": 984656655,
+                                "can_be_overruled": true
+                            },
+                            "language": {
+                                "type": "textfield",
+                                "value": "Portuguese",
+                                "code": "language",
+                                "id": 1538296904,
+                                "can_be_overruled": true
+                            },
+                            "season": {
+                                "type": "textfield",
+                                "value": "March – June",
+                                "code": "season",
+                                "id": 103461027,
+                                "can_be_overruled": true
+                            },
+                            "nights": {
+                                "type": "number",
+                                "value": "3",
+                                "code": "nights",
+                                "id": 941171822,
+                                "can_be_overruled": true
+                            },
+                            "price": {
+                                "type": "number",
+                                "value": "349",
+                                "code": "price",
+                                "id": 1596640820,
+                                "can_be_overruled": true
+                            },
+                            "intro": {
+                                "type": "textarea",
+                                "value": "Seven hills, yellow trams and custard tarts still warm from the oven. Lisbon combines a relaxed Atlantic pace with some of the best viewpoints in Europe.",
+                                "code": "intro",
+                                "id": 1296330185,
+                                "can_be_overruled": true
+                            },
+                            "email": {
+                                "type": "email",
+                                "value": "lisbon@example.com",
+                                "code": "email",
+                                "id": 877524433,
+                                "can_be_overruled": true
+                            }
+                        }
+                    },
+                    {
+                        "index": 2,
+                        "id": 581925013,
+                        "parent_id": 0,
+                        "fields": {
+                            "title": {
+                                "type": "title",
+                                "value": "Barcelona",
+                                "code": "city",
+                                "id": 1297790621,
+                                "can_be_overruled": false
+                            },
+                            "href": {
+                                "type": "href",
+                                "value": "barcelona",
+                                "code": "slug",
+                                "id": 350656999,
+                                "can_be_overruled": false
+                            },
+                            "country": {
+                                "type": "textfield",
+                                "value": "Spain",
+                                "code": "country",
+                                "id": 1587519413,
+                                "can_be_overruled": true
+                            },
+                            "language": {
+                                "type": "textfield",
+                                "value": "Catalan and Spanish",
+                                "code": "language",
+                                "id": 1827161793,
+                                "can_be_overruled": true
+                            },
+                            "season": {
+                                "type": "textfield",
+                                "value": "May – June",
+                                "code": "season",
+                                "id": 2085997945,
+                                "can_be_overruled": true
+                            },
+                            "nights": {
+                                "type": "number",
+                                "value": "3",
+                                "code": "nights",
+                                "id": 1366326517,
+                                "can_be_overruled": true
+                            },
+                            "price": {
+                                "type": "number",
+                                "value": "399",
+                                "code": "price",
+                                "id": 1761135580,
+                                "can_be_overruled": true
+                            },
+                            "intro": {
+                                "type": "textarea",
+                                "value": "Gaudí’s architecture, a city beach and tapas until late. Barcelona is a city break and a seaside holiday in one.",
+                                "code": "intro",
+                                "id": 1041439670,
+                                "can_be_overruled": true
+                            },
+                            "email": {
+                                "type": "email",
+                                "value": "barcelona@example.com",
+                                "code": "email",
+                                "id": 1121846730,
+                                "can_be_overruled": true
+                            }
+                        }
+                    },
+                    {
+                        "index": 3,
+                        "id": 973513026,
+                        "parent_id": 0,
+                        "fields": {
+                            "title": {
+                                "type": "title",
+                                "value": "Amsterdam",
+                                "code": "city",
+                                "id": 1283553433,
+                                "can_be_overruled": false
+                            },
+                            "href": {
+                                "type": "href",
+                                "value": "amsterdam",
+                                "code": "slug",
+                                "id": 1927781664,
+                                "can_be_overruled": false
+                            },
+                            "country": {
+                                "type": "textfield",
+                                "value": "Netherlands",
+                                "code": "country",
+                                "id": 847202640,
+                                "can_be_overruled": true
+                            },
+                            "language": {
+                                "type": "textfield",
+                                "value": "Dutch",
+                                "code": "language",
+                                "id": 848684754,
+                                "can_be_overruled": true
+                            },
+                            "season": {
+                                "type": "textfield",
+                                "value": "April – May",
+                                "code": "season",
+                                "id": 1638676639,
+                                "can_be_overruled": true
+                            },
+                            "nights": {
+                                "type": "number",
+                                "value": "3",
+                                "code": "nights",
+                                "id": 1428774958,
+                                "can_be_overruled": true
+                            },
+                            "price": {
+                                "type": "number",
+                                "value": "379",
+                                "code": "price",
+                                "id": 1653616514,
+                                "can_be_overruled": true
+                            },
+                            "intro": {
+                                "type": "textarea",
+                                "value": "Explore the canal ring by boat or by bike, then spend an afternoon with Rembrandt and Van Gogh in the museum quarter.",
+                                "code": "intro",
+                                "id": 1107715083,
+                                "can_be_overruled": true
+                            },
+                            "email": {
+                                "type": "email",
+                                "value": "amsterdam@example.com",
+                                "code": "email",
+                                "id": 1932921127,
+                                "can_be_overruled": true
+                            }
+                        }
+                    },
+                    {
+                        "index": 4,
+                        "id": 1698949978,
+                        "parent_id": 0,
+                        "fields": {
+                            "title": {
+                                "type": "title",
+                                "value": "Copenhagen",
+                                "code": "city",
+                                "id": 1369565141,
+                                "can_be_overruled": false
+                            },
+                            "href": {
+                                "type": "href",
+                                "value": "copenhagen",
+                                "code": "slug",
+                                "id": 574972457,
+                                "can_be_overruled": false
+                            },
+                            "country": {
+                                "type": "textfield",
+                                "value": "Denmark",
+                                "code": "country",
+                                "id": 2075457934,
+                                "can_be_overruled": true
+                            },
+                            "language": {
+                                "type": "textfield",
+                                "value": "Danish",
+                                "code": "language",
+                                "id": 487068660,
+                                "can_be_overruled": true
+                            },
+                            "season": {
+                                "type": "textfield",
+                                "value": "May – August",
+                                "code": "season",
+                                "id": 1407664017,
+                                "can_be_overruled": true
+                            },
+                            "nights": {
+                                "type": "number",
+                                "value": "3",
+                                "code": "nights",
+                                "id": 1517561242,
+                                "can_be_overruled": true
+                            },
+                            "price": {
+                                "type": "number",
+                                "value": "449",
+                                "code": "price",
+                                "id": 607753872,
+                                "can_be_overruled": true
+                            },
+                            "intro": {
+                                "type": "textarea",
+                                "value": "Colourful harbour fronts, new Nordic cooking and a city that is built for cycling. Copenhagen is at its best on long summer evenings.",
+                                "code": "intro",
+                                "id": 562967576,
+                                "can_be_overruled": true
+                            },
+                            "email": {
+                                "type": "email",
+                                "value": "copenhagen@example.com",
+                                "code": "email",
+                                "id": 242990245,
+                                "can_be_overruled": true
+                            }
+                        }
+                    },
+                    {
+                        "index": 5,
+                        "id": 819637518,
+                        "parent_id": 0,
+                        "fields": {
+                            "title": {
+                                "type": "title",
+                                "value": "Prague",
+                                "code": "city",
+                                "id": 237349886,
+                                "can_be_overruled": false
+                            },
+                            "href": {
+                                "type": "href",
+                                "value": "prague",
+                                "code": "slug",
+                                "id": 900322791,
+                                "can_be_overruled": false
+                            },
+                            "country": {
+                                "type": "textfield",
+                                "value": "Czechia",
+                                "code": "country",
+                                "id": 241384637,
+                                "can_be_overruled": true
+                            },
+                            "language": {
+                                "type": "textfield",
+                                "value": "Czech",
+                                "code": "language",
+                                "id": 1692376679,
+                                "can_be_overruled": true
+                            },
+                            "season": {
+                                "type": "textfield",
+                                "value": "April – June",
+                                "code": "season",
+                                "id": 572488834,
+                                "can_be_overruled": true
+                            },
+                            "nights": {
+                                "type": "number",
+                                "value": "3",
+                                "code": "nights",
+                                "id": 1426364864,
+                                "can_be_overruled": true
+                            },
+                            "price": {
+                                "type": "number",
+                                "value": "299",
+                                "code": "price",
+                                "id": 1248473765,
+                                "can_be_overruled": true
+                            },
+                            "intro": {
+                                "type": "textarea",
+                                "value": "Cross Charles Bridge at sunrise, wander through the Old Town and end the day in a traditional beer hall.",
+                                "code": "intro",
+                                "id": 1046346751,
+                                "can_be_overruled": true
+                            },
+                            "email": {
+                                "type": "email",
+                                "value": "prague@example.com",
+                                "code": "email",
+                                "id": 299159778,
+                                "can_be_overruled": true
+                            }
+                        }
+                    },
+                    {
+                        "index": 6,
+                        "id": 1117166810,
+                        "parent_id": 0,
+                        "fields": {
+                            "title": {
+                                "type": "title",
+                                "value": "Vienna",
+                                "code": "city",
+                                "id": 1515350463,
+                                "can_be_overruled": false
+                            },
+                            "href": {
+                                "type": "href",
+                                "value": "vienna",
+                                "code": "slug",
+                                "id": 1838165253,
+                                "can_be_overruled": false
+                            },
+                            "country": {
+                                "type": "textfield",
+                                "value": "Austria",
+                                "code": "country",
+                                "id": 1900428728,
+                                "can_be_overruled": true
+                            },
+                            "language": {
+                                "type": "textfield",
+                                "value": "German",
+                                "code": "language",
+                                "id": 1339559496,
+                                "can_be_overruled": true
+                            },
+                            "season": {
+                                "type": "textfield",
+                                "value": "April – May",
+                                "code": "season",
+                                "id": 1442559505,
+                                "can_be_overruled": true
+                            },
+                            "nights": {
+                                "type": "number",
+                                "value": "3",
+                                "code": "nights",
+                                "id": 1894886717,
+                                "can_be_overruled": true
+                            },
+                            "price": {
+                                "type": "number",
+                                "value": "369",
+                                "code": "price",
+                                "id": 1791318386,
+                                "can_be_overruled": true
+                            },
+                            "intro": {
+                                "type": "textarea",
+                                "value": "Imperial palaces, coffee houses and world-class music. Vienna rewards slow mornings and evenings at the opera.",
+                                "code": "intro",
+                                "id": 833991281,
+                                "can_be_overruled": true
+                            },
+                            "email": {
+                                "type": "email",
+                                "value": "vienna@example.com",
+                                "code": "email",
+                                "id": 982589290,
+                                "can_be_overruled": true
+                            }
+                        }
+                    },
+                    {
+                        "index": 7,
+                        "id": 1876729288,
+                        "parent_id": 0,
+                        "fields": {
+                            "title": {
+                                "type": "title",
+                                "value": "Kraków",
+                                "code": "city",
+                                "id": 596883938,
+                                "can_be_overruled": false
+                            },
+                            "href": {
+                                "type": "href",
+                                "value": "krakow",
+                                "code": "slug",
+                                "id": 443404701,
+                                "can_be_overruled": false
+                            },
+                            "country": {
+                                "type": "textfield",
+                                "value": "Poland",
+                                "code": "country",
+                                "id": 1544848958,
+                                "can_be_overruled": true
+                            },
+                            "language": {
+                                "type": "textfield",
+                                "value": "Polish",
+                                "code": "language",
+                                "id": 1521173385,
+                                "can_be_overruled": true
+                            },
+                            "season": {
+                                "type": "textfield",
+                                "value": "May – September",
+                                "code": "season",
+                                "id": 795541160,
+                                "can_be_overruled": true
+                            },
+                            "nights": {
+                                "type": "number",
+                                "value": "3",
+                                "code": "nights",
+                                "id": 517275443,
+                                "can_be_overruled": true
+                            },
+                            "price": {
+                                "type": "number",
+                                "value": "279",
+                                "code": "price",
+                                "id": 1172656649,
+                                "can_be_overruled": true
+                            },
+                            "intro": {
+                                "type": "textarea",
+                                "value": "One of Europe’s largest medieval market squares, the Wawel castle and the lively Kazimierz district.",
+                                "code": "intro",
+                                "id": 581810008,
+                                "can_be_overruled": true
+                            },
+                            "email": {
+                                "type": "email",
+                                "value": "krakow@example.com",
+                                "code": "email",
+                                "id": 1318396616,
+                                "can_be_overruled": true
+                            }
+                        }
+                    },
+                    {
+                        "index": 8,
+                        "id": 651080612,
+                        "parent_id": 0,
+                        "fields": {
+                            "title": {
+                                "type": "title",
+                                "value": "Dubrovnik",
+                                "code": "city",
+                                "id": 517244036,
+                                "can_be_overruled": false
+                            },
+                            "href": {
+                                "type": "href",
+                                "value": "dubrovnik",
+                                "code": "slug",
+                                "id": 761225320,
+                                "can_be_overruled": false
+                            },
+                            "country": {
+                                "type": "textfield",
+                                "value": "Croatia",
+                                "code": "country",
+                                "id": 1540916271,
+                                "can_be_overruled": true
+                            },
+                            "language": {
+                                "type": "textfield",
+                                "value": "Croatian",
+                                "code": "language",
+                                "id": 1832859519,
+                                "can_be_overruled": true
+                            },
+                            "season": {
+                                "type": "textfield",
+                                "value": "May – June",
+                                "code": "season",
+                                "id": 542056082,
+                                "can_be_overruled": true
+                            },
+                            "nights": {
+                                "type": "number",
+                                "value": "4",
+                                "code": "nights",
+                                "id": 889497036,
+                                "can_be_overruled": true
+                            },
+                            "price": {
+                                "type": "number",
+                                "value": "499",
+                                "code": "price",
+                                "id": 1850346616,
+                                "can_be_overruled": true
+                            },
+                            "intro": {
+                                "type": "textarea",
+                                "value": "Walk the city walls above the Adriatic and take a boat to the islands. Come early in the season to avoid the crowds.",
+                                "code": "intro",
+                                "id": 1276092912,
+                                "can_be_overruled": true
+                            },
+                            "email": {
+                                "type": "email",
+                                "value": "dubrovnik@example.com",
+                                "code": "email",
+                                "id": 247390320,
+                                "can_be_overruled": true
+                            }
+                        }
+                    },
+                    {
+                        "index": 9,
+                        "id": 691079388,
+                        "parent_id": 0,
+                        "fields": {
+                            "title": {
+                                "type": "title",
+                                "value": "Edinburgh",
+                                "code": "city",
+                                "id": 1439920378,
+                                "can_be_overruled": false
+                            },
+                            "href": {
+                                "type": "href",
+                                "value": "edinburgh",
+                                "code": "slug",
+                                "id": 1826674167,
+                                "can_be_overruled": false
+                            },
+                            "country": {
+                                "type": "textfield",
+                                "value": "United Kingdom",
+                                "code": "country",
+                                "id": 651646353,
+                                "can_be_overruled": true
+                            },
+                            "language": {
+                                "type": "textfield",
+                                "value": "English",
+                                "code": "language",
+                                "id": 641211869,
+                                "can_be_overruled": true
+                            },
+                            "season": {
+                                "type": "textfield",
+                                "value": "May – September",
+                                "code": "season",
+                                "id": 2077827365,
+                                "can_be_overruled": true
+                            },
+                            "nights": {
+                                "type": "number",
+                                "value": "3",
+                                "code": "nights",
+                                "id": 463395824,
+                                "can_be_overruled": true
+                            },
+                            "price": {
+                                "type": "number",
+                                "value": "429",
+                                "code": "price",
+                                "id": 858243006,
+                                "can_be_overruled": true
+                            },
+                            "intro": {
+                                "type": "textarea",
+                                "value": "A castle on a volcanic rock, cobbled closes and the largest arts festival in the world every August.",
+                                "code": "intro",
+                                "id": 2070119593,
+                                "can_be_overruled": true
+                            },
+                            "email": {
+                                "type": "email",
+                                "value": "edinburgh@example.com",
+                                "code": "email",
+                                "id": 683329664,
+                                "can_be_overruled": true
+                            }
+                        }
+                    },
+                    {
+                        "index": 10,
+                        "id": 786125261,
+                        "parent_id": 0,
+                        "fields": {
+                            "title": {
+                                "type": "title",
+                                "value": "Rome",
+                                "code": "city",
+                                "id": 2005497225,
+                                "can_be_overruled": false
+                            },
+                            "href": {
+                                "type": "href",
+                                "value": "rome",
+                                "code": "slug",
+                                "id": 323715477,
+                                "can_be_overruled": false
+                            },
+                            "country": {
+                                "type": "textfield",
+                                "value": "Italy",
+                                "code": "country",
+                                "id": 1068103933,
+                                "can_be_overruled": true
+                            },
+                            "language": {
+                                "type": "textfield",
+                                "value": "Italian",
+                                "code": "language",
+                                "id": 1312557801,
+                                "can_be_overruled": true
+                            },
+                            "season": {
+                                "type": "textfield",
+                                "value": "April – May",
+                                "code": "season",
+                                "id": 1531231447,
+                                "can_be_overruled": true
+                            },
+                            "nights": {
+                                "type": "number",
+                                "value": "4",
+                                "code": "nights",
+                                "id": 1220284765,
+                                "can_be_overruled": true
+                            },
+                            "price": {
+                                "type": "number",
+                                "value": "459",
+                                "code": "price",
+                                "id": 1355640095,
+                                "can_be_overruled": true
+                            },
+                            "intro": {
+                                "type": "textarea",
+                                "value": "Two thousand years of history on every corner, from the Colosseum to the Trevi Fountain, with the best gelato along the way.",
+                                "code": "intro",
+                                "id": 1177093714,
+                                "can_be_overruled": true
+                            },
+                            "email": {
+                                "type": "email",
+                                "value": "rome@example.com",
+                                "code": "email",
+                                "id": 2049749743,
+                                "can_be_overruled": true
+                            }
+                        }
+                    },
+                    {
+                        "index": 11,
+                        "id": 1290530717,
+                        "parent_id": 0,
+                        "fields": {
+                            "title": {
+                                "type": "title",
+                                "value": "Stockholm",
+                                "code": "city",
+                                "id": 201743137,
+                                "can_be_overruled": false
+                            },
+                            "href": {
+                                "type": "href",
+                                "value": "stockholm",
+                                "code": "slug",
+                                "id": 1931140323,
+                                "can_be_overruled": false
+                            },
+                            "country": {
+                                "type": "textfield",
+                                "value": "Sweden",
+                                "code": "country",
+                                "id": 768964732,
+                                "can_be_overruled": true
+                            },
+                            "language": {
+                                "type": "textfield",
+                                "value": "Swedish",
+                                "code": "language",
+                                "id": 1723162126,
+                                "can_be_overruled": true
+                            },
+                            "season": {
+                                "type": "textfield",
+                                "value": "June – August",
+                                "code": "season",
+                                "id": 795731481,
+                                "can_be_overruled": true
+                            },
+                            "nights": {
+                                "type": "number",
+                                "value": "3",
+                                "code": "nights",
+                                "id": 1414976646,
+                                "can_be_overruled": true
+                            },
+                            "price": {
+                                "type": "number",
+                                "value": "479",
+                                "code": "price",
+                                "id": 1408319860,
+                                "can_be_overruled": true
+                            },
+                            "intro": {
+                                "type": "textarea",
+                                "value": "A capital spread over fourteen islands, with design shops, archipelago ferries and nights that hardly get dark in summer.",
+                                "code": "intro",
+                                "id": 330152320,
+                                "can_be_overruled": true
+                            },
+                            "email": {
+                                "type": "email",
+                                "value": "stockholm@example.com",
+                                "code": "email",
+                                "id": 1949218761,
+                                "can_be_overruled": true
+                            }
+                        }
+                    },
+                    {
+                        "index": 12,
+                        "id": 1224625907,
+                        "parent_id": 0,
+                        "fields": {
+                            "title": {
+                                "type": "title",
+                                "value": "Tallinn",
+                                "code": "city",
+                                "id": 1120375987,
+                                "can_be_overruled": false
+                            },
+                            "href": {
+                                "type": "href",
+                                "value": "tallinn",
+                                "code": "slug",
+                                "id": 1132753676,
+                                "can_be_overruled": false
+                            },
+                            "country": {
+                                "type": "textfield",
+                                "value": "Estonia",
+                                "code": "country",
+                                "id": 651015507,
+                                "can_be_overruled": true
+                            },
+                            "language": {
+                                "type": "textfield",
+                                "value": "Estonian",
+                                "code": "language",
+                                "id": 1977639933,
+                                "can_be_overruled": true
+                            },
+                            "season": {
+                                "type": "textfield",
+                                "value": "June – August",
+                                "code": "season",
+                                "id": 393908270,
+                                "can_be_overruled": true
+                            },
+                            "nights": {
+                                "type": "number",
+                                "value": "3",
+                                "code": "nights",
+                                "id": 766533804,
+                                "can_be_overruled": true
+                            },
+                            "price": {
+                                "type": "number",
+                                "value": "319",
+                                "code": "price",
+                                "id": 728064051,
+                                "can_be_overruled": true
+                            },
+                            "intro": {
+                                "type": "textarea",
+                                "value": "A medieval old town on the Baltic Sea and one of the most digital societies in Europe.",
+                                "code": "intro",
+                                "id": 1104987566,
+                                "can_be_overruled": true
+                            },
+                            "email": {
+                                "type": "email",
+                                "value": "tallinn@example.com",
+                                "code": "email",
+                                "id": 1324073877,
+                                "can_be_overruled": true
+                            }
+                        }
+                    }
+                ]
+            },
+            "save_action": "update_pages",
+            "featured_image": null,
+            "meta": {
+                "_wp_page_template": [
+                    "page"
+                ]
+            },
+            "extra": []
+        },
+        {
+            "id": 99,
+            "parent": 0,
+            "title": "Food tour in @code_city_99@",
+            "content": "<!-- wp:paragraph {\"fontSize\":\"large\"} -->\n<p class=\"has-large-font-size\">Taste @code_city_99@ like a local: a @code_hours_99@-hour walking tour through markets, family-run kitchens and bars in @code_country_99@.</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:heading -->\n<h2 class=\"wp-block-heading\">Don't leave without trying @code_dish_99@</h2>\n<!-- /wp:heading -->\n\n<!-- wp:paragraph -->\n<p>@code_description_99@</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p><strong>Meeting point:</strong> @code_meeting_point_99@<br><strong>Duration:</strong> @code_hours_99@ hours</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:buttons -->\n<div class=\"wp-block-buttons\"><!-- wp:button -->\n<div class=\"wp-block-button\"><a class=\"wp-block-button__link wp-element-button\" href=\"mailto:@code_email_99@\">Book this tour</a></div>\n<!-- /wp:button --></div>\n<!-- /wp:buttons -->",
+            "excerpt": "",
+            "status": "draft",
+            "menu_order": 0,
+            "config": {
+                "rowsprout_page_href": "/food-tour-@code_slug_99@",
+                "field_types": [
+                    {
+                        "key": "title",
+                        "type": "title",
+                        "label": "City",
+                        "code": "city",
+                        "field_type": "text",
+                        "options": [],
+                        "can_be_overruled": false,
+                        "required": true
+                    },
+                    {
+                        "key": "href",
+                        "type": "href",
+                        "label": "Slug",
+                        "code": "slug",
+                        "field_type": "text",
+                        "options": [],
+                        "can_be_overruled": false,
+                        "required": true
+                    },
+                    {
+                        "key": "country",
+                        "type": "textfield",
+                        "label": "Country",
+                        "code": "country",
+                        "field_type": "text",
+                        "options": [],
+                        "can_be_overruled": true,
+                        "required": false
+                    },
+                    {
+                        "key": "dish",
+                        "type": "textfield",
+                        "label": "Signature dish",
+                        "code": "dish",
+                        "field_type": "text",
+                        "options": [],
+                        "can_be_overruled": true,
+                        "required": false
+                    },
+                    {
+                        "key": "hours",
+                        "type": "number",
+                        "label": "Duration (hours)",
+                        "code": "hours",
+                        "field_type": "number",
+                        "options": [],
+                        "can_be_overruled": true,
+                        "required": false
+                    },
+                    {
+                        "key": "meeting_point",
+                        "type": "textfield",
+                        "label": "Meeting point",
+                        "code": "meeting_point",
+                        "field_type": "text",
+                        "options": [],
+                        "can_be_overruled": true,
+                        "required": false
+                    },
+                    {
+                        "key": "description",
+                        "type": "textarea",
+                        "label": "Description",
+                        "code": "description",
+                        "field_type": "textarea",
+                        "options": [],
+                        "can_be_overruled": true,
+                        "required": false
+                    },
+                    {
+                        "key": "email",
+                        "type": "email",
+                        "label": "Contact email",
+                        "code": "email",
+                        "field_type": "email",
+                        "options": [],
+                        "can_be_overruled": true,
+                        "required": false
+                    }
+                ],
+                "groups": [
+                    {
+                        "index": 1,
+                        "id": 236810875,
+                        "parent_id": 0,
+                        "fields": {
+                            "title": {
+                                "type": "title",
+                                "value": "Bologna",
+                                "code": "city",
+                                "id": 1139047670,
+                                "can_be_overruled": false
+                            },
+                            "href": {
+                                "type": "href",
+                                "value": "bologna",
+                                "code": "slug",
+                                "id": 1608786839,
+                                "can_be_overruled": false
+                            },
+                            "country": {
+                                "type": "textfield",
+                                "value": "Italy",
+                                "code": "country",
+                                "id": 1926228714,
+                                "can_be_overruled": true
+                            },
+                            "dish": {
+                                "type": "textfield",
+                                "value": "tortellini in brodo",
+                                "code": "dish",
+                                "id": 2140673186,
+                                "can_be_overruled": true
+                            },
+                            "hours": {
+                                "type": "number",
+                                "value": "3",
+                                "code": "hours",
+                                "id": 1719169927,
+                                "can_be_overruled": true
+                            },
+                            "meeting_point": {
+                                "type": "textfield",
+                                "value": "Piazza Maggiore",
+                                "code": "meeting_point",
+                                "id": 435614270,
+                                "can_be_overruled": true
+                            },
+                            "description": {
+                                "type": "textarea",
+                                "value": "Bologna is called “la grassa”, the fat one, for good reason. Watch the sfogline fold tortellini by hand and taste mortadella where it was invented.",
+                                "code": "description",
+                                "id": 2128832748,
+                                "can_be_overruled": true
+                            },
+                            "email": {
+                                "type": "email",
+                                "value": "food-bologna@example.com",
+                                "code": "email",
+                                "id": 818053686,
+                                "can_be_overruled": true
+                            }
+                        }
+                    },
+                    {
+                        "index": 2,
+                        "id": 774888019,
+                        "parent_id": 0,
+                        "fields": {
+                            "title": {
+                                "type": "title",
+                                "value": "Lyon",
+                                "code": "city",
+                                "id": 507078782,
+                                "can_be_overruled": false
+                            },
+                            "href": {
+                                "type": "href",
+                                "value": "lyon",
+                                "code": "slug",
+                                "id": 842306300,
+                                "can_be_overruled": false
+                            },
+                            "country": {
+                                "type": "textfield",
+                                "value": "France",
+                                "code": "country",
+                                "id": 1183401315,
+                                "can_be_overruled": true
+                            },
+                            "dish": {
+                                "type": "textfield",
+                                "value": "quenelles in a bouchon",
+                                "code": "dish",
+                                "id": 259836263,
+                                "can_be_overruled": true
+                            },
+                            "hours": {
+                                "type": "number",
+                                "value": "3",
+                                "code": "hours",
+                                "id": 1819563001,
+                                "can_be_overruled": true
+                            },
+                            "meeting_point": {
+                                "type": "textfield",
+                                "value": "Place Bellecour",
+                                "code": "meeting_point",
+                                "id": 389082820,
+                                "can_be_overruled": true
+                            },
+                            "description": {
+                                "type": "textarea",
+                                "value": "The capital of French gastronomy. Visit the Halles Paul Bocuse and have lunch in a traditional bouchon lyonnais.",
+                                "code": "description",
+                                "id": 614602375,
+                                "can_be_overruled": true
+                            },
+                            "email": {
+                                "type": "email",
+                                "value": "food-lyon@example.com",
+                                "code": "email",
+                                "id": 660153627,
+                                "can_be_overruled": true
+                            }
+                        }
+                    },
+                    {
+                        "index": 3,
+                        "id": 166236808,
+                        "parent_id": 0,
+                        "fields": {
+                            "title": {
+                                "type": "title",
+                                "value": "San Sebastián",
+                                "code": "city",
+                                "id": 1261654182,
+                                "can_be_overruled": false
+                            },
+                            "href": {
+                                "type": "href",
+                                "value": "san-sebastian",
+                                "code": "slug",
+                                "id": 1100534504,
+                                "can_be_overruled": false
+                            },
+                            "country": {
+                                "type": "textfield",
+                                "value": "Spain",
+                                "code": "country",
+                                "id": 1417292022,
+                                "can_be_overruled": true
+                            },
+                            "dish": {
+                                "type": "textfield",
+                                "value": "pintxos",
+                                "code": "dish",
+                                "id": 1754115852,
+                                "can_be_overruled": true
+                            },
+                            "hours": {
+                                "type": "number",
+                                "value": "4",
+                                "code": "hours",
+                                "id": 818954131,
+                                "can_be_overruled": true
+                            },
+                            "meeting_point": {
+                                "type": "textfield",
+                                "value": "Plaza de la Constitución",
+                                "code": "meeting_point",
+                                "id": 1422598563,
+                                "can_be_overruled": true
+                            },
+                            "description": {
+                                "type": "textarea",
+                                "value": "Hop from bar to bar in the old town, where every counter is covered with pintxos and every bar has its own speciality.",
+                                "code": "description",
+                                "id": 1517798696,
+                                "can_be_overruled": true
+                            },
+                            "email": {
+                                "type": "email",
+                                "value": "food-san-sebastian@example.com",
+                                "code": "email",
+                                "id": 1912524706,
+                                "can_be_overruled": true
+                            }
+                        }
+                    },
+                    {
+                        "index": 4,
+                        "id": 1419506158,
+                        "parent_id": 0,
+                        "fields": {
+                            "title": {
+                                "type": "title",
+                                "value": "Brussels",
+                                "code": "city",
+                                "id": 1820624106,
+                                "can_be_overruled": false
+                            },
+                            "href": {
+                                "type": "href",
+                                "value": "brussels",
+                                "code": "slug",
+                                "id": 1206550550,
+                                "can_be_overruled": false
+                            },
+                            "country": {
+                                "type": "textfield",
+                                "value": "Belgium",
+                                "code": "country",
+                                "id": 513272218,
+                                "can_be_overruled": true
+                            },
+                            "dish": {
+                                "type": "textfield",
+                                "value": "waffles and frites",
+                                "code": "dish",
+                                "id": 105225151,
+                                "can_be_overruled": true
+                            },
+                            "hours": {
+                                "type": "number",
+                                "value": "2",
+                                "code": "hours",
+                                "id": 1408636574,
+                                "can_be_overruled": true
+                            },
+                            "meeting_point": {
+                                "type": "textfield",
+                                "value": "Grand-Place",
+                                "code": "meeting_point",
+                                "id": 717460150,
+                                "can_be_overruled": true
+                            },
+                            "description": {
+                                "type": "textarea",
+                                "value": "Chocolate makers, a proper paper cone of frites and a Belgian beer to finish. Brussels is a city for the sweet tooth.",
+                                "code": "description",
+                                "id": 1176801650,
+                                "can_be_overruled": true
+                            },
+                            "email": {
+                                "type": "email",
+                                "value": "food-brussels@example.com",
+                                "code": "email",
+                                "id": 555356206,
+                                "can_be_overruled": true
+                            }
+                        }
+                    },
+                    {
+                        "index": 5,
+                        "id": 168061938,
+                        "parent_id": 0,
+                        "fields": {
+                            "title": {
+                                "type": "title",
+                                "value": "Naples",
+                                "code": "city",
+                                "id": 599334206,
+                                "can_be_overruled": false
+                            },
+                            "href": {
+                                "type": "href",
+                                "value": "naples",
+                                "code": "slug",
+                                "id": 1393573315,
+                                "can_be_overruled": false
+                            },
+                            "country": {
+                                "type": "textfield",
+                                "value": "Italy",
+                                "code": "country",
+                                "id": 1678540211,
+                                "can_be_overruled": true
+                            },
+                            "dish": {
+                                "type": "textfield",
+                                "value": "pizza napoletana",
+                                "code": "dish",
+                                "id": 2050394706,
+                                "can_be_overruled": true
+                            },
+                            "hours": {
+                                "type": "number",
+                                "value": "3",
+                                "code": "hours",
+                                "id": 1760707717,
+                                "can_be_overruled": true
+                            },
+                            "meeting_point": {
+                                "type": "textfield",
+                                "value": "Piazza del Plebiscito",
+                                "code": "meeting_point",
+                                "id": 1003555995,
+                                "can_be_overruled": true
+                            },
+                            "description": {
+                                "type": "textarea",
+                                "value": "The birthplace of pizza, fried street food and the strongest espresso in Italy, all in the lively Spanish Quarter.",
+                                "code": "description",
+                                "id": 1260965894,
+                                "can_be_overruled": true
+                            },
+                            "email": {
+                                "type": "email",
+                                "value": "food-naples@example.com",
+                                "code": "email",
+                                "id": 632723191,
+                                "can_be_overruled": true
+                            }
+                        }
+                    },
+                    {
+                        "index": 6,
+                        "id": 166764003,
+                        "parent_id": 0,
+                        "fields": {
+                            "title": {
+                                "type": "title",
+                                "value": "Porto",
+                                "code": "city",
+                                "id": 897433481,
+                                "can_be_overruled": false
+                            },
+                            "href": {
+                                "type": "href",
+                                "value": "porto",
+                                "code": "slug",
+                                "id": 582112338,
+                                "can_be_overruled": false
+                            },
+                            "country": {
+                                "type": "textfield",
+                                "value": "Portugal",
+                                "code": "country",
+                                "id": 2120115495,
+                                "can_be_overruled": true
+                            },
+                            "dish": {
+                                "type": "textfield",
+                                "value": "the francesinha",
+                                "code": "dish",
+                                "id": 974421760,
+                                "can_be_overruled": true
+                            },
+                            "hours": {
+                                "type": "number",
+                                "value": "3",
+                                "code": "hours",
+                                "id": 1983970487,
+                                "can_be_overruled": true
+                            },
+                            "meeting_point": {
+                                "type": "textfield",
+                                "value": "Ribeira",
+                                "code": "meeting_point",
+                                "id": 188151011,
+                                "can_be_overruled": true
+                            },
+                            "description": {
+                                "type": "textarea",
+                                "value": "A sandwich with a reputation, followed by a port wine tasting in one of the cellars across the river in Vila Nova de Gaia.",
+                                "code": "description",
+                                "id": 1512765847,
+                                "can_be_overruled": true
+                            },
+                            "email": {
+                                "type": "email",
+                                "value": "food-porto@example.com",
+                                "code": "email",
+                                "id": 285227768,
+                                "can_be_overruled": true
+                            }
+                        }
+                    }
+                ]
+            },
+            "save_action": "update_pages",
+            "featured_image": null,
+            "meta": {
+                "_wp_page_template": [
+                    "page"
+                ]
+            },
+            "extra": []
+        }
+    ]
+}
