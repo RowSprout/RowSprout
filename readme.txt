@@ -37,6 +37,7 @@ A plumbing company works in 30 towns. With RowSprout it designs one "Plumber in 
 * **Background generation.** Pages are created in a queue (Action Scheduler), so saving a template with hundreds of rows never slows down your admin.
 * **Placeholders anywhere.** Use a property in the page title, the URL, the content or a link, and it is replaced per page.
 * **Field types:** Title, URL slug, Text, Textarea, URL, Email and Number.
+* **Import and export.** Download templates with their properties, rows and design as a file and add them to another site, for example from a staging site to the live one.
 * **Grid of pages.** Show all pages of a template as a list or as cards on any page, for example an overview of every town you serve.
 * **Child templates.** Give a template a parent template and it reuses the parent's rows: its pages inherit the title, URL and fields of the matching row, for example a "Roof repair in [town]" page for every town that has a "Roofer in [town]" page. Templates nest one level deep.
 * **As many templates as you need**, managed from the Templates screen.
@@ -126,6 +127,11 @@ No. The free plugin works entirely on your own site. RowSprout Pro, a separate p
 5. A generated page: a real WordPress page with its own URL, title and content.
 
 == Changelog ==
+
+= 3.2 =
+* Fix: generated pages now use the theme's page template instead of its blog-post template, so block themes such as Twenty Twenty-Five no longer show an empty "Written by … in …" line above them. A template you chose yourself still wins.
+* New: RowSprout → Import / Export. Download templates (with their properties, groups and page-builder layout) as a file and import them on another site as drafts. The Templates list gets an Export action too.
+* New: sample data. One click on the Import / Export page adds two example templates (city breaks and food tours in European cities) to try RowSprout with.
 
 = 3.1 =
 * Initial public release.
