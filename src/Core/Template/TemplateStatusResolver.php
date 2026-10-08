@@ -17,6 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class TemplateStatusResolver {
 
+	public const STATUS_NO_GROUPS  = 'no_groups';
 	public const STATUS_NONE       = 'none';
 	public const STATUS_DELETED    = 'deleted';
 	public const STATUS_UP_TO_DATE = 'up_to_date';
@@ -24,6 +25,7 @@ final class TemplateStatusResolver {
 	/**
 	 * Determine status of generated pages for a template.
 	 *
+	 * - no_groups: the template has no groups, so there is nothing to generate yet.
 	 * - none: no generated pages exist yet.
 	 * - in-process / pending / scheduled: rows are queued or being processed.
 	 * - stale: at least one generated page exists, but not all rows are completed.
@@ -34,7 +36,7 @@ final class TemplateStatusResolver {
 		$rows = GroupTableGateway::getRowsByPostId( $postId );
 
 		if ( empty( $rows ) ) {
-			return self::STATUS_NONE;
+			return self::STATUS_NO_GROUPS;
 		}
 
 		$hasGeneratedPages = false;
@@ -162,6 +164,7 @@ final class TemplateStatusResolver {
 
 	public static function getColor( string $status ): string {
 		$colors = [
+			self::STATUS_NO_GROUPS               => '#d63638',
 			self::STATUS_NONE                    => '#d63638',
 			GroupTableGateway::STATUS_IN_PROCESS => '#2271b1',
 			GroupTableGateway::STATUS_PENDING    => '#2271b1',
@@ -176,6 +179,7 @@ final class TemplateStatusResolver {
 
 	public static function getLabel( string $status ): string {
 		$labels = [
+			self::STATUS_NO_GROUPS               => __( 'No groups', 'rowsprout' ),
 			self::STATUS_NONE                    => __( 'No pages generated yet', 'rowsprout' ),
 			GroupTableGateway::STATUS_IN_PROCESS => __( 'Generating…', 'rowsprout' ),
 			GroupTableGateway::STATUS_PENDING    => __( 'Queued', 'rowsprout' ),
