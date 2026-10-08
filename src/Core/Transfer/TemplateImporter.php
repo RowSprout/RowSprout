@@ -150,8 +150,6 @@ final class TemplateImporter {
 			) );
 		}
 
-		self::warnAboutSharedUrlPatterns( $idMap, $result );
-
 		/**
 		 * The whole import is done.
 		 *
@@ -378,10 +376,14 @@ final class TemplateImporter {
 		}
 		TemplateMeta::save( $newId, $config );
 
-		if ( ! empty( HrefUniquenessValidator::findDuplicateGroups( TemplateMeta::get( $newId ) ) ) ) {
+		// URLs are not checked for a new template: it is a draft, and the save
+		// that publishes it refuses URLs that are taken (also by another
+		// template). An updated template stays published, and generating it
+		// without a save does not check two groups of one template.
+		if ( $isUpdate && ! empty( HrefUniquenessValidator::findDuplicateGroups( TemplateMeta::get( $newId ) ) ) ) {
 			$result->addWarning( sprintf(
 				/* translators: %s: template title. */
-				__( 'In "%s" two or more groups share the same URL. Make every URL unique before you publish it.', 'rowsprout' ),
+				__( 'In "%s" two or more groups share the same URL. Make every URL unique before you generate its pages.', 'rowsprout' ),
 				self::title( $entry )
 			) );
 		}
@@ -679,52 +681,6 @@ final class TemplateImporter {
 			self::title( $entry ),
 			$url
 		) );
-	}
-
-	/**
-	 * Two templates with the same URL pattern generate pages with the same
-	 * URLs. Patterns are compared without the template ids in their tokens and
-	 * the way the slug is made (sanitize_title() in PageBuilder), so patterns
-	 * that differ only in case or punctuation count as the same.
-	 *
-	 * @param array<int, int> $idMap
-	 */
-	private static function warnAboutSharedUrlPatterns( array $idMap, ImportResult $result ): void {
-		$existing = [];
-		$others   = get_posts( [
-			'post_type'      => PostTypes::TEMPLATE,
-			'post_status'    => [ 'publish', 'draft', 'pending', 'future', 'private' ],
-			'posts_per_page' => -1,
-			'fields'         => 'ids',
-			'no_found_rows'  => true,
-		] );
-		foreach ( $others as $otherId ) {
-			if ( in_array( (int) $otherId, $idMap, true ) ) {
-				continue;
-			}
-			$pattern = self::comparablePattern( TemplateMeta::getHref( (int) $otherId ) );
-			if ( $pattern !== '' ) {
-				$existing[ $pattern ] = (int) $otherId;
-			}
-		}
-
-		foreach ( $idMap as $newId ) {
-			$pattern = self::comparablePattern( TemplateMeta::getHref( $newId ) );
-			if ( $pattern === '' || ! isset( $existing[ $pattern ] ) ) {
-				continue;
-			}
-
-			$result->addWarning( sprintf(
-				/* translators: 1: imported template title, 2: existing template title. */
-				__( '"%1$s" has the same URL pattern as the existing template "%2$s". Change one of them before publishing, or their pages get the same URLs.', 'rowsprout' ),
-				get_the_title( $newId ),
-				get_the_title( $existing[ $pattern ] )
-			) );
-		}
-	}
-
-	private static function comparablePattern( string $pattern ): string {
-		return sanitize_title( PlaceholderTokenIds::strip( $pattern ) );
 	}
 
 	/**
