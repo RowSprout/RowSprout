@@ -20,8 +20,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  * template generated, or, when generated pages have no URL base, a regular
  * WordPress page or post. Two generated pages at one address make one of
  * them unreachable without any warning (generated slugs skip WordPress's own
- * uniqueness check, see PageUpserter), so a save is refused instead, as for
- * two groups of one template (HrefUniquenessValidator).
+ * uniqueness check, see PageUpserter), so such a group is not generated
+ * (queueWithout()), as a group whose URL another group of the same template
+ * has (HrefUniquenessValidator). The template itself is always saved.
  *
  * A URL is computed the way PageBuilder::createById() builds the page:
  * the template's URL pattern with the group's placeholders filled in
@@ -85,6 +86,135 @@ final class UrlConflicts {
 		}
 
 		return array_values( $perGroup );
+	}
+
+	/**
+	 * Everything that keeps a group's page from being generated: its URL is
+	 * in use elsewhere (find()), or another group of the same template has
+	 * the same URL (kind 'duplicate').
+	 *
+	 * @param array<string, mixed> $config
+	 * @return array<int, array<string, mixed>>
+	 */
+	public static function blocking( int $templateId, array $config ): array {
+		$conflicts = self::find( $templateId, $config );
+		$post      = get_post( $templateId );
+		if ( ! $post instanceof \WP_Post || ! in_array( $post->post_status, self::GENERATING_STATUSES, true ) ) {
+			return $conflicts;
+		}
+
+		$listed = array_fill_keys( array_map( 'strval', array_column( $conflicts, 'guid' ) ), true );
+		$paths  = null;
+		foreach ( HrefUniquenessValidator::findDuplicateGroups( $config ) as $guids ) {
+			$paths = $paths ?? self::paths( $post, $config );
+			foreach ( $guids as $guid ) {
+				if ( isset( $listed[ (string) $guid ] ) ) {
+					continue;
+				}
+				$listed[ (string) $guid ] = true;
+				$conflicts[]              = [
+					'guid'    => (string) $guid,
+					'path'    => $paths[ (string) $guid ] ?? '',
+					'post_id' => $templateId,
+					'kind'    => 'duplicate',
+					'title'   => get_the_title( $post ),
+				];
+			}
+		}
+
+		return $conflicts;
+	}
+
+	/**
+	 * Runs $queue (whatever queues the template's groups: a save, a generate
+	 * action), then puts every blocked group (blocking()) back the way it
+	 * was: a planned group gets its plan back, one that was queued already or
+	 * had no row yet becomes outdated. Covers the template and its child
+	 * templates, whose groups a template-wide save or generate queues too.
+	 * One transaction, so a queue run never picks such a group up in
+	 * between; rolled back when anything in it fails.
+	 *
+	 * @param array<int, string>|null $guids Only these groups of the template
+	 *                                       (a call that queues a subset): no
+	 *                                       other group, and no child
+	 *                                       template, is held or reported.
+	 * @return array<int, array<string, mixed>> The groups that were held
+	 *                                          back, each with its template_id.
+	 */
+	public static function queueWithout( int $templateId, callable $queue, ?array $guids = null ): array {
+		global $wpdb;
+
+		$templateIds = [ $templateId ];
+		if ( $guids === null ) {
+			$templateIds = array_merge( $templateIds, array_map( 'intval', get_children( [
+				'post_parent' => $templateId,
+				'post_type'   => PostTypes::TEMPLATE,
+				'post_status' => 'any',
+				'fields'      => 'ids',
+			] ) ) );
+		}
+		$scope = $guids === null ? null : array_fill_keys( array_map( 'strval', $guids ), true );
+
+		$conflicts = [];
+		$before    = [];
+		foreach ( $templateIds as $id ) {
+			$found = self::blocking( $id, TemplateMeta::get( $id ) );
+			if ( $scope !== null ) {
+				$found = array_values( array_filter( $found, static function ( array $conflict ) use ( $scope ): bool {
+					return isset( $scope[ (string) ( $conflict['guid'] ?? '' ) ] );
+				} ) );
+			}
+			if ( $found === [] ) {
+				continue;
+			}
+			$held = [];
+			foreach ( array_unique( array_map( 'strval', array_column( $found, 'guid' ) ) ) as $guid ) {
+				// The whole row: getRowsByPostId() leaves scheduled_at out.
+				$held[ $guid ] = GroupTableGateway::getRowByGuidAndPostId( $guid, $id );
+			}
+			$before[ $id ] = $held;
+			foreach ( $found as $conflict ) {
+				$conflicts[] = [ 'template_id' => $id ] + $conflict;
+			}
+		}
+
+		if ( $conflicts === [] ) {
+			$queue();
+			return [];
+		}
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- a transaction around the queueing, nothing to cache.
+		$wpdb->query( 'START TRANSACTION' );
+		try {
+			$queue();
+
+			foreach ( $before as $id => $held ) {
+				foreach ( $held as $guid => $previous ) {
+					$guid = (string) $guid;
+					$row  = GroupTableGateway::getRowByGuidAndPostId( $guid, (int) $id );
+					if ( $row === null || ( $row['status'] ?? '' ) !== GroupTableGateway::STATUS_PENDING ) {
+						continue;
+					}
+					$status = $previous !== null ? (string) $previous['status'] : GroupTableGateway::STATUS_STALE;
+					if ( GroupTableGateway::isActiveQueueStatus( $status ) ) {
+						$status = GroupTableGateway::STATUS_STALE;
+					}
+					$data = [ 'status' => $status ];
+					if ( GroupTableGateway::supportsScheduling() ) {
+						$data['scheduled_at'] = $previous['scheduled_at'] ?? null;
+					}
+					GroupTableGateway::updateByGuidAndPostId( $guid, (int) $id, $data );
+				}
+			}
+		} catch ( \Throwable $error ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- see START TRANSACTION.
+			$wpdb->query( 'ROLLBACK' );
+			throw $error;
+		}
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- see START TRANSACTION.
+		$wpdb->query( 'COMMIT' );
+
+		return $conflicts;
 	}
 
 	/**
@@ -264,14 +394,15 @@ final class UrlConflicts {
 	}
 
 	/**
-	 * The notice for a refused save.
+	 * The notice after a save that held groups back (queueWithout()): the
+	 * template is saved, only those pages are not generated.
 	 *
 	 * @param array<int, array<string, mixed>> $conflicts
 	 */
 	public static function message( array $conflicts ): string {
 		return sprintf(
 			/* translators: %s: list of URLs with what already uses them. */
-			__( 'This template was not saved and no pages were generated: some of its URLs are already in use: %s. Every URL must be unique on the site; change these groups (or the URL pattern) and save again.', 'rowsprout' ),
+			__( 'The template is saved, but these pages are not generated because their URL is already in use: %s. Every URL must be unique on the site; change these groups (or the URL pattern) and save again to generate them.', 'rowsprout' ),
 			self::describe( $conflicts )
 		);
 	}
@@ -285,11 +416,16 @@ final class UrlConflicts {
 	public static function describe( array $conflicts ): string {
 		$items = [];
 		foreach ( array_slice( $conflicts, 0, 5 ) as $conflict ) {
-			$owner = (string) ( $conflict['kind'] ?? '' ) === 'template'
+			$kind = (string) ( $conflict['kind'] ?? '' );
+			if ( $kind === 'duplicate' ) {
+				$owner = __( 'another group of this template', 'rowsprout' );
+			} elseif ( $kind === 'template' ) {
 				/* translators: %s: template title. */
-				? sprintf( __( 'template "%s"', 'rowsprout' ), (string) ( $conflict['title'] ?? '' ) )
+				$owner = sprintf( __( 'template "%s"', 'rowsprout' ), (string) ( $conflict['title'] ?? '' ) );
+			} else {
 				/* translators: 1: post type name, e.g. "Page", 2: post title. */
-				: sprintf( __( '%1$s "%2$s"', 'rowsprout' ), (string) ( $conflict['kind'] ?? '' ), (string) ( $conflict['title'] ?? '' ) );
+				$owner = sprintf( __( '%1$s "%2$s"', 'rowsprout' ), $kind, (string) ( $conflict['title'] ?? '' ) );
+			}
 			$items[] = self::displayPath( (string) ( $conflict['path'] ?? '' ) ) . ' (' . $owner . ')';
 		}
 

@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-07T14:34:33+00:00\n"
+"POT-Creation-Date: 2026-10-08T08:12:35+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: rowsprout\n"
@@ -219,8 +219,8 @@ msgid "RowSprout Pro"
 msgstr ""
 
 #: src/Admin/Metaboxes.php:34
-#: src/ThirdParty/Elementor/TemplateEditorTab.php:151
-#: src/ThirdParty/Elementor/TemplateEditorTab.php:239
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:150
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:233
 #: src/ThirdParty/Elementor/Widgets/GridWidget.php:67
 #: src/ThirdParty/WPBakery/WPBakeryIntegration.php:144
 #: assets/js/blocks.js:39
@@ -390,7 +390,7 @@ msgid "Add new property"
 msgstr ""
 
 #: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:100
-#: src/ThirdParty/Elementor/TemplateEditorTab.php:240
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:234
 msgid "Close"
 msgstr ""
 
@@ -773,23 +773,19 @@ msgstr ""
 msgid "Search in RowSprout Template Pages"
 msgstr ""
 
-#: src/Core/SavePost.php:161
-msgid "This template was not saved: two or more groups share the same URL/slug. Every group's URL must be unique — fix the duplicate and save again."
-msgstr ""
-
-#: src/Core/SavePost.php:186
+#: src/Core/SavePost.php:158
 msgid "This template was not saved: it is a child template, but its parent template has not generated any pages yet. Generate the parent's pages first (or set this save action to \"Save template only\"), then save again."
 msgstr ""
 
-#: src/Core/SavePost.php:207
+#: src/Core/SavePost.php:179
 msgid "Properties and groups were not saved: this template was changed elsewhere (e.g. via the API) after this page was loaded. Reload the page and reapply your property/group changes. (Title, content, and status were saved normally.)"
 msgstr ""
 
-#: src/Core/SavePost.php:603
+#: src/Core/SavePost.php:577
 msgid "The parent was not saved: the chosen parent is itself a child template. Templates can only be nested one level deep, so choose a template without a parent."
 msgstr ""
 
-#: src/Core/SavePost.php:605
+#: src/Core/SavePost.php:579
 msgid "The parent was not saved: this template has child templates, so it cannot have a parent itself. Templates can only be nested one level deep."
 msgstr ""
 
@@ -891,25 +887,29 @@ msgid "Unknown"
 msgstr ""
 
 #. translators: %s: list of URLs with what already uses them.
-#: src/Core/Template/UrlConflicts.php:241
+#: src/Core/Template/UrlConflicts.php:405
 #, php-format
-msgid "This template was not saved and no pages were generated: some of its URLs are already in use: %s. Every URL must be unique on the site; change these groups (or the URL pattern) and save again."
+msgid "The template is saved, but these pages are not generated because their URL is already in use: %s. Every URL must be unique on the site; change these groups (or the URL pattern) and save again to generate them."
+msgstr ""
+
+#: src/Core/Template/UrlConflicts.php:421
+msgid "another group of this template"
 msgstr ""
 
 #. translators: %s: template title.
-#: src/Core/Template/UrlConflicts.php:257
+#: src/Core/Template/UrlConflicts.php:424
 #, php-format
 msgid "template \"%s\""
 msgstr ""
 
 #. translators: 1: post type name, e.g. "Page", 2: post title.
-#: src/Core/Template/UrlConflicts.php:259
+#: src/Core/Template/UrlConflicts.php:427
 #, php-format
 msgid "%1$s \"%2$s\""
 msgstr ""
 
 #. translators: 1: list of URLs, 2: number of further URLs.
-#: src/Core/Template/UrlConflicts.php:266
+#: src/Core/Template/UrlConflicts.php:435
 #, php-format
 msgid "%1$s and %2$d more"
 msgstr ""
@@ -923,23 +923,19 @@ msgstr ""
 msgid "Invalid template."
 msgstr ""
 
-#: src/ThirdParty/Elementor/TemplateEditorTab.php:203
-msgid "Two or more groups share the same URL/slug. Every group's URL must be unique."
-msgstr ""
-
-#: src/ThirdParty/Elementor/TemplateEditorTab.php:246
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:240
 msgid "Save"
 msgstr ""
 
-#: src/ThirdParty/Elementor/TemplateEditorTab.php:282
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:276
 msgid "Preview group"
 msgstr ""
 
-#: src/ThirdParty/Elementor/TemplateEditorTab.php:290
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:284
 msgid "Determines which group the widgets and tags show in this editor. After choosing, click \"Refresh preview\" to update the preview. Has no effect on the actual pages."
 msgstr ""
 
-#: src/ThirdParty/Elementor/TemplateEditorTab.php:318
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:312
 msgid "Refresh preview"
 msgstr ""
 

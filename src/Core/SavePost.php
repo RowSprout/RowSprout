@@ -4,7 +4,6 @@ namespace RowSprout\Core;
 
 use RowSprout\Core\Groups\GroupTableGateway;
 use RowSprout\Core\Template\HrefPatternValidator;
-use RowSprout\Core\Template\HrefUniquenessValidator;
 use RowSprout\Core\Template\UrlConflicts;
 use RowSprout\Core\Template\Lifecycle\TemplateSyncMarker;
 use RowSprout\Core\PostMetaKeys;
@@ -61,8 +60,7 @@ final class SavePost {
 		}
 
 		$sources = [
-			[ self::hrefDuplicateNoticeTransientKey( $userId ), 'error', '' ],
-			[ self::urlConflictNoticeTransientKey( $userId ), 'error', '' ],
+			[ self::urlConflictNoticeTransientKey( $userId ), 'warning', '' ],
 			[ self::parentNotGeneratedNoticeTransientKey( $userId ), 'error', '' ],
 			[ self::configConflictNoticeTransientKey( $userId ), 'warning', '' ],
 			[ self::hrefTokenMissingNoticeTransientKey( $userId ), 'warning', '' ],
@@ -84,17 +82,13 @@ final class SavePost {
 		return $notices;
 	}
 
-	private static function hrefDuplicateNoticeTransientKey( int $userId ): string {
-		return 'rowsprout_href_duplicate_notice_' . $userId;
-	}
-
 	private static function urlConflictNoticeTransientKey( int $userId ): string {
 		return 'rowsprout_url_conflict_notice_' . $userId;
 	}
 
 	/**
-	 * See UrlConflicts: a URL that another template's group, a generated
-	 * page or (without a URL base) another post already has.
+	 * See UrlConflicts: groups whose page was not generated because their URL
+	 * is in use elsewhere, or another group of the template has it too.
 	 *
 	 * @param array<int, array<string, mixed>> $conflicts
 	 */
@@ -137,28 +131,6 @@ final class SavePost {
 		set_transient(
 			self::hrefTokenMissingNoticeTransientKey( $userId ),
 			$message,
-			MINUTE_IN_SECONDS
-		);
-	}
-
-	/**
-	 * Server-side backstop for the live JS check in groups-metabox.js — a
-	 * rare last-resort path (JS disabled, a bypassed submit, a programmatic
-	 * save) since the JS already blocks normal form submission on a
-	 * collision. Rejects the whole save rather than persisting a config
-	 * that would silently produce two generated pages with the identical
-	 * post_name (WordPress's own slug-dedup safety net is deliberately
-	 * removed around generated-page inserts, see PageUpserter.php).
-	 */
-	private static function persistHrefDuplicateNotice(): void {
-		$userId = get_current_user_id();
-		if ( ! $userId ) {
-			return;
-		}
-
-		set_transient(
-			self::hrefDuplicateNoticeTransientKey( $userId ),
-			__( 'This template was not saved: two or more groups share the same URL/slug. Every group\'s URL must be unique — fix the duplicate and save again.', 'rowsprout' ),
 			MINUTE_IN_SECONDS
 		);
 	}
@@ -378,9 +350,7 @@ final class SavePost {
 			$currentVersion   = (string) ( $existingConfig['config_updated_at'] ?? '' );
 			if ( $submittedVersion !== '' && $currentVersion !== '' && $submittedVersion !== $currentVersion ) {
 				self::persistConfigConflictNotice();
-				if ( ! self::refuseStoredUrlConflicts( $postId, $existingConfig ) ) {
-					self::handlePostSaveQueue( $postId, $existingConfig, $input );
-				}
+				self::queueHoldingConflicts( $postId, $existingConfig, $input );
 				return;
 			}
 
@@ -390,56 +360,43 @@ final class SavePost {
 
 			$config = PayloadConfigBuilder::build( $templateHref, $rawCols, $rawAllCols, $rawRows, $existingConfig, $postId );
 
-			if ( ! empty( HrefUniquenessValidator::findDuplicateGroups( $config ) ) ) {
-				self::persistHrefDuplicateNotice();
-				if ( ! self::refuseStoredUrlConflicts( $postId, $existingConfig ) ) {
-					self::handlePostSaveQueue( $postId, $existingConfig, $input );
-				}
-				return;
-			}
-
-			// Refused like a duplicate within the template, but nothing is
-			// queued either: the stored config may have the same URLs (a draft
-			// is not checked), and publishing it now would generate them.
-			$urlConflicts = UrlConflicts::find( $postId, $config );
-			if ( $urlConflicts !== [] ) {
-				self::persistUrlConflictNotice( $urlConflicts );
-				return;
-			}
-
+			// Always saved; a group whose URL is in use elsewhere, or that
+			// shares its URL with another group of this template, is just not
+			// generated (queueHoldingConflicts()).
 			TemplateMeta::save( $postId, $config );
 			$hrefWarning = HrefPatternValidator::saveWarning( $config, $postId );
 			if ( $hrefWarning !== '' ) {
 				self::persistHrefTokenMissingNotice( $hrefWarning );
 			}
-			self::handlePostSaveQueue( $postId, $existingConfig, $input );
+			self::queueHoldingConflicts( $postId, $existingConfig, $input );
 			return;
 		}
 
 		// A save without the template form (quick edit, REST, a translation
 		// saved back) can publish a template whose stored URLs collide.
-		if ( ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) || ! self::refuseStoredUrlConflicts( $postId, $existingConfig ) ) {
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
 			self::handlePostSaveQueue( $postId, $existingConfig, $input );
+			return;
 		}
+		self::queueHoldingConflicts( $postId, $existingConfig, $input );
 	}
 
 	/**
-	 * Whenever a save falls back to queueing the STORED config (a stale form,
-	 * a duplicate URL within the template, a save without the form), that
-	 * config may have URLs in use elsewhere: a draft is not checked, and
-	 * publishing it now would generate them. Then nothing is queued and the
-	 * notice says why.
+	 * Queues what the save asks for, except the groups whose URL is in use
+	 * elsewhere or by another group of the template (UrlConflicts::
+	 * queueWithout(), against the config as stored now); the notice names
+	 * them.
 	 *
-	 * @param array<string, mixed> $storedConfig
+	 * @param array<string, mixed> $oldConfig
+	 * @param array<string, mixed> $input
 	 */
-	private static function refuseStoredUrlConflicts( int $postId, array $storedConfig ): bool {
-		$conflicts = UrlConflicts::find( $postId, $storedConfig );
-		if ( $conflicts === [] ) {
-			return false;
+	private static function queueHoldingConflicts( int $postId, array $oldConfig, array $input ): void {
+		$held = UrlConflicts::queueWithout( $postId, static function () use ( $postId, $oldConfig, $input ): void {
+			self::handlePostSaveQueue( $postId, $oldConfig, $input );
+		} );
+		if ( $held !== [] ) {
+			self::persistUrlConflictNotice( $held );
 		}
-
-		self::persistUrlConflictNotice( $conflicts );
-		return true;
 	}
 
 	/**

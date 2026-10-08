@@ -6,7 +6,6 @@ use RowSprout\Admin\Metaboxes\TemplateTabsRenderer;
 use RowSprout\Core\Helpers;
 use RowSprout\Core\PostTypes;
 use RowSprout\Core\Template\HrefPatternValidator;
-use RowSprout\Core\Template\HrefUniquenessValidator;
 use RowSprout\Core\Template\UrlConflicts;
 use RowSprout\Core\Template\Lifecycle\TemplateSyncMarker;
 use RowSprout\Core\Template\PayloadConfigBuilder;
@@ -159,8 +158,9 @@ final class TemplateEditorTab {
 	 * docblock for why), through the exact same building blocks
 	 * SavePost::handleSave() uses for the classic screen's own
 	 * dp_columns/dp_all_columns/dp_groups/rowsprout_page_href fields:
-	 * PayloadConfigBuilder to build the new config, HrefUniquenessValidator
-	 * to block a duplicate group URL/slug, and — once saved —
+	 * PayloadConfigBuilder to build the new config (always saved: URLs in
+	 * use only keep their groups from being generated, see UrlConflicts),
+	 * and — once saved —
 	 * TemplateSyncMarker::markStaleFromSmallAdjustments() to mark the
 	 * affected groups stale, the same path the classic screen's own "Save
 	 * template only" action uses. Deliberately never queues page
@@ -197,30 +197,24 @@ final class TemplateEditorTab {
 
 		$config = PayloadConfigBuilder::build( $templateHref, $rawCols, $rawAllCols, $rawRows, $existingConfig, $postId );
 
-		if ( ! empty( HrefUniquenessValidator::findDuplicateGroups( $config ) ) ) {
-			wp_send_json_error( [
-				'code'    => 'duplicate_href',
-				'message' => __( 'Two or more groups share the same URL/slug. Every group\'s URL must be unique.', 'rowsprout' ),
-			], 422 );
-		}
-
-		$urlConflicts = UrlConflicts::find( $postId, $config );
-		if ( $urlConflicts !== [] ) {
-			wp_send_json_error( [
-				'code'    => 'url_conflict',
-				'message' => UrlConflicts::message( $urlConflicts ),
-			], 422 );
-		}
-
 		TemplateMeta::save( $postId, $config );
 		TemplateSyncMarker::markStaleFromSmallAdjustments( $postId, $existingConfig );
 
 		$saved = TemplateMeta::get( $postId );
 
+		// Not errors: the config is saved; the modal stays open and shows
+		// them. Groups whose URL is in use (elsewhere, or by another group of
+		// this template) are not generated when Elementor's Update runs the
+		// save action (SavePost holds them back).
+		$warnings  = array_filter( [ HrefPatternValidator::saveWarning( $saved, $postId ) ] );
+		$conflicts = UrlConflicts::blocking( $postId, $saved );
+		if ( $conflicts !== [] ) {
+			$warnings[] = UrlConflicts::message( $conflicts );
+		}
+
 		wp_send_json_success( [
 			'config_updated_at' => (string) ( $saved['config_updated_at'] ?? '' ),
-			// Not an error: the config is saved; the modal stays open and shows it.
-			'warning'           => HrefPatternValidator::saveWarning( $saved, $postId ),
+			'warning'           => implode( ' ', $warnings ),
 		] );
 	}
 
