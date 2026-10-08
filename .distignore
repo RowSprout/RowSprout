@@ -3,8 +3,9 @@
 # (so vendor/'s own AGENTS.md/README.md go too); a trailing "/" means a
 # directory; a leading "/" anchors to the plugin root.
 
-# Version control and build tooling.
-.git/
+# Version control and build tooling. ".git" has no trailing slash: in a
+# git worktree it is a file, not a directory.
+.git
 .gitignore
 .gitattributes
 .distignore

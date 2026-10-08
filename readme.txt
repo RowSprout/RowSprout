@@ -4,7 +4,7 @@ Tags: landing pages, programmatic seo, page generator, bulk pages, elementor
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 3.1
+Stable tag: 3.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -129,11 +129,18 @@ No. The free plugin works entirely on your own site. RowSprout Pro, a separate p
 == Changelog ==
 
 = 3.2 =
-* Fix: generated pages now use the theme's page template instead of its blog-post template, so block themes such as Twenty Twenty-Five no longer show an empty "Written by … in …" line above them. A template you chose yourself still wins.
 * New: RowSprout → Import / Export. Download templates (with their properties, groups and page-builder layout) as a file and import them on another site as drafts. The Templates list gets an Export action too.
 * New: sample data. One click on the Import / Export page adds two example templates (city breaks and food tours in European cities) to try RowSprout with.
 * New: a page whose URL is already in use on the site is not generated: by another template's page or, without a URL prefix, by a regular page, post or another plugin's content. The template is still saved and its other pages are generated; a notice lists the URLs and what has them. Before, one of the two pages could no longer be reached, without any warning.
 * Change: a child template whose parent has no pages yet is now saved; its pages are generated once the parent has its own. Before, the save was refused.
+* Change: a template without groups now shows "No groups" as its status, instead of "No pages generated yet".
+* Fix: generated pages now use the theme's page template instead of its blog-post template, so block themes such as Twenty Twenty-Five no longer show an empty "Written by … in …" line above them. A template you chose yourself still wins.
+* Fix: a bulk action (Move to Trash, Restore, Delete Permanently, Empty Trash, or Undo after a bulk trash) on a parent template selected together with its child templates no longer ends in an error.
 
 = 3.1 =
 * Initial public release.
+
+== Upgrade Notice ==
+
+= 3.2 =
+Import and export templates between sites, sample data to try RowSprout with, no more pages at a URL that is already in use, and fixes for block themes and bulk actions.
