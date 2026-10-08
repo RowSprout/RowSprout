@@ -3,7 +3,7 @@
  * Plugin Name: RowSprout
  * Plugin URI: https://rowsprout.com
  * Description: Generate SEO landing pages at scale from reusable templates and structured data groups.
- * Version: 3.1
+ * Version: 3.2
  * Text Domain: rowsprout
  * Domain Path: /languages
  * Author: RowSprout
@@ -25,7 +25,7 @@ if ( ! defined( 'ROWSPROUT_FILE' ) ) {
 // used for cache-busting inline/no-file scripts (real asset files use their
 // own filemtime() instead, see GroupsMetaBoxAssets/TemplateEditorTab).
 if ( ! defined( 'ROWSPROUT_VERSION' ) ) {
-    define( 'ROWSPROUT_VERSION', '3.1' );
+    define( 'ROWSPROUT_VERSION', '3.2' );
 }
 
 if ( ! defined( 'ROWSPROUT_PATH' ) ) {
