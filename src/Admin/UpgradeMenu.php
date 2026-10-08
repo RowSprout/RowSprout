@@ -32,6 +32,7 @@ final class UpgradeMenu {
 				'title' => __( 'Multiple languages', 'rowsprout' ),
 				'items' => [
 					__( 'WPML: translate a template once and all of its pages are generated in that language.', 'rowsprout' ),
+					__( 'Import and export keep a template\'s language versions together and link them again on the other site.', 'rowsprout' ),
 				],
 			],
 			[
@@ -47,6 +48,8 @@ final class UpgradeMenu {
 				'title' => __( 'Automation', 'rowsprout' ),
 				'items' => [
 					__( 'An MCP server and WP-CLI commands to manage templates and pages from scripts or AI agents.', 'rowsprout' ),
+					__( 'Import that updates templates already on the site (for example from staging to live) and downloads missing images.', 'rowsprout' ),
+					__( 'Export only the properties and groups you choose.', 'rowsprout' ),
 				],
 			],
 		];

@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-08T13:33:50+00:00\n"
+"POT-Creation-Date: 2026-10-08T09:36:46+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: rowsprout\n"
@@ -147,6 +147,7 @@ msgid "You haven't created a template yet."
 msgstr ""
 
 #: src/Admin/Menu.php:125
+#: src/Admin/TemplateTransferPage.php:252
 msgid "(no title)"
 msgstr ""
 
@@ -207,14 +208,19 @@ msgstr ""
 
 #: src/Admin/MenuRegistrar.php:49
 #: src/Admin/MenuRegistrar.php:50
+msgid "Import / Export"
+msgstr ""
+
+#: src/Admin/MenuRegistrar.php:58
+#: src/Admin/MenuRegistrar.php:59
 #: src/ThirdParty/Elementor/Widgets/GridWidget.php:59
 #: assets/js/blocks.js:37
 msgid "Settings"
 msgstr ""
 
-#: src/Admin/MenuRegistrar.php:58
-#: src/Admin/MenuRegistrar.php:59
-#: src/Admin/UpgradeMenu.php:55
+#: src/Admin/MenuRegistrar.php:67
+#: src/Admin/MenuRegistrar.php:68
+#: src/Admin/UpgradeMenu.php:58
 msgid "RowSprout Pro"
 msgstr ""
 
@@ -377,6 +383,7 @@ msgstr ""
 
 #: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:76
 #: src/Admin/TemplateStatusColumn.php:38
+#: src/Admin/TemplateTransferPage.php:246
 msgid "Status"
 msgstr ""
 
@@ -480,6 +487,7 @@ msgid "Properties"
 msgstr ""
 
 #: src/Admin/Metaboxes/TemplateTabsRenderer.php:131
+#: src/Admin/TemplateTransferPage.php:246
 msgid "Groups"
 msgstr ""
 
@@ -549,6 +557,126 @@ msgstr[1] ""
 msgid "%1$d of %2$d up to date"
 msgstr ""
 
+#: src/Admin/TemplateTransferPage.php:70
+#: src/Admin/TemplateTransferPage.php:116
+#: src/Admin/TemplateTransferPage.php:226
+msgid "Export"
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:115
+msgid "Export with parent"
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:125
+msgid "You are not allowed to export templates."
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:145
+msgid "Select at least one template to export."
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:154
+#: src/Admin/TemplateTransferPage.php:356
+msgid "You are not allowed to import templates."
+msgstr ""
+
+#. translators: %s: maximum upload size, e.g. "8 MB".
+#: src/Admin/TemplateTransferPage.php:169
+#, php-format
+msgid "The file is larger than this server accepts (%s)."
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:172
+msgid "Choose an export file to import."
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:198
+msgid "Import / Export templates"
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:227
+msgid "Download templates as a file, with their properties, groups and page-builder layout, to add them to another site. A child template is always exported with its parent."
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:228
+msgid "Not included: the generated pages (the other site generates its own) and media files. Images keep pointing at this site."
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:231
+msgid "There are no templates to export yet."
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:245
+msgid "Select all"
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:246
+msgid "Template"
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:267
+msgid "Download selected"
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:313
+#: src/Admin/TemplateTransferPage.php:334
+msgid "Import"
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:314
+msgid "Choose a RowSprout export file. Every template in it is added as a new draft; existing templates are never changed."
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:315
+msgid "Check an imported template (above all its URL pattern), then publish it with \"Create & update pages\" to generate its pages."
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:320
+msgid "Export file"
+msgstr ""
+
+#. translators: %s: maximum upload size, e.g. "8 MB".
+#: src/Admin/TemplateTransferPage.php:324
+#, php-format
+msgid "Maximum file size: %s."
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:341
+msgid "Sample data"
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:342
+msgid "Add two example templates to see how RowSprout works: city breaks in 12 European cities and food tours in 6, with their properties and groups. They are added as drafts; publish one with \"Create & update pages\" to generate its pages."
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:346
+msgid "Import sample data"
+msgstr ""
+
+#: src/Admin/TemplateTransferPage.php:364
+msgid "The sample data file is missing. Reinstall RowSprout and try again."
+msgstr ""
+
+#. translators: %d: number of templates.
+#: src/Admin/TemplateTransferPage.php:392
+#, php-format
+msgid "%d template was imported as a draft:"
+msgid_plural "%d templates were imported as drafts:"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: number of templates.
+#: src/Admin/TemplateTransferPage.php:407
+#, php-format
+msgid "%d existing template was updated. Nothing was generated: its changed pages are marked as outdated until you save it with \"Create & update pages\"."
+msgid_plural "%d existing templates were updated. Nothing was generated: their changed pages are marked as outdated until you save them with \"Create & update pages\"."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Admin/TemplateTransferPage.php:434
+msgid "The export file could not be created."
+msgstr ""
+
 #: src/Admin/UpgradeMenu.php:23
 msgid "Working with many pages"
 msgstr ""
@@ -577,47 +705,59 @@ msgstr ""
 msgid "WPML: translate a template once and all of its pages are generated in that language."
 msgstr ""
 
-#: src/Admin/UpgradeMenu.php:38
+#: src/Admin/UpgradeMenu.php:35
+msgid "Import and export keep a template's language versions together and link them again on the other site."
+msgstr ""
+
+#: src/Admin/UpgradeMenu.php:39
 msgid "More field types and elements"
 msgstr ""
 
-#: src/Admin/UpgradeMenu.php:40
+#: src/Admin/UpgradeMenu.php:41
 msgid "Extra field types: Checkbox, Date, Date and time, Item list, Icon, Phone, Rich text, Thumbnail, Select, Color and File."
 msgstr ""
 
-#: src/Admin/UpgradeMenu.php:41
+#: src/Admin/UpgradeMenu.php:42
 msgid "Elementor: Date, Item List, Thumbnail and Sibling Links widgets, plus RowSprout Page Field and Page Link dynamic tags."
 msgstr ""
 
-#: src/Admin/UpgradeMenu.php:42
+#: src/Admin/UpgradeMenu.php:43
 msgid "Block editor: an Item List block."
 msgstr ""
 
-#: src/Admin/UpgradeMenu.php:43
+#: src/Admin/UpgradeMenu.php:44
 msgid "WPBakery: an Item List element."
 msgstr ""
 
-#: src/Admin/UpgradeMenu.php:47
+#: src/Admin/UpgradeMenu.php:48
 msgid "Automation"
 msgstr ""
 
-#: src/Admin/UpgradeMenu.php:49
+#: src/Admin/UpgradeMenu.php:50
 msgid "An MCP server and WP-CLI commands to manage templates and pages from scripts or AI agents."
 msgstr ""
 
-#: src/Admin/UpgradeMenu.php:59
-msgid "RowSprout works fully on its own: there are no limits on templates, groups or pages, and nothing in this plugin requires Pro."
+#: src/Admin/UpgradeMenu.php:51
+msgid "Import that updates templates already on the site (for example from staging to live) and downloads missing images."
+msgstr ""
+
+#: src/Admin/UpgradeMenu.php:52
+msgid "Export only the properties and groups you choose."
 msgstr ""
 
 #: src/Admin/UpgradeMenu.php:62
+msgid "RowSprout works fully on its own: there are no limits on templates, groups or pages, and nothing in this plugin requires Pro."
+msgstr ""
+
+#: src/Admin/UpgradeMenu.php:65
 msgid "RowSprout Pro is a separate add-on, not distributed through WordPress.org and adds:"
 msgstr ""
 
-#: src/Admin/UpgradeMenu.php:76
+#: src/Admin/UpgradeMenu.php:79
 msgid "Learn more on rowsprout.com"
 msgstr ""
 
-#: src/Admin/UpgradeMenu.php:77
+#: src/Admin/UpgradeMenu.php:80
 msgid "(opens in a new tab)"
 msgstr ""
 
@@ -888,6 +1028,96 @@ msgstr ""
 
 #: src/Core/Template/TemplateStatusResolver.php:188
 msgid "Unknown"
+msgstr ""
+
+#: src/Core/Transfer/TemplateImporter.php:59
+msgid "This file is not a RowSprout export file: it does not contain valid JSON."
+msgstr ""
+
+#: src/Core/Transfer/TemplateImporter.php:74
+msgid "This file is not a RowSprout export file."
+msgstr ""
+
+#: src/Core/Transfer/TemplateImporter.php:80
+msgid "This export file was made by a newer version of RowSprout. Update RowSprout on this site and try again."
+msgstr ""
+
+#: src/Core/Transfer/TemplateImporter.php:84
+msgid "This export file is damaged: it has no valid format version."
+msgstr ""
+
+#: src/Core/Transfer/TemplateImporter.php:90
+msgid "The export file contains no templates."
+msgstr ""
+
+#. translators: %s: comma-separated property types, e.g. "richtext, date".
+#: src/Core/Transfer/TemplateImporter.php:151
+#, php-format
+msgid "These property types are not available on this site: %s. Their values were imported unchanged; activate the plugin that adds them (such as RowSprout Pro) to edit and use them."
+msgstr ""
+
+#. translators: %s: comma-separated property types, e.g. "richtext, date".
+#: src/Core/Transfer/TemplateImporter.php:153
+#, php-format
+msgid "These property types are not available on this site: %s. Their values were imported with only safe HTML kept (your account may not add other HTML), so some markup may be gone; activate the plugin that adds them (such as RowSprout Pro) to edit and use them."
+msgstr ""
+
+#. translators: %d: number of skipped entries.
+#: src/Core/Transfer/TemplateImporter.php:193
+#, php-format
+msgid "%d entry in the file was skipped because it is incomplete."
+msgid_plural "%d entries in the file were skipped because they are incomplete."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %s: template title.
+#: src/Core/Transfer/TemplateImporter.php:239
+#, php-format
+msgid "\"%s\" is a child template, but its parent template could not be imported with it. It was imported as a template without a parent."
+msgstr ""
+
+#. translators: 1: template title, 2: error message.
+#: src/Core/Transfer/TemplateImporter.php:255
+#, php-format
+msgid "\"%1$s\" could not be imported: %2$s"
+msgstr ""
+
+#: src/Core/Transfer/TemplateImporter.php:257
+msgid "unknown error"
+msgstr ""
+
+#. translators: %s: template title.
+#: src/Core/Transfer/TemplateImporter.php:383
+#, php-format
+msgid "\"%s\" was not updated: it was saved on this site while the import ran. Import the file again to update it."
+msgstr ""
+
+#. translators: 1: template title, 2: error message.
+#: src/Core/Transfer/TemplateImporter.php:393
+#, php-format
+msgid "The content of \"%1$s\" could not be imported: %2$s"
+msgstr ""
+
+#. translators: %s: template title.
+#: src/Core/Transfer/TemplateImporter.php:408
+#, php-format
+msgid "In \"%s\" two or more groups share the same URL. Make every URL unique before you generate its pages."
+msgstr ""
+
+#. translators: %s: template title.
+#: src/Core/Transfer/TemplateImporter.php:630
+#, php-format
+msgid "The page-builder data and other settings of \"%s\" were not imported: your account is not allowed to add unfiltered HTML. Ask an administrator to import this file."
+msgstr ""
+
+#. translators: 1: template title, 2: image URL.
+#: src/Core/Transfer/TemplateImporter.php:704
+#, php-format
+msgid "The featured image of \"%1$s\" is not in this site's media library (%2$s). Upload it and set it again."
+msgstr ""
+
+#: src/Core/Transfer/TemplateImporter.php:716
+msgid "Imported template"
 msgstr ""
 
 #: src/ThirdParty/Elementor/PageFieldResolver.php:284

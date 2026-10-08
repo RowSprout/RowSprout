@@ -8,6 +8,7 @@ use RowSprout\Admin\PageEditNotice;
 use RowSprout\Admin\TemplateBlockEditor;
 use RowSprout\Admin\ChildTemplateAdminUx;
 use RowSprout\Admin\TemplateStatusColumn;
+use RowSprout\Admin\TemplateTransferPage;
 use RowSprout\Admin\Metaboxes\ParentPayloadAjaxHandler;
 use RowSprout\Blocks\BlockRegistry;
 use RowSprout\Core\AccessControl;
@@ -61,6 +62,7 @@ final class Plugin
         PageEditNotice::register();
         ChildTemplateAdminUx::register();
         TemplateStatusColumn::register();
+        TemplateTransferPage::register();
         ParentPayloadAjaxHandler::register();
         ChildTemplateInheritance::register();
         PermalinkSettings::register();
