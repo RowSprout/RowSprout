@@ -18,8 +18,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * The URLs a template's groups would get that something else already has:
  * a group of another template (generated or not yet), a page another
- * template generated, or, when generated pages have no URL base, a regular
- * WordPress page or post. Two generated pages at one address make one of
+ * template generated, or a regular WordPress page or post at the same
+ * address (under the URL base, if there is one). Two generated pages at one address make one of
  * them unreachable without any warning (generated slugs skip WordPress's own
  * uniqueness check, see PageUpserter), so such a group is not generated
  * (queueWithout()), as a group whose URL another group of the same template
@@ -499,31 +499,32 @@ final class UrlConflicts {
 			}
 		}
 
-		// Without a URL base, generated pages share the site root with
-		// everything else: pages, posts and the content of other plugins. What
-		// counts is the address such a post really has (its permalink), so a
-		// post type with a base of its own (/product/amsterdam/) does not
-		// clash, and one without does. With a fixed start in the permalink
-		// structure (/blog/%postname%/), generated pages are under it too, as
-		// are posts, but regular pages are not.
-		if ( PermalinkSettings::getBase() === '' ) {
-			$front     = self::front();
-			$postTypes = array_values( array_diff(
-				get_post_types( [ 'public' => true ] ),
-				[ PostTypes::PAGE, PostTypes::TEMPLATE, 'attachment' ]
-			) );
-			foreach ( self::postsWithSlugs( $postTypes, $slugs ) as $post ) {
-				$path = self::sitePath( (string) get_permalink( $post ) );
-				if ( $front !== '' ) {
-					if ( strpos( $path . '/', $front . '/' ) !== 0 ) {
-						continue;
-					}
-					$path = trim( (string) substr( $path, strlen( $front ) ), '/' );
+		// Generated pages share their addresses with everything else on the
+		// site: pages, posts and the content of other plugins. What counts is
+		// the address such a post really has (its permalink), so a post type
+		// with a base of its own (/product/amsterdam/) does not clash, and one
+		// without does. Generated pages sit under the fixed start of the
+		// permalink structure (/blog/%postname%/) and the URL base, so only a
+		// post under that same prefix can have one of their addresses: with
+		// the base "locations", a regular page "amsterdam" under a page
+		// "locations" (/locations/amsterdam/) does, a post at /amsterdam/ does
+		// not.
+		$prefix    = implode( '/', array_filter( [ self::front(), trim( PermalinkSettings::getBase(), '/' ) ], 'strlen' ) );
+		$postTypes = array_values( array_diff(
+			get_post_types( [ 'public' => true ] ),
+			[ PostTypes::PAGE, PostTypes::TEMPLATE, 'attachment' ]
+		) );
+		foreach ( self::postsWithSlugs( $postTypes, $slugs ) as $post ) {
+			$path = self::sitePath( (string) get_permalink( $post ) );
+			if ( $prefix !== '' ) {
+				if ( strpos( $path . '/', $prefix . '/' ) !== 0 ) {
+					continue;
 				}
-				if ( $path !== '' && isset( $wanted[ $path ] ) ) {
-					$typeObject = get_post_type_object( $post->post_type );
-					$add( $path, $post->ID, $typeObject ? (string) $typeObject->labels->singular_name : $post->post_type, get_the_title( $post ) );
-				}
+				$path = trim( (string) substr( $path, strlen( $prefix ) ), '/' );
+			}
+			if ( $path !== '' && isset( $wanted[ $path ] ) ) {
+				$typeObject = get_post_type_object( $post->post_type );
+				$add( $path, $post->ID, $typeObject ? (string) $typeObject->labels->singular_name : $post->post_type, get_the_title( $post ) );
 			}
 		}
 
