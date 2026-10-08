@@ -30,13 +30,14 @@ A plumbing company works in 30 towns. With RowSprout it designs one "Plumber in 
 = Features =
 
 * **Real pages, not virtual ones.** Every generated page is a normal WordPress post with its own permalink, so search engines, caching plugins and your theme treat it like any other page.
-* **Your own URL pattern.** Build each page's address from its properties, for example `/plumber-amsterdam/`, `/plumber-utrecht/` and so on, under the site root or a prefix of your choice. RowSprout warns you before two pages would get the same URL.
+* **Your own URL pattern.** Build each page's address from its properties, for example `/plumber-amsterdam/`, `/plumber-utrecht/` and so on, under the site root or a prefix of your choice. RowSprout never generates two pages at the same URL, also across templates and, without a prefix, against your other pages and posts: such a page waits until you give it a free URL.
 * **Every language and alphabet.** Accents, Greek, Cyrillic, Arabic, Hebrew, Chinese, Japanese and emoji are fully supported in your rows, titles, content and URLs. Addresses follow WordPress's own rules: *Zürich* becomes `/plumber-zurich/`, while other alphabets stay as they are (`/plumber-αθήνα/`).
 * **Pages stay in sync.** Change the design or a row, save, and every page of the template is regenerated from it, so no page is ever out of date.
 * **Status at a glance.** The Templates screen shows per template how many of its pages are up to date.
 * **Background generation.** Pages are created in a queue (Action Scheduler), so saving a template with hundreds of rows never slows down your admin.
 * **Placeholders anywhere.** Use a property in the page title, the URL, the content or a link, and it is replaced per page.
 * **Field types:** Title, URL slug, Text, Textarea, URL, Email and Number.
+* **Import and export.** Download templates with their properties, rows and design as a file and add them to another site, for example from a staging site to the live one.
 * **Grid of pages.** Show all pages of a template as a list or as cards on any page, for example an overview of every town you serve.
 * **Child templates.** Give a template a parent template and it reuses the parent's rows: its pages inherit the title, URL and fields of the matching row, for example a "Roof repair in [town]" page for every town that has a "Roofer in [town]" page. Templates nest one level deep.
 * **As many templates as you need**, managed from the Templates screen.
