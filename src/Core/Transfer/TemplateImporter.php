@@ -109,7 +109,12 @@ final class TemplateImporter {
 		foreach ( $idMap as $sourceId => $newId ) {
 			$entry    = $entries[ $sourceId ];
 			$isUpdate = isset( $oldConfigs[ $newId ] );
-			self::fillTemplate( $newId, $entry, $idMap, $result, $unknownTypes, $options, $isUpdate );
+			$version  = $isUpdate ? (string) ( $oldConfigs[ $newId ]['config_updated_at'] ?? '' ) : '';
+			if ( ! self::fillTemplate( $newId, $entry, $idMap, $result, $unknownTypes, $options, $isUpdate, $version ) ) {
+				// Left as it was, so it has nothing to mark either.
+				unset( $oldConfigs[ $newId ] );
+				continue;
+			}
 			if ( $isUpdate ) {
 				$result->addUpdated( $newId, $sourceId );
 			} else {
@@ -318,8 +323,11 @@ final class TemplateImporter {
 	 * @param array<int, int>      $idMap
 	 * @param array<string, bool>  $unknownTypes
 	 * @param array<string, mixed> $options
+	 * @param string               $version For an update: the config_updated_at read in createPosts().
+	 * @return bool False when an updated template was saved by someone else
+	 *              since $version and is left as it is.
 	 */
-	private static function fillTemplate( int $newId, array $entry, array $idMap, ImportResult $result, array &$unknownTypes, array $options, bool $isUpdate ): void {
+	private static function fillTemplate( int $newId, array $entry, array $idMap, ImportResult $result, array &$unknownTypes, array $options, bool $isUpdate, string $version = '' ): bool {
 		/**
 		 * The template ids whose placeholder tokens are rewritten in this
 		 * template (old id => new id). By default every template of the
@@ -345,16 +353,6 @@ final class TemplateImporter {
 			$postUpdate['post_parent'] = $idMap[ $sourceParent ];
 		}
 
-		$updated = wp_update_post( wp_slash( $postUpdate ), true );
-		if ( is_wp_error( $updated ) ) {
-			$result->addWarning( sprintf(
-				/* translators: 1: template title, 2: error message. */
-				__( 'The content of "%1$s" could not be imported: %2$s', 'rowsprout' ),
-				self::title( $entry ),
-				$updated->get_error_message()
-			) );
-		}
-
 		$config = self::sanitizeConfig( PlaceholderTokenIds::remapRecursive( $entry['config'] ?? [], $map ), $unknownTypes );
 
 		/**
@@ -374,6 +372,30 @@ final class TemplateImporter {
 		if ( $isUpdate ) {
 			$config = self::keepEquivalentValues( $config, TemplateMeta::get( $newId ) );
 		}
+
+		// A save that landed since createPosts() read the config (another
+		// tab, an agent) is not overwritten, and the marking below would
+		// compare against a config that is no longer the one before the
+		// import. Checked right before the first write to the template.
+		if ( $isUpdate && TemplateMeta::hasChangedSince( $newId, $version ) ) {
+			$result->addWarning( sprintf(
+				/* translators: %s: template title. */
+				__( '"%s" was not updated: it was saved on this site while the import ran. Import the file again to update it.', 'rowsprout' ),
+				self::title( $entry )
+			) );
+			return false;
+		}
+
+		$updated = wp_update_post( wp_slash( $postUpdate ), true );
+		if ( is_wp_error( $updated ) ) {
+			$result->addWarning( sprintf(
+				/* translators: 1: template title, 2: error message. */
+				__( 'The content of "%1$s" could not be imported: %2$s', 'rowsprout' ),
+				self::title( $entry ),
+				$updated->get_error_message()
+			) );
+		}
+
 		TemplateMeta::save( $newId, $config );
 
 		// URLs are not checked for a new template: it is a draft, and the save
@@ -398,6 +420,8 @@ final class TemplateImporter {
 		if ( ! $isUpdate && $saveAction !== '' ) {
 			update_post_meta( $newId, PostMetaKeys::SAVE_ACTION, $saveAction );
 		}
+
+		return true;
 	}
 
 	/**

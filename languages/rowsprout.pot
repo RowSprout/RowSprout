@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-08T07:45:29+00:00\n"
+"POT-Creation-Date: 2026-10-08T09:36:46+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: rowsprout\n"
@@ -1051,19 +1051,19 @@ msgid "The export file contains no templates."
 msgstr ""
 
 #. translators: %s: comma-separated property types, e.g. "richtext, date".
-#: src/Core/Transfer/TemplateImporter.php:146
+#: src/Core/Transfer/TemplateImporter.php:151
 #, php-format
 msgid "These property types are not available on this site: %s. Their values were imported unchanged; activate the plugin that adds them (such as RowSprout Pro) to edit and use them."
 msgstr ""
 
 #. translators: %s: comma-separated property types, e.g. "richtext, date".
-#: src/Core/Transfer/TemplateImporter.php:148
+#: src/Core/Transfer/TemplateImporter.php:153
 #, php-format
 msgid "These property types are not available on this site: %s. Their values were imported with only safe HTML kept (your account may not add other HTML), so some markup may be gone; activate the plugin that adds them (such as RowSprout Pro) to edit and use them."
 msgstr ""
 
 #. translators: %d: number of skipped entries.
-#: src/Core/Transfer/TemplateImporter.php:188
+#: src/Core/Transfer/TemplateImporter.php:193
 #, php-format
 msgid "%d entry in the file was skipped because it is incomplete."
 msgid_plural "%d entries in the file were skipped because they are incomplete."
@@ -1071,46 +1071,52 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: template title.
-#: src/Core/Transfer/TemplateImporter.php:234
+#: src/Core/Transfer/TemplateImporter.php:239
 #, php-format
 msgid "\"%s\" is a child template, but its parent template could not be imported with it. It was imported as a template without a parent."
 msgstr ""
 
 #. translators: 1: template title, 2: error message.
-#: src/Core/Transfer/TemplateImporter.php:250
+#: src/Core/Transfer/TemplateImporter.php:255
 #, php-format
 msgid "\"%1$s\" could not be imported: %2$s"
 msgstr ""
 
-#: src/Core/Transfer/TemplateImporter.php:252
+#: src/Core/Transfer/TemplateImporter.php:257
 msgid "unknown error"
 msgstr ""
 
+#. translators: %s: template title.
+#: src/Core/Transfer/TemplateImporter.php:383
+#, php-format
+msgid "\"%s\" was not updated: it was saved on this site while the import ran. Import the file again to update it."
+msgstr ""
+
 #. translators: 1: template title, 2: error message.
-#: src/Core/Transfer/TemplateImporter.php:352
+#: src/Core/Transfer/TemplateImporter.php:393
 #, php-format
 msgid "The content of \"%1$s\" could not be imported: %2$s"
 msgstr ""
 
 #. translators: %s: template title.
-#: src/Core/Transfer/TemplateImporter.php:386
+#: src/Core/Transfer/TemplateImporter.php:408
 #, php-format
 msgid "In \"%s\" two or more groups share the same URL. Make every URL unique before you generate its pages."
 msgstr ""
 
 #. translators: %s: template title.
-#: src/Core/Transfer/TemplateImporter.php:606
+#: src/Core/Transfer/TemplateImporter.php:630
 #, php-format
 msgid "The page-builder data and other settings of \"%s\" were not imported: your account is not allowed to add unfiltered HTML. Ask an administrator to import this file."
 msgstr ""
 
 #. translators: 1: template title, 2: image URL.
-#: src/Core/Transfer/TemplateImporter.php:680
+#: src/Core/Transfer/TemplateImporter.php:704
 #, php-format
 msgid "The featured image of \"%1$s\" is not in this site's media library (%2$s). Upload it and set it again."
 msgstr ""
 
-#: src/Core/Transfer/TemplateImporter.php:692
+#: src/Core/Transfer/TemplateImporter.php:716
 msgid "Imported template"
 msgstr ""
 
