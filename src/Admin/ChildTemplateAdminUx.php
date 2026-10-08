@@ -68,7 +68,7 @@ final class ChildTemplateAdminUx {
 		} elseif ( isset( $_REQUEST['ids'] ) ) {
 			$ids = explode( ',', sanitize_text_field( wp_unslash( $_REQUEST['ids'] ) ) );
 		} elseif ( ! empty( $_REQUEST['post'] ) ) {
-			$ids = (array) wp_unslash( $_REQUEST['post'] );
+			$ids = array_map( 'absint', (array) wp_unslash( $_REQUEST['post'] ) );
 		}
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
