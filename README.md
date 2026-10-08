@@ -17,7 +17,7 @@ Generate SEO landing pages at scale from reusable templates and structured data 
 
 ## Field types
 
-Title and Href/Slug are required and unique per template (locked to one each). Beyond those: Textfield, Textarea, URL, Email and Number. RowSprout Pro adds Checkbox, Date, Date+time, Item-list, Icon, Thumbnail, Select, Rich text, Color, Phone and File (registered through the `rowsprout_field_types` filter).
+Title and Href/Slug are required and unique per template (locked to one each). Every page URL must also be unique on the site: when a group of a published template would get an address another template's page already has (or, when generated pages have no URL base, a regular page, post or other plugin's content at the site root), or that another group of the template has too, the template is saved but that group's page is not generated, and a notice lists the URLs. RowSprout Pro limits this check to the template's own language under WPML. Beyond those: Textfield, Textarea, URL, Email and Number. RowSprout Pro adds Checkbox, Date, Date+time, Item-list, Icon, Thumbnail, Select, Rich text, Color, Phone and File (registered through the `rowsprout_field_types` filter).
 
 ## Admin UI
 
