@@ -127,5 +127,8 @@ No. The free plugin works entirely on your own site. RowSprout Pro, a separate p
 
 == Changelog ==
 
+= 3.2 =
+* Fix: generated pages now use the theme's page template instead of its blog-post template, so block themes such as Twenty Twenty-Five no longer show an empty "Written by … in …" line above them. A template you chose yourself still wins.
+
 = 3.1 =
 * Initial public release.

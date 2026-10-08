@@ -14,6 +14,7 @@ use RowSprout\Core\AccessControl;
 use RowSprout\Core\BlockBindings\PropertyBindingSource;
 use RowSprout\Core\ChildTemplates\ChildTemplateInheritance;
 use RowSprout\Core\Database;
+use RowSprout\Core\PageTemplateHierarchy;
 use RowSprout\Core\PermalinkSettings;
 use RowSprout\Core\PostTypes;
 use RowSprout\Core\RemoveCptBase;
@@ -65,6 +66,7 @@ final class Plugin
         PermalinkSettings::register();
         \RowSprout\Core\PageEditing::register();
         PostTypes::register();
+        PageTemplateHierarchy::register();
         RemoveCptBase::register();
         SavePost::register();
         Scheduler::register();
