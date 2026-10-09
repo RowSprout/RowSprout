@@ -50,7 +50,7 @@ final class PostTypes
 
         register_post_type(self::PAGE, [
             'label' => __('RowSprout Pages', 'rowsprout'),
-            'description' => __('All RowSprout Pages lives here', 'rowsprout'),
+            'description' => __('All RowSprout Pages live here', 'rowsprout'),
             'labels' => [
                 'name' => __('RowSprout Pages', 'rowsprout'),
                 'singular_name' => __('RowSprout Page', 'rowsprout'),
@@ -91,7 +91,7 @@ final class PostTypes
 
         register_post_type(self::TEMPLATE, [
             'label' => __('RowSprout Template Pages', 'rowsprout'),
-            'description' => __('All RowSprout Template Pages lives here', 'rowsprout'),
+            'description' => __('All RowSprout Template Pages live here', 'rowsprout'),
             'labels' => [
                 'name' => __('RowSprout Templates', 'rowsprout'),
                 'singular_name' => __('RowSprout Template', 'rowsprout'),

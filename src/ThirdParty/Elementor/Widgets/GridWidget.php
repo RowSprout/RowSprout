@@ -127,7 +127,7 @@ final class GridWidget extends Widget_Base {
 				'label'   => __( 'Layout Type', 'rowsprout' ),
 				'type'    => Controls_Manager::SELECT,
 				'options' => [
-					'cart' => __( 'Cart Layout', 'rowsprout' ),
+					'cart' => __( 'Card Layout', 'rowsprout' ),
 					'list' => __( 'List Layout', 'rowsprout' ),
 				],
 				'default' => 'list',

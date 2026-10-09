@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-08T13:40:50+00:00\n"
+"POT-Creation-Date: 2026-10-09T12:38:08+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: rowsprout\n"
@@ -41,11 +41,11 @@ msgstr ""
 #. translators: %s: template title.
 #: src/Admin/ChildTemplateAdminUx.php:126
 #, php-format
-msgid "Move &#8220;%s&#8221; and its child pages to the Trash"
+msgid "Move &#8220;%s&#8221; and its child templates to the Trash"
 msgstr ""
 
 #: src/Admin/ChildTemplateAdminUx.php:129
-msgid "Trash with Child pages"
+msgid "Trash with Child Templates"
 msgstr ""
 
 #. translators: %s: template title.
@@ -83,7 +83,7 @@ msgid "Add properties"
 msgstr ""
 
 #: src/Admin/Menu.php:54
-msgid "Properties are the parts that differ per page: a title, a URL, a text, a link, an email address. Place a property in your design with its code (shown on the Properties tab, for example @code_city_123@) or with one with the widgets."
+msgid "Properties are the parts that differ per page: a title, a URL, a text, a link, an email address. Place a property in your design with its code (shown on the Properties tab, for example @code_city_123@) or with one of the widgets."
 msgstr ""
 
 #: src/Admin/Menu.php:57
@@ -818,7 +818,7 @@ msgid "RowSprout Pages"
 msgstr ""
 
 #: src/Core/PostTypes.php:53
-msgid "All RowSprout Pages lives here"
+msgid "All RowSprout Pages live here"
 msgstr ""
 
 #: src/Core/PostTypes.php:56
@@ -869,7 +869,7 @@ msgid "RowSprout Template Pages"
 msgstr ""
 
 #: src/Core/PostTypes.php:94
-msgid "All RowSprout Template Pages lives here"
+msgid "All RowSprout Template Pages live here"
 msgstr ""
 
 #: src/Core/PostTypes.php:96
@@ -1246,7 +1246,7 @@ msgid "Layout Type"
 msgstr ""
 
 #: src/ThirdParty/Elementor/Widgets/GridWidget.php:130
-msgid "Cart Layout"
+msgid "Card Layout"
 msgstr ""
 
 #: src/ThirdParty/Elementor/Widgets/GridWidget.php:131
