@@ -1,6 +1,6 @@
-=== RowSprout – Landing Pages at Scale ===
+=== RowSprout – Bulk Page Generator & Programmatic SEO ===
 Contributors: rowsprout
-Tags: landing pages, programmatic seo, page generator, bulk pages, elementor
+Tags: programmatic seo, bulk pages, page generator, landing pages, local seo
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
@@ -8,13 +8,13 @@ Stable tag: 3.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Design one page, fill a table with your data, and RowSprout creates a real WordPress page for every row. Landing pages at scale, no code.
+Bulk page generator for programmatic and local SEO: design one template, fill a table, and get a real WordPress page for every row.
 
 == Description ==
 
 Many sites need dozens or hundreds of pages that share one layout but differ in the details: a page per service in every city you work in, per product variant, per location, per specialism. Building and maintaining those by hand is slow, and duplicating pages means every later change has to be made again on each copy.
 
-RowSprout turns that into one template and one table.
+RowSprout turns that into one template and one table. It is a bulk page generator for programmatic SEO: location pages, service-area pages for local SEO, landing pages per product or audience, all kept in sync with a single design.
 
 = An example =
 
@@ -93,6 +93,14 @@ No. RowSprout works with the WordPress block editor, Elementor and WPBakery Page
 = Are the generated pages good for SEO? =
 
 They are ordinary WordPress pages with their own URL, title, content and featured image, so SEO plugins, sitemaps and caching treat them like any page you made by hand. Make sure every row has genuinely useful, distinct content: search engines value pages that answer a real question, not near-identical copies.
+
+= How is this different from duplicating a page? =
+
+A duplicated page is an independent copy: when the layout, a call to action or the opening hours change, you edit every copy by hand. RowSprout keeps the design (the template) and the details (the rows) apart. Change the template and every page is regenerated from it; change a row and only that page's details change. Adding a page is adding a row.
+
+= Can I use RowSprout for local SEO and service-area pages? =
+
+Yes, that is one of the most common uses: one page per town, region or branch, each with its own title, URL, introduction and contact details. With a child template you can add a second set on top, such as a "Roof repair in [town]" page for every town that has a "Roofer in [town]" page. As with any page, give every location genuinely useful, distinct content (see the SEO question above).
 
 = Does RowSprout work in my language? =
 
