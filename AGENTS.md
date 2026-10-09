@@ -116,7 +116,7 @@ The self-hosted update checker (`PluginUpdateChecker`, talks to `license.rowspro
 
 - Code must stay PHP 7.4-compatible (`Requires PHP: 7.4`).
 - Third-party versions (WPML, Elementor, Action Scheduler, object caching, PHP) differ between sites, so a green run on one site does not prove another: verify anything touching WPML, queue concurrency, caching or PHP-version behaviour on a site that runs those versions. `wp rowsprout-support doctor --only=environment` reports them.
-- **Language**: code, comments, docs and UI msgids are English; text domains are `rowsprout` (free) and `rowsprout-pro` (Pro). There are no `nl` .po/.mo files yet.
+- **Language**: code, comments, docs and UI msgids are English; text domains are `rowsprout` (free) and `rowsprout-pro` (Pro). Translations come from translate.wordpress.org as language packs, so this repo ships no .po/.mo files. A script that uses `wp.i18n` needs `wp_set_script_translations()` on its handle (as `BlockRegistry` does), or its strings stay English.
 - Comments explain *why* (constraints, incidents), not what. Some files may have CRLF line endings; normalise before multi-line edits.
 - **Release zip**: `php bin/build-zip.php` → `build/rowsprout-<version>.zip` (working tree minus `.distignore`; refuses to build when the header version, `ROWSPROUT_VERSION` and readme's `Stable tag` disagree, warns on a dirty tree). Regenerate `languages/rowsprout.pot` with `wp i18n make-pot . languages/rowsprout.pot --domain=rowsprout --exclude=vendor,node_modules` when strings change.
 - `AGENTS.md`, `CLAUDE.md` and the `rowsprout-support` development plugin must never end up in a release package.
