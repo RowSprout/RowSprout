@@ -22,12 +22,16 @@ use RowSprout\Core\RemoveCptBase;
 use RowSprout\Core\SavePost;
 use RowSprout\Core\Scheduler;
 use RowSprout\Core\TemplateDeletion;
+use RowSprout\Core\TemplateIndexing;
 use RowSprout\ThirdParty\Elementor\ElementorIntegration;
 use RowSprout\ThirdParty\Elementor\TemplateEditorTab;
 use RowSprout\ThirdParty\Elementor\TemplateSaveActionControl;
 use RowSprout\ThirdParty\RankMath;
+use RowSprout\ThirdParty\SeoFramework;
+use RowSprout\ThirdParty\SeoPress;
 use RowSprout\ThirdParty\WPBakery\WPBakeryIntegration;
 use RowSprout\ThirdParty\WpRocket;
+use RowSprout\ThirdParty\Yoast;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -73,8 +77,12 @@ final class Plugin
         SavePost::register();
         Scheduler::register();
         TemplateDeletion::register();
+        TemplateIndexing::register();
 
         RankMath::register();
+        Yoast::register();
+        SeoPress::register();
+        SeoFramework::register();
         WPBakeryIntegration::register();
         WpRocket::register();
         ElementorIntegration::register();

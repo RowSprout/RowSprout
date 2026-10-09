@@ -51,6 +51,8 @@ A plumbing company works in 30 towns. With RowSprout it designs one "Plumber in 
 = Integrations =
 
 * **Rank Math:** generated pages get the template's SEO, social and robots settings with each page's own values; the template itself is kept out of the sitemap and set to noindex.
+* **Yoast SEO, SEOPress and The SEO Framework:** generated pages get the template's SEO title and meta description, and the other settings these plugins store with a page, with each page's own values; templates are kept out of their sitemaps and set to noindex.
+* **Without an SEO plugin**, templates are kept out of WordPress' own sitemap and set to noindex as well.
 
 = RowSprout Pro =
 

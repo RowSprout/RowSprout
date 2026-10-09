@@ -3,6 +3,7 @@
 namespace RowSprout\ThirdParty;
 
 use RowSprout\Core\PostTypes;
+use RowSprout\Core\TemplateIndexing;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -65,14 +66,15 @@ final class RankMath {
 	}
 
 	/**
-	 * Forces noindex for templates. Generated pages are left alone: they
-	 * carry the robots settings copied from the template's RankMath meta.
+	 * Forces noindex for templates and the template archive. Generated pages
+	 * are left alone: they carry the robots settings copied from the
+	 * template's RankMath meta.
 	 *
 	 * @param array $robots
 	 * @return array
 	 */
 	public static function setRobots( array $robots ): array {
-		if ( is_singular( PostTypes::TEMPLATE ) ) {
+		if ( TemplateIndexing::isTemplateView() ) {
 			$robots['index']  = 'noindex';
 			$robots['follow'] = 'nofollow';
 		}
