@@ -106,6 +106,10 @@ final class PostTypes
                 'not_found' => __('Not Found', 'rowsprout'),
                 'not_found_in_trash' => __('Not Found in Trash', 'rowsprout'),
             ],
+            // Public with an archive on purpose: page builders such as
+            // Elementor did not open templates with has_archive false.
+            // TemplateIndexing (and the SEO plugin integrations) keep them
+            // out of sitemaps and set noindex instead.
             'public' => true,
             'has_archive' => true,
             'rewrite' => false,
