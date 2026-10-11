@@ -38,7 +38,6 @@
 	var tInvalidUrl = String(i18n.invalidUrl || 'Voer een geldige URL in (http(s)://...)');
 	var tInvalidEmail = String(i18n.invalidEmail || 'Voer een geldig e-mailadres in.');
 	var tTypeSingleInstance = String(i18n.typeSingleInstance || 'Dit type kan maar één keer worden toegevoegd.');
-	var tChildGroupAddDisabled = String(i18n.childGroupAddDisabled || 'Groepen toevoegen is niet toegestaan bij child templates.');
 	var tDuplicatePropertyTitle = String(i18n.duplicatePropertyTitle || 'Deze eigenschapstitel bestaat al binnen deze template.');
 	var tDuplicateHref = String(i18n.duplicateHref || 'Deze URL/slug wordt al gebruikt door een andere groep in deze template.');
 	var tMediaTitle = String(i18n.mediaTitle || 'Selecteer of upload een afbeelding');
@@ -453,11 +452,17 @@
 		window.setTimeout(function(){ $card.removeClass('is-new'); }, 900);
 	}
 
+	// A child template's groups come from its parent, so it cannot add any.
+	// The classic editor's Parent dropdown can change that live; the block
+	// editor and Elementor have no #parent_id, so the stored parent decides.
+	function isChildTemplate(){
+		var $parent=$('#parent_id');
+		return (parseInt($parent.length ? $parent.val() : cfg.parentId, 10)||0)>0;
+	}
 	function refreshAddGroupButtonState(){
-		var parentId=parseInt($('#parent_id').val()||'0',10)||0;
-		var isChild=parentId>0;
-		$('#dp-add-group-btn').prop('disabled', isChild);
-		$('#dp-add-group-btn').attr('title', isChild ? tChildGroupAddDisabled : '');
+		var isChild=isChildTemplate();
+		$('#dp-add-group-btn').prop('disabled', isChild).toggle(!isChild);
+		$('#dp-child-groups-note').toggle(isChild);
 	}
 
 	function applyParentSyncPayload(payload, savedChildColumns, savedGroupValues){

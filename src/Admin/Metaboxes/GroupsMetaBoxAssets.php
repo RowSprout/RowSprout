@@ -72,7 +72,6 @@ final class GroupsMetaBoxAssets {
 				'invalidUrl'               => __( 'Enter a valid URL (http(s)://...)', 'rowsprout' ),
 				'invalidEmail'             => __( 'Enter a valid email address.', 'rowsprout' ),
 				'typeSingleInstance'       => __( 'This type can only be added once.', 'rowsprout' ),
-				'childGroupAddDisabled'    => __( 'Adding groups is not allowed in child templates.', 'rowsprout' ),
 				'duplicatePropertyTitle'   => __( 'This property title already exists in this template.', 'rowsprout' ),
 				'duplicateHref'            => __( 'This URL/slug is already used by another group in this template.', 'rowsprout' ),
 				'mediaTitle'               => __( 'Select or upload an image', 'rowsprout' ),
