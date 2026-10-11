@@ -110,7 +110,53 @@ final class GroupCsvValue {
 			);
 		}
 
+		return self::normalizeDate( $column, $cell );
+	}
+
+	/**
+	 * A spreadsheet app writes a date and time as "2026-10-11 14:30" or
+	 * "2026-01-02 9:05", while the Date and time type stores (and its input
+	 * needs) "2026-10-11T14:30"; a date can come with a time ("2026-10-11
+	 * 0:00:00"). Only these year-first forms are converted: they cannot be
+	 * read two ways, unlike 10/11/2026.
+	 *
+	 * @param array<string, mixed> $column
+	 */
+	private static function normalizeDate( array $column, string $cell ): string {
+		$kind  = (string) ( $column['field_type'] ?? '' );
+		$value = trim( $cell );
+		if ( $kind === 'datetime-local' && preg_match( '/^(\d{4}-\d{2}-\d{2})[ T](\d{1,2}):(\d{2})(?::\d{2})?$/', $value, $match ) === 1 ) {
+			return sprintf( '%sT%02d:%s', $match[1], (int) $match[2], $match[3] );
+		}
+		if ( $kind === 'date' && preg_match( '/^(\d{4}-\d{2}-\d{2})[ T]\d{1,2}:\d{2}(?::\d{2})?$/', $value, $match ) === 1 ) {
+			return $match[1];
+		}
+
 		return $cell;
+	}
+
+	/**
+	 * Whether an imported value is the stored one as a spreadsheet app
+	 * rewrites it when it converts text to numbers (Google Sheets' and
+	 * Excel's default): leading zeros dropped ("0612345678" to "612345678",
+	 * "007" to "7"), or a number in the app's own notation ("1e5" to
+	 * "1,00E+05"). The import keeps the stored value and says so: the lost
+	 * digits are no edit anyone made.
+	 */
+	public static function spreadsheetEquivalent( string $stored, string $imported ): bool {
+		$stored   = trim( $stored );
+		$imported = trim( $imported );
+		if ( $stored === '' || $imported === '' || $stored === $imported ) {
+			return false;
+		}
+		if ( ctype_digit( $stored ) && ctype_digit( $imported ) && $stored[0] === '0' ) {
+			return ltrim( $stored, '0' ) === ltrim( $imported, '0' );
+		}
+		if ( is_numeric( $stored ) && preg_match( '/^-?\d+(?:[.,]\d+)?E[+-]?\d+$/i', $imported ) === 1 ) {
+			return (float) $stored === (float) str_replace( ',', '.', $imported );
+		}
+
+		return false;
 	}
 
 	/**

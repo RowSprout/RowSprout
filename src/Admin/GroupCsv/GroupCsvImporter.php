@@ -129,6 +129,7 @@ final class GroupCsvImporter {
 		$touchedBy = [];
 		$changed   = [];
 		$emptied   = [];
+		$kept      = [];
 		foreach ( $rows as $i => $cells ) {
 			$rowNumber = absint( $payload['row_numbers'][ $i ] ?? 0 ) ?: $i + 1;
 			$id        = '';
@@ -190,6 +191,17 @@ final class GroupCsvImporter {
 					}
 					$stored = (string) $rawRows[ $position ]['fields'][ $key ];
 					if ( GroupCsvValue::equivalent( $column, $stored, $value ) ) {
+						continue;
+					}
+					if ( GroupCsvValue::spreadsheetEquivalent( $stored, $value ) ) {
+						$kept[] = sprintf(
+							/* translators: 1: property label, 2: row number in the file, 3: stored value, 4: value in the file. */
+							__( '%1$s in row %2$d (%3$s, not %4$s)', 'rowsprout' ),
+							(string) $column['label'],
+							$rowNumber,
+							$stored,
+							trim( $value )
+						);
 						continue;
 					}
 					$rawRows[ $position ]['fields'][ $key ] = $value;
@@ -300,6 +312,19 @@ final class GroupCsvImporter {
 			$result->addWarning( sprintf(
 				/* translators: %s: list such as "Email in row 4, Website in row 9". */
 				__( 'These values do not fit their property type and are left empty: %s.', 'rowsprout' ),
+				implode( ', ', $listed ) . ( $more > 0 ? ' ' . sprintf(
+					/* translators: %d: number of further values. */
+					_n( 'and %d more', 'and %d more', $more, 'rowsprout' ),
+					$more
+				) : '' )
+			) );
+		}
+		if ( $kept !== [] ) {
+			$listed = array_slice( $kept, 0, self::MAX_LISTED_EMPTIED );
+			$more   = count( $kept ) - count( $listed );
+			$result->addWarning( sprintf(
+				/* translators: %s: list such as "Phone in row 2 (0612345678, not 612345678)". */
+				__( 'These values look changed by a spreadsheet app (leading zeros dropped, or a number in another notation), so they keep their stored value: %s. In Google Sheets or Excel, turn off converting text to numbers when you open the file.', 'rowsprout' ),
 				implode( ', ', $listed ) . ( $more > 0 ? ' ' . sprintf(
 					/* translators: %d: number of further values. */
 					_n( 'and %d more', 'and %d more', $more, 'rowsprout' ),

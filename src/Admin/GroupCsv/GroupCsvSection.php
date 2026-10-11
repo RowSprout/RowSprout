@@ -92,6 +92,7 @@ final class GroupCsvSection {
 						<button type="button" class="button" id="dp-csv-export" data-export-url="<?php echo esc_url( $exportUrl ); ?>"<?php echo $disabled; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- a fixed attribute. ?>><?php esc_html_e( 'Download groups', 'rowsprout' ); ?></button>
 					</div>
 					<p class="description"><?php esc_html_e( 'Downloads the saved groups. Save the template first to include changes you just made.', 'rowsprout' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Opening it in Google Sheets or Excel? Turn off converting text to numbers, dates and formulas (in Google Sheets: "Convert text to numbers, dates, and formulas" when importing), or leading zeros and dates may change.', 'rowsprout' ); ?></p>
 				</div>
 				<div class="dp-csv-action">
 					<span class="dp-csv-label"><?php esc_html_e( 'Import', 'rowsprout' ); ?></span>
@@ -501,6 +502,15 @@ final class GroupCsvSection {
 
 		$code = (int) wp_remote_retrieve_response_code( $response );
 		$body = (string) wp_remote_retrieve_body( $response );
+		// A sign-in, such as a Google sheet that is not shared with "Anyone
+		// with the link" (Google answers 401 and points to its sign-in page).
+		if ( $code === 401 || $code === 403 ) {
+			return [ 'error' => sprintf(
+				/* translators: %d: HTTP status code, 401 or 403. */
+				__( 'The URL asks for a sign-in (HTTP status %d). For a Google sheet, share it with "Anyone with the link".', 'rowsprout' ),
+				$code
+			) ];
+		}
 		if ( $code !== 200 ) {
 			return [ 'error' => sprintf(
 				/* translators: %d: HTTP status code such as 404. */
