@@ -5,6 +5,7 @@ namespace RowSprout\ThirdParty\Elementor;
 use RowSprout\Admin\Metaboxes\TemplateTabsRenderer;
 use RowSprout\Core\Helpers;
 use RowSprout\Core\PostTypes;
+use RowSprout\Core\SavePost;
 use RowSprout\Core\Template\HrefPatternValidator;
 use RowSprout\Core\Template\UrlConflicts;
 use RowSprout\Core\Template\Lifecycle\TemplateSyncMarker;
@@ -180,6 +181,12 @@ final class TemplateEditorTab {
 
 		if ( ! current_user_can( 'edit_post', $postId ) ) {
 			wp_send_json_error( [ 'message' => __( 'You do not have permission to edit this template.', 'rowsprout' ) ], 403 );
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce checked above; only the field count is read.
+		if ( SavePost::requestWasTruncated( $_POST ) ) {
+			// HTTP 200: the modal shows response.data.message on .done(), not on .fail().
+			wp_send_json_error( [ 'message' => SavePost::inputLimitMessage() ] );
 		}
 
 		$templateHref = isset( $_POST['rowsprout_page_href'] )

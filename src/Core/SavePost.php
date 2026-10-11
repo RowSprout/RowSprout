@@ -64,6 +64,7 @@ final class SavePost {
 			[ self::urlConflictNoticeTransientKey( $userId ), 'warning', '' ],
 			[ self::parentNotGeneratedNoticeTransientKey( $userId ), 'warning', '' ],
 			[ self::configConflictNoticeTransientKey( $userId ), 'warning', '' ],
+			[ self::inputLimitNoticeTransientKey( $userId ), 'error', '' ],
 			[ self::hrefTokenMissingNoticeTransientKey( $userId ), 'warning', '' ],
 			[ self::parentRejectedNoticeTransientKey( $userId ), 'warning', '' ],
 		];
@@ -108,6 +109,68 @@ final class SavePost {
 
 	private static function configConflictNoticeTransientKey( int $userId ): string {
 		return 'rowsprout_config_conflict_notice_' . $userId;
+	}
+
+	private static function inputLimitNoticeTransientKey( int $userId ): string {
+		return 'rowsprout_input_limit_notice_' . $userId;
+	}
+
+	/**
+	 * The form field rendered last in the template form
+	 * (TemplateTabsRenderer). PHP stops reading a request at max_input_vars
+	 * and drops the rest without an error, so a request without it, which
+	 * also reached the limit, lost its last fields: saving those groups
+	 * would delete the ones that fell off, with their pages.
+	 */
+	public const FORM_COMPLETE_FIELD = 'dp_form_complete';
+
+	/**
+	 * Whether this request's form fields were cut off at max_input_vars.
+	 * The field count is checked too, so a form rendered before the field
+	 * existed (an editor left open during an update) is not refused for it.
+	 *
+	 * @param array<string, mixed> $request The request as PHP parsed it ($_POST).
+	 */
+	public static function requestWasTruncated( array $request ): bool {
+		if ( isset( $request[ self::FORM_COMPLETE_FIELD ] ) ) {
+			return false;
+		}
+		$limit = (int) ini_get( 'max_input_vars' );
+
+		return $limit > 0 && self::countInputVars( $request ) >= $limit;
+	}
+
+	/**
+	 * Fields as PHP counts them for max_input_vars: every value, nested ones too.
+	 *
+	 * @param array<int|string, mixed> $values
+	 */
+	private static function countInputVars( array $values ): int {
+		$count = 0;
+		foreach ( $values as $value ) {
+			$count += is_array( $value ) ? self::countInputVars( $value ) : 1;
+		}
+
+		return $count;
+	}
+
+	/**
+	 * The message for a save whose template form was cut off at
+	 * max_input_vars; also used by the Elementor modal's save.
+	 */
+	public static function inputLimitMessage(): string {
+		return sprintf(
+			/* translators: %d: the server's max_input_vars value. */
+			__( 'Properties, groups and the Href were not saved: this template has more form fields than the server accepts (the PHP setting max_input_vars is %d), so the last ones were cut off. Ask your host to raise max_input_vars, or change the groups with "Import groups" on the General tab. (Title, content and status were saved normally.)', 'rowsprout' ),
+			(int) ini_get( 'max_input_vars' )
+		);
+	}
+
+	private static function persistInputLimitNotice(): void {
+		$userId = get_current_user_id();
+		if ( $userId ) {
+			set_transient( self::inputLimitNoticeTransientKey( $userId ), self::inputLimitMessage(), MINUTE_IN_SECONDS );
+		}
 	}
 
 	private static function parentRejectedNoticeTransientKey( int $userId ): string {
@@ -233,7 +296,17 @@ final class SavePost {
 	 * abort the save — it only means nothing from the request is used.
 	 */
 	public static function handleSave( int $postId ): void {
-		self::saveWithInput( $postId, self::verifiedFormInput( $postId ) );
+		$input = self::verifiedFormInput( $postId );
+
+		// A cut-off form must not store its properties and groups: the
+		// groups that fell off would be deleted, with their pages. The rest
+		// of the save (save action, queueing on the stored config) goes on.
+		if ( $input !== [] && self::requestWasTruncated( $_POST ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- verifiedFormInput() checked the nonce; only the field count is read.
+			unset( $input['dp_columns'], $input['dp_all_columns'], $input['dp_groups'], $input['rowsprout_page_href'], $input['dp_config_version'] );
+			self::persistInputLimitNotice();
+		}
+
+		self::saveWithInput( $postId, $input );
 	}
 
 	/**
