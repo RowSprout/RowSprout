@@ -69,66 +69,139 @@
    inside Elementor's own editing canvas — the latter never loads WP
    core's admin.css/forms.css, which is what these classes/elements
    normally borrow their look from on the classic screen, so without this
-   they rendered unstyled there). Kept visually close to WP core's own
+   they rendered unstyled there; .dp-csv-modal is the group import wizard,
+   which group-csv.js moves to <body>). Kept visually close to WP core's own
    button/table/form-field styling so both contexts look the same. */
-:is(.dp-template-tabs, .dp-elementor-tab-modal) .button {
+:is(.dp-template-tabs, .dp-elementor-tab-modal, .dp-csv-modal) .button {
 	display:inline-flex; align-items:center; justify-content:center; box-sizing:border-box;
 	margin:0; padding:0 10px; min-height:30px; line-height:2.15384615; font-size:13px;
 	cursor:pointer; border:1px solid #c3c4c7; border-radius:3px; white-space:nowrap;
 	text-decoration:none; background:#f6f7f7; color:#2c3338;
 }
-:is(.dp-template-tabs, .dp-elementor-tab-modal) .button:hover {
+:is(.dp-template-tabs, .dp-elementor-tab-modal, .dp-csv-modal) .button:hover {
 	background:#f0f0f1; border-color:#8c8f94;
 }
-:is(.dp-template-tabs, .dp-elementor-tab-modal) .button.button-primary {
+:is(.dp-template-tabs, .dp-elementor-tab-modal, .dp-csv-modal) .button.button-primary {
 	background:#2271b1; border-color:#2271b1; color:#fff;
 }
-:is(.dp-template-tabs, .dp-elementor-tab-modal) .button.button-primary:hover {
+:is(.dp-template-tabs, .dp-elementor-tab-modal, .dp-csv-modal) .button.button-primary:hover {
 	background:#135e96; border-color:#135e96;
 }
-:is(.dp-template-tabs, .dp-elementor-tab-modal) .button.button-small {
+:is(.dp-template-tabs, .dp-elementor-tab-modal, .dp-csv-modal) .button.button-small {
 	min-height:24px; line-height:2.05; padding:0 8px; font-size:11px;
 }
-:is(.dp-template-tabs, .dp-elementor-tab-modal) .button-link {
+:is(.dp-template-tabs, .dp-elementor-tab-modal, .dp-csv-modal) .button-link {
 	background:none; border:none; box-shadow:none; color:#2271b1; cursor:pointer;
 	padding:0; text-decoration:underline; font-size:13px;
 }
-:is(.dp-template-tabs, .dp-elementor-tab-modal) .button-link:hover { color:#135e96; }
+:is(.dp-template-tabs, .dp-elementor-tab-modal, .dp-csv-modal) .button-link:hover { color:#135e96; }
 
-:is(.dp-template-tabs, .dp-elementor-tab-modal) .description {
+:is(.dp-template-tabs, .dp-elementor-tab-modal, .dp-csv-modal) .description {
 	color:#646970; font-size:13px; font-style:normal; margin-top:4px;
 }
 
-:is(.dp-template-tabs, .dp-elementor-tab-modal) label { font-weight:600; color:#1d2327; }
+:is(.dp-template-tabs, .dp-elementor-tab-modal, .dp-csv-modal) label { font-weight:600; color:#1d2327; }
 
-:is(.dp-template-tabs, .dp-elementor-tab-modal) input[type="text"],
-:is(.dp-template-tabs, .dp-elementor-tab-modal) input[type="url"],
-:is(.dp-template-tabs, .dp-elementor-tab-modal) input[type="number"],
-:is(.dp-template-tabs, .dp-elementor-tab-modal) input[type="email"],
-:is(.dp-template-tabs, .dp-elementor-tab-modal) textarea,
-:is(.dp-template-tabs, .dp-elementor-tab-modal) select {
+:is(.dp-template-tabs, .dp-elementor-tab-modal, .dp-csv-modal) input[type="text"],
+:is(.dp-template-tabs, .dp-elementor-tab-modal, .dp-csv-modal) input[type="url"],
+:is(.dp-template-tabs, .dp-elementor-tab-modal, .dp-csv-modal) input[type="number"],
+:is(.dp-template-tabs, .dp-elementor-tab-modal, .dp-csv-modal) input[type="email"],
+:is(.dp-template-tabs, .dp-elementor-tab-modal, .dp-csv-modal) textarea,
+:is(.dp-template-tabs, .dp-elementor-tab-modal, .dp-csv-modal) select {
 	box-sizing:border-box; border:1px solid #8c8f94; border-radius:4px; padding:4px 8px;
 	font-size:13px; line-height:1.6; color:#2c3338; background:#fff;
 }
-:is(.dp-template-tabs, .dp-elementor-tab-modal) input[type="text"]:focus,
-:is(.dp-template-tabs, .dp-elementor-tab-modal) input[type="url"]:focus,
-:is(.dp-template-tabs, .dp-elementor-tab-modal) input[type="number"]:focus,
-:is(.dp-template-tabs, .dp-elementor-tab-modal) input[type="email"]:focus,
-:is(.dp-template-tabs, .dp-elementor-tab-modal) textarea:focus,
-:is(.dp-template-tabs, .dp-elementor-tab-modal) select:focus {
+:is(.dp-template-tabs, .dp-elementor-tab-modal, .dp-csv-modal) input[type="text"]:focus,
+:is(.dp-template-tabs, .dp-elementor-tab-modal, .dp-csv-modal) input[type="url"]:focus,
+:is(.dp-template-tabs, .dp-elementor-tab-modal, .dp-csv-modal) input[type="number"]:focus,
+:is(.dp-template-tabs, .dp-elementor-tab-modal, .dp-csv-modal) input[type="email"]:focus,
+:is(.dp-template-tabs, .dp-elementor-tab-modal, .dp-csv-modal) textarea:focus,
+:is(.dp-template-tabs, .dp-elementor-tab-modal, .dp-csv-modal) select:focus {
 	border-color:#2271b1; box-shadow:0 0 0 1px #2271b1; outline:2px solid transparent;
 }
 
-:is(.dp-template-tabs, .dp-elementor-tab-modal) table.widefat {
+:is(.dp-template-tabs, .dp-elementor-tab-modal, .dp-csv-modal) table.widefat {
 	border-collapse:collapse; width:100%; border:1px solid #c3c4c7; background:#fff;
 }
-:is(.dp-template-tabs, .dp-elementor-tab-modal) table.widefat th,
-:is(.dp-template-tabs, .dp-elementor-tab-modal) table.widefat td {
+:is(.dp-template-tabs, .dp-elementor-tab-modal, .dp-csv-modal) table.widefat th,
+:is(.dp-template-tabs, .dp-elementor-tab-modal, .dp-csv-modal) table.widefat td {
 	padding:8px 10px; text-align:left; border-bottom:1px solid #c3c4c7;
 }
-:is(.dp-template-tabs, .dp-elementor-tab-modal) table.widefat thead th {
+:is(.dp-template-tabs, .dp-elementor-tab-modal, .dp-csv-modal) table.widefat thead th {
 	font-weight:600; background:#f6f7f7;
 }
-:is(.dp-template-tabs, .dp-elementor-tab-modal) table.striped tbody tr:nth-child(odd) {
+:is(.dp-template-tabs, .dp-elementor-tab-modal, .dp-csv-modal) table.striped tbody tr:nth-child(odd) {
 	background:#f6f7f7;
+}
+
+/* Import and export groups (General tab) and its import wizard
+   (assets/js/group-csv.js). The script moves the dialog to <body>: inside
+   the block editor's metabox area a fixed element is not fixed to the
+   window. Above the Elementor modal (z-index 999999). */
+.dp-csv { margin-top:24px; padding-top:16px; border-top:1px solid #dcdcde; }
+.dp-csv-heading { margin:0 0 4px; font-size:14px; }
+.dp-csv [hidden] { display:none !important; }
+.dp-csv-actions { display:grid; gap:16px; margin-top:12px; max-width:640px; }
+.dp-csv-action > label, .dp-csv-label { display:block; font-weight:600; color:#1d2327; margin:0 0 4px; }
+.dp-csv-inline { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.dp-csv-inline select { max-width:100%; min-width:0; flex:0 1 auto; }
+
+.dp-csv-modal[hidden] { display:none; }
+.dp-csv-modal { position:fixed; inset:0; z-index:1000000; font-size:13px; line-height:1.4; color:#1d2327; }
+.dp-csv-modal [hidden] { display:none !important; }
+.dp-csv-backdrop { position:absolute; inset:0; background:rgba(15,23,42,.55); }
+.dp-csv-dialog { position:relative; display:flex; flex-direction:column; width:min(860px, calc(100vw - 32px)); max-height:calc(100vh - 48px); margin:24px auto 0; background:#fff; border-radius:12px; box-shadow:0 24px 60px rgba(15,23,42,.25); overflow:hidden; }
+.dp-csv-dialog-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; border-bottom:1px solid #e2e8f0; }
+.dp-csv-step-label { display:block; font-size:12px; color:#646970; margin-top:2px; }
+.dp-csv-close { text-decoration:none; font-size:24px; line-height:1; }
+:is(.dp-template-tabs, .dp-elementor-tab-modal, .dp-csv-modal) .dp-csv-close { text-decoration:none; font-size:24px; }
+.dp-csv-dialog-body { padding:16px; overflow:auto; flex:1 1 auto; }
+.dp-csv-dialog-body section > p:first-child { margin-top:0; }
+.dp-csv-dialog-foot { display:flex; gap:8px; align-items:center; padding:12px 16px; border-top:1px solid #e2e8f0; background:#f6f7f7; }
+.dp-csv-foot-spacer { flex:1 1 auto; }
+.dp-csv-fields { display:flex; flex-wrap:wrap; gap:8px 24px; align-items:flex-end; }
+.dp-csv-fields p { margin:8px 0; }
+.dp-csv-dialog-body input[type="number"] { width:90px; }
+.dp-csv-delimiters { display:flex; flex-wrap:wrap; gap:6px 18px; align-items:center; margin:0 0 8px; padding:0; border:0; }
+.dp-csv-delimiters legend { width:100%; padding:0; }
+.dp-csv-delimiters label { font-weight:400; }
+:is(.dp-template-tabs, .dp-elementor-tab-modal, .dp-csv-modal) .dp-csv-delimiters label, :is(.dp-template-tabs, .dp-elementor-tab-modal, .dp-csv-modal) .dp-csv-fields label:has(input[type="checkbox"]) { font-weight:400; }
+:is(.dp-template-tabs, .dp-elementor-tab-modal, .dp-csv-modal) input.dp-csv-other { width:44px; text-align:center; margin-left:-12px; }
+.dp-csv-empty { margin:0; padding:8px 12px; color:#646970; }
+.dp-csv-preview .dp-csv-colname { text-align:center; color:#646970; font-weight:400; }
+.dp-csv-preview tr.is-skipped td { opacity:.45; }
+.dp-csv-preview tr.is-header td { font-weight:600; background:#f0f6fc; }
+.dp-csv-recognised { margin:8px 0 0; padding:8px 12px; border-left:4px solid #2271b1; background:#f0f6fc; }
+.dp-csv-recognised[hidden] { display:none; }
+.dp-csv-help { margin:0 0 8px; }
+.dp-csv-preview { max-height:300px; overflow:auto; border:1px solid #c3c4c7; border-radius:4px; }
+.dp-csv-map-wrap { overflow-x:auto; border:1px solid #c3c4c7; border-radius:4px; }
+.dp-csv-preview table { border-collapse:collapse; font-size:12px; min-width:100%; }
+.dp-csv-preview th, .dp-csv-preview td { padding:4px 8px; border:1px solid #e2e4e7; text-align:left; vertical-align:top; max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.dp-csv-preview thead th { position:sticky; top:0; background:#f0f0f1; font-weight:600; }
+.dp-csv-preview .dp-csv-rownum { color:#646970; background:#f6f7f7; text-align:right; }
+.dp-csv-count { margin:6px 0 0; font-size:12px; color:#646970; }
+:is(.dp-template-tabs, .dp-elementor-tab-modal, .dp-csv-modal) table.dp-csv-map { border:0; }
+.dp-csv-map td { vertical-align:top; }
+.dp-csv-map select, .dp-csv-map input[type="text"] { width:100%; max-width:280px; }
+.dp-csv-map-examples { color:#646970; font-size:12px; word-break:break-word; }
+.dp-csv-map-examples span { display:block; }
+.dp-csv-map td.has-conflict select { border-color:#d63638; box-shadow:0 0 0 1px #d63638; }
+.dp-csv-conflict { margin-top:4px; color:#d63638; font-size:12px; }
+.dp-csv-prop-modal { position:fixed; inset:0; z-index:1; }
+.dp-csv-prop-error { margin-top:4px; color:#d63638; font-size:12px; }
+.dp-csv-modal .dp-add-col-close { text-decoration:none; font-size:24px; line-height:1; }
+.dp-csv-error { margin-top:12px; padding:8px 12px; border-left:4px solid #d63638; background:#fcf0f1; }
+.dp-csv-error p { margin:4px 0; }
+.dp-csv-notice { padding:8px 12px; border-left:4px solid #dba617; background:#fcf9e8; }
+.dp-csv-notice[hidden] { display:none; }
+.dp-csv-summary-list { margin:8px 0 12px 18px; list-style:disc; }
+.dp-csv-summary-list li { margin:2px 0; }
+.dp-csv-box { margin:12px 0; padding:8px 12px; border-left:4px solid #dba617; background:#fcf9e8; }
+.dp-csv-box.is-info { border-left-color:#2271b1; background:#f0f6fc; }
+.dp-csv-box.is-success { border-left-color:#00a32a; background:#edfaef; }
+.dp-csv-box ul { margin:4px 0 4px 18px; list-style:disc; }
+.dp-csv-box p { margin:4px 0; }
+@media (max-width: 782px) {
+.dp-csv-dialog { margin-top:12px; max-height:calc(100vh - 24px); }
 }

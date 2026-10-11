@@ -2,6 +2,7 @@
 
 namespace RowSprout\Admin\Metaboxes;
 
+use RowSprout\Admin\GroupCsv\GroupCsvSection;
 use RowSprout\Core\SavePost;
 use RowSprout\Core\TemplateMeta;
 
@@ -136,6 +137,7 @@ final class TemplateTabsRenderer {
 			<div class="dp-template-tabs__content">
 				<div id="dp-tab-general" class="dp-template-tab-panel is-active" role="tabpanel">
 					<?php TitleHrefMetaBoxRenderer::render( $post ); ?>
+					<?php GroupCsvSection::render( $post ); ?>
 				</div>
 				<div id="dp-tab-properties" class="dp-template-tab-panel" role="tabpanel">
 					<?php GroupsMetaBoxRenderer::renderPropertiesTab( $post ); ?>
