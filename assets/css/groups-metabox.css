@@ -173,6 +173,8 @@
 .dp-csv-preview tr.is-header td { font-weight:600; background:#f0f6fc; }
 .dp-csv-recognised { margin:8px 0 0; padding:8px 12px; border-left:4px solid #2271b1; background:#f0f6fc; }
 .dp-csv-recognised[hidden] { display:none; }
+.dp-csv-url { flex:1 1 320px; min-width:0; }
+.dp-csv-fetched { margin:6px 0 0; color:#1e4d2b; }
 .dp-csv-help { margin:0 0 8px; }
 .dp-csv-preview { max-height:300px; overflow:auto; border:1px solid #c3c4c7; border-radius:4px; }
 .dp-csv-map-wrap { overflow-x:auto; border:1px solid #c3c4c7; border-radius:4px; }

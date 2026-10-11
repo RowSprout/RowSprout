@@ -832,7 +832,7 @@
 		}
 		if (state.step === 1) {
 			if (!state.buffer) {
-				showError([i18n.noFile]);
+				showError([currentSource() === 'url' ? i18n.noUrl : i18n.noFile]);
 				return;
 			}
 			if (!state.text.trim()) {
@@ -924,6 +924,9 @@
 		state.mapping = [];
 		state.saved = false;
 		$('#dp-csv-file').val('');
+		$('#dp-csv-url').val(cfg.lastUrl || '');
+		$('#dp-csv-fetched').prop('hidden', true).text('');
+		setSource(cfg.lastUrl ? 'url' : 'file');
 		$('#dp-csv-encoding').val('utf-8');
 		$('#dp-csv-start').val('1');
 		$('#dp-csv-headers').prop('checked', true);
@@ -940,7 +943,7 @@
 		lastFocus = document.activeElement;
 		$modal.prop('hidden', false);
 		goTo(1);
-		$('#dp-csv-file').trigger('focus');
+		$(currentSource() === 'url' ? '#dp-csv-url' : '#dp-csv-file').trigger('focus');
 	}
 
 	function close() {
@@ -975,26 +978,56 @@
 		setPreviewOpen(String($(this).attr('aria-expanded')) !== 'true');
 	});
 
+	// The file's bytes, from an upload or a URL: detect the encoding and the
+	// delimiter, then show what was recognised.
+	function loadBuffer(buffer) {
+		state.buffer = buffer;
+		state.mapping = [];
+		var detected = detectEncoding(buffer);
+		$('#dp-csv-encoding').val(detected.encoding);
+		$('#dp-csv-encoding-notice').text(i18n.notUtf8).prop('hidden', !detected.guessed);
+		loadText();
+		var delimiter = detectDelimiter(state.text);
+		setDelimiter(delimiter.delimiter);
+		$('#dp-csv-start').val(delimiter.sepLine ? '2' : '1');
+		renderFilePreview();
+	}
+
+	function clearBuffer() {
+		state.buffer = null;
+		state.mapping = [];
+		loadText();
+	}
+
+	function currentSource() {
+		return String($('#dp-csv-source').val() || 'file');
+	}
+
+	function setSource(source) {
+		$('#dp-csv-source').val(source);
+		$modal.find('[data-csv-source-row]').each(function() {
+			$(this).prop('hidden', String($(this).data('csvSourceRow')) !== source);
+		});
+	}
+
+	$('#dp-csv-source').on('change', function() {
+		setSource(currentSource());
+		showError([]);
+		$('#dp-csv-file').val('');
+		$('#dp-csv-fetched').prop('hidden', true).text('');
+		clearBuffer();
+	});
+
 	$('#dp-csv-file').on('change', function() {
 		var file = this.files && this.files[0];
 		showError([]);
-		state.mapping = [];
 		if (!file) {
-			state.buffer = null;
-			loadText();
+			clearBuffer();
 			return;
 		}
 		var reader = new FileReader();
 		reader.onload = function() {
-			state.buffer = reader.result;
-			var detected = detectEncoding(state.buffer);
-			$('#dp-csv-encoding').val(detected.encoding);
-			$('#dp-csv-encoding-notice').text(i18n.notUtf8).prop('hidden', !detected.guessed);
-			loadText();
-			var delimiter = detectDelimiter(state.text);
-			setDelimiter(delimiter.delimiter);
-			$('#dp-csv-start').val(delimiter.sepLine ? '2' : '1');
-			renderFilePreview();
+			loadBuffer(reader.result);
 		};
 		reader.onerror = function() {
 			state.buffer = null;
@@ -1002,6 +1035,51 @@
 		};
 		reader.readAsArrayBuffer(file);
 	});
+
+	// The server fetches the URL (a browser may not read most other sites)
+	// and returns the file's bytes.
+	function fetchUrl() {
+		var url = String($('#dp-csv-url').val() || '').trim();
+		showError([]);
+		if (!url || state.busy) {
+			if (!url) {
+				showError([i18n.noUrl]);
+			}
+			return;
+		}
+		setBusy(true, i18n.fetching);
+		$('#dp-csv-fetch').prop('disabled', true);
+		$('#dp-csv-fetched').prop('hidden', true).text('');
+		$.ajax({
+			url: cfg.ajaxUrl,
+			method: 'POST',
+			dataType: 'json',
+			data: { action: cfg.fetchAction, nonce: cfg.nonce, template_id: cfg.templateId, url: url }
+		}).done(function(response) {
+			var data = response && response.data ? response.data : {};
+			if (!response || !response.success || typeof data.content !== 'string') {
+				clearBuffer();
+				showError(data.errors || [i18n.requestFailed]);
+				return;
+			}
+			var binary = window.atob(data.content);
+			var bytes = new Uint8Array(binary.length);
+			for (var i = 0; i < binary.length; i++) {
+				bytes[i] = binary.charCodeAt(i);
+			}
+			cfg.lastUrl = url;
+			$('#dp-csv-fetched').text(fmt(i18n.fetched, data.name, data.size)).prop('hidden', false);
+			loadBuffer(bytes.buffer);
+		}).fail(function(xhr) {
+			clearBuffer();
+			showError(responseData(xhr && xhr.responseJSON).errors);
+		}).always(function() {
+			setBusy(false);
+			$('#dp-csv-fetch').prop('disabled', false);
+		});
+	}
+
+	$('#dp-csv-fetch').on('click', fetchUrl);
 
 	$('#dp-csv-encoding').on('change', function() {
 		$('#dp-csv-encoding-notice').prop('hidden', true);
@@ -1047,6 +1125,8 @@
 			e.preventDefault();
 			if (propEdit && e.target.id === 'dp-csv-prop-label') {
 				confirmPropertyDialog();
+			} else if (e.target.id === 'dp-csv-url') {
+				fetchUrl();
 			}
 			return;
 		}

@@ -30,13 +30,27 @@ final class GroupCsvSection {
 
 	private const EXPORT_ACTION = 'rowsprout_export_groups';
 	private const IMPORT_ACTION = 'rowsprout_import_groups';
+	private const FETCH_ACTION  = 'rowsprout_fetch_groups_csv';
 	private const NONCE_ACTION  = 'rowsprout_group_csv';
 
 	private const SCRIPT_HANDLE = 'rowsprout-group-csv';
 
+	/**
+	 * The last URL a template's groups were fetched from, offered again
+	 * next time. The _rowsprout_page_ prefix keeps it off the generated
+	 * pages (PageMetaReplicator) and out of template export files.
+	 */
+	public const URL_META = '_rowsprout_page_groups_csv_url';
+
+	/**
+	 * Largest file fetched from a URL.
+	 */
+	private const MAX_URL_BYTES = 10485760;
+
 	public static function register(): void {
 		add_action( 'admin_post_' . self::EXPORT_ACTION, [ self::class, 'handleExport' ] );
 		add_action( 'wp_ajax_' . self::IMPORT_ACTION, [ self::class, 'handleImport' ] );
+		add_action( 'wp_ajax_' . self::FETCH_ACTION, [ self::class, 'handleFetch' ] );
 	}
 
 	public static function render( \WP_Post $post ): void {
@@ -129,9 +143,25 @@ final class GroupCsvSection {
 					<section data-csv-step="1">
 						<div class="dp-csv-box" id="dp-csv-unsaved" role="alert" hidden><p><strong></strong></p></div>
 						<p>
+							<label for="dp-csv-source"><?php esc_html_e( 'Source', 'rowsprout' ); ?></label><br />
+							<select id="dp-csv-source">
+								<option value="file"><?php esc_html_e( 'A file on this computer', 'rowsprout' ); ?></option>
+								<option value="url"><?php esc_html_e( 'A URL', 'rowsprout' ); ?></option>
+							</select>
+						</p>
+						<p data-csv-source-row="file">
 							<label for="dp-csv-file"><?php esc_html_e( 'File', 'rowsprout' ); ?></label><br />
 							<input type="file" id="dp-csv-file" accept=".csv,.txt,.tsv,text/csv,text/plain,text/tab-separated-values" />
 						</p>
+						<div data-csv-source-row="url" hidden>
+							<label for="dp-csv-url"><?php esc_html_e( 'URL', 'rowsprout' ); ?></label>
+							<div class="dp-csv-inline">
+								<input type="url" id="dp-csv-url" class="dp-csv-url" placeholder="https://" />
+								<button type="button" class="button" id="dp-csv-fetch"><?php esc_html_e( 'Fetch', 'rowsprout' ); ?></button>
+							</div>
+							<p class="description"><?php esc_html_e( 'A CSV or text file on the web, or a Google Sheets link of a sheet shared with "Anyone with the link".', 'rowsprout' ); ?></p>
+							<p class="dp-csv-fetched" id="dp-csv-fetched" hidden></p>
+						</div>
 						<div class="dp-csv-fields">
 							<p>
 								<label for="dp-csv-encoding"><?php esc_html_e( 'Character encoding', 'rowsprout' ); ?></label><br />
@@ -310,6 +340,8 @@ final class GroupCsvSection {
 			'window.rowsproutGroupCsvConfig = ' . wp_json_encode( [
 				'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
 				'action'     => self::IMPORT_ACTION,
+				'fetchAction' => self::FETCH_ACTION,
+				'lastUrl'    => (string) get_post_meta( (int) $post->ID, self::URL_META, true ),
 				'nonce'      => wp_create_nonce( self::NONCE_ACTION ),
 				'templateId' => (int) $post->ID,
 				'editUrl'    => (string) get_edit_post_link( (int) $post->ID, 'raw' ),
@@ -323,13 +355,17 @@ final class GroupCsvSection {
 				'types'      => $types,
 				'i18n'       => [
 					'steps'           => [
-						__( 'Step 1 of 4: Choose a file', 'rowsprout' ),
+						__( 'Step 1 of 4: Choose a file or URL', 'rowsprout' ),
 						__( 'Step 2 of 4: Delimiters', 'rowsprout' ),
 						__( 'Step 3 of 4: Columns', 'rowsprout' ),
 						__( 'Step 4 of 4: Summary', 'rowsprout' ),
 					],
 					'noFile'          => __( 'Choose a file first.', 'rowsprout' ),
 					'readError'       => __( 'The file could not be read.', 'rowsprout' ),
+					'noUrl'           => __( 'Enter a URL and click Fetch first.', 'rowsprout' ),
+					'fetching'        => __( 'Fetching…', 'rowsprout' ),
+					/* translators: 1: file name, 2: file size such as "12 KB". */
+					'fetched'         => __( 'Fetched %1$s (%2$s).', 'rowsprout' ),
 					'emptyFile'       => __( 'The file is empty.', 'rowsprout' ),
 					'notUtf8'         => __( 'This file is not UTF-8, so it is read as Western European (Windows-1252), the way Excel saves "CSV (comma delimited)". Choose another character encoding if letters look wrong.', 'rowsprout' ),
 					'noDelimiter'     => __( 'Choose at least one delimiter.', 'rowsprout' ),
@@ -409,6 +445,115 @@ final class GroupCsvSection {
 		header( 'Content-Length: ' . strlen( $body ) );
 		echo $body; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- a CSV file download, not HTML.
 		exit;
+	}
+
+	/**
+	 * A Google Sheets link as its CSV export (the sheet must be shared with
+	 * "Anyone with the link"); any other URL as it is.
+	 */
+	public static function normalizeUrl( string $url ): string {
+		$url = trim( $url );
+		// A sheet's own link (…/edit, …/view); a published (/d/e/…/pub) or
+		// export link already gives CSV.
+		if ( preg_match( '~^https://docs\.google\.com/spreadsheets/d/(?!e/)([A-Za-z0-9_-]+)(?:/(?:edit|view|htmlview)[^?#]*|/)?(?:[?#].*)?$~', $url, $match ) === 1 ) {
+			$gid = '';
+			if ( preg_match( '~[?&#]gid=(\d+)~', $url, $gidMatch ) === 1 ) {
+				$gid = '&gid=' . $gidMatch[1];
+			}
+			return 'https://docs.google.com/spreadsheets/d/' . $match[1] . '/export?format=csv' . $gid;
+		}
+
+		return $url;
+	}
+
+	/**
+	 * Fetches the file at a URL through WordPress's safe HTTP API (no
+	 * local-network addresses).
+	 *
+	 * @return array{content?:string, name?:string, size?:string, error?:string}
+	 *         The file's bytes, a file name and a readable size; or an error.
+	 */
+	public static function fetch( string $url ): array {
+		$url      = self::normalizeUrl( $url );
+		$response = wp_safe_remote_get( $url, [
+			'timeout'             => 20,
+			'redirection'         => 5,
+			'limit_response_size' => self::MAX_URL_BYTES + 1,
+		] );
+		if ( is_wp_error( $response ) ) {
+			return [ 'error' => sprintf(
+				/* translators: %s: error message. */
+				__( 'The URL could not be fetched: %s', 'rowsprout' ),
+				$response->get_error_message()
+			) ];
+		}
+
+		$code = (int) wp_remote_retrieve_response_code( $response );
+		$body = (string) wp_remote_retrieve_body( $response );
+		if ( $code !== 200 ) {
+			return [ 'error' => sprintf(
+				/* translators: %d: HTTP status code such as 404. */
+				__( 'The URL answered with HTTP status %d instead of a file.', 'rowsprout' ),
+				$code
+			) ];
+		}
+		if ( strlen( $body ) > self::MAX_URL_BYTES ) {
+			return [ 'error' => sprintf(
+				/* translators: %s: maximum size such as "10 MB". */
+				__( 'The file is larger than %s.', 'rowsprout' ),
+				size_format( self::MAX_URL_BYTES )
+			) ];
+		}
+		if ( trim( $body ) === '' ) {
+			return [ 'error' => __( 'The URL gave an empty file.', 'rowsprout' ) ];
+		}
+		// A sign-in or error page instead of a file, such as a Google sheet
+		// that is not shared with "Anyone with the link".
+		if ( preg_match( '~^\s*<(!doctype html|html)~i', $body ) === 1 ) {
+			return [ 'error' => __( 'This URL gives a web page, not a CSV file. For a Google sheet, share it with "Anyone with the link".', 'rowsprout' ) ];
+		}
+
+		$name = sanitize_file_name( (string) wp_basename( (string) wp_parse_url( $url, PHP_URL_PATH ) ) );
+
+		return [
+			'content' => $body,
+			'name'    => $name !== '' && $name !== 'export' ? $name : 'download.csv',
+			'size'    => (string) size_format( strlen( $body ) ),
+		];
+	}
+
+	/**
+	 * The wizard's "Fetch": the file at a URL (fetch()) as base64, which
+	 * the browser decodes and splits as it does an uploaded file. The URL is
+	 * remembered for the template.
+	 */
+	public static function handleFetch(): void {
+		check_ajax_referer( self::NONCE_ACTION, 'nonce' );
+
+		$templateId = isset( $_POST['template_id'] ) ? absint( $_POST['template_id'] ) : 0;
+		$post       = get_post( $templateId );
+		if ( ! $post instanceof \WP_Post || $post->post_type !== PostTypes::TEMPLATE || ! current_user_can( 'edit_post', $templateId ) ) {
+			wp_send_json_error( [ 'errors' => [ __( 'You are not allowed to import groups into this template.', 'rowsprout' ) ] ], 403 );
+		}
+
+		$url = isset( $_POST['url'] ) ? esc_url_raw( trim( (string) wp_unslash( $_POST['url'] ) ), [ 'http', 'https' ] ) : '';
+		if ( $url === '' ) {
+			wp_send_json_error( [ 'errors' => [ __( 'Enter a URL that starts with http:// or https://.', 'rowsprout' ) ] ] );
+		}
+
+		$file = self::fetch( $url );
+		if ( isset( $file['error'] ) ) {
+			wp_send_json_error( [ 'errors' => [ $file['error'] ] ] );
+		}
+
+		update_post_meta( $templateId, self::URL_META, wp_slash( $url ) );
+
+		wp_send_json_success( [
+			// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- the file's bytes for the browser, which detects the encoding itself.
+			'content' => base64_encode( (string) $file['content'] ),
+			'name'    => $file['name'],
+			'size'    => $file['size'],
+		] );
 	}
 
 	public static function handleImport(): void {
