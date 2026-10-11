@@ -21,6 +21,7 @@ Keep this file short and true: change it in the same change that alters what it 
 4. **Queue tick**: recurring Action Scheduler action `rowsprout_process_groups_queue` (every minute, group `rowsprout_page`) → `Core/Scheduler/QueueProcessor::processQueue`: promote due `scheduled` rows to `pending` → stop if outside the processing window (filter `rowsprout_is_within_processing_window`) or if any row is `in-process` → take up to N rows (filter `rowsprout_groups_queue_limit`, default 40) via `GroupTableGateway::getPendingGroupsForProcessing` (roots before children; a child waits until its parent group has a page; never-generated first, then oldest `generated_at`; new pages are not capped) → mark `in-process` and enqueue async action `rowsprout_process_single_group`.
 5. `processSingleGroup` → `Core/Page/PageBuilder::createById` (context: `PageBuildContextResolver`; child inheritance via filter `rowsprout_resolve_child_template_context`, served by `Core/ChildTemplates/ChildTemplateInheritance`; upsert; meta copy; thumbnail) → row `completed` + `generated_at`, or `failed` (`handleFailedExecution` also marks failed).
 6. Hourly `rowsprout_cleanup_hook` deletes old finished Action Scheduler actions of group `rowsprout_page`.
+7. **Removing a group**: a save prunes the rows and pages of groups the config no longer has (`QueueManager::syncGroupStructure()` → `pruneOrphanedGroups()`, scoped to the template), also for a draft or pending template (`pruneRemovedGroups()`, which adds no rows). A removed parent group takes the groups its child templates have for it along, in the same action: out of each child's config, with their rows and pages (`pruneChildGroupsOf()`), as a trashed or deleted parent template takes its child templates (`TemplateDeletionManager`). The editor's delete button asks first when child templates have groups for the group (`cfg.childGroupCounts`). A WPML completion save passes `$pruneOrphans = false` and prunes nothing.
 
 ### Row statuses (`GroupTableGateway::STATUS_*`)
 
@@ -39,7 +40,7 @@ Keep this file short and true: change it in the same change that alters what it 
 1. **A `scheduled` (planned) group is never re-marked implicitly.** Implicit paths (template saves, parent cascades, WPML completion, first-time bootstrap) pass `$protectScheduled` / `$preserveScheduled` / `$exceptScheduled` (`TemplateLifecycleGroupTableGateway::markStale*`, `rowsprout_queue_groups`, `QueueManager::queue`, `GroupTableGateway::set*ByPostId`). Only an explicit "generate now" action may override a plan.
 2. Use `QueueManager::syncGroupStructure( $id, false )` (no pruning) for any trigger whose read of the config is not authoritative (WPML completion): pruning deletes pages.
 3. A child group is never processed before its parent group's page exists, and cannot be planned before its parent.
-4. Group ids are unique only per template; template-scope every lookup.
+4. Group ids are unique only per template; template-scope every lookup — and every delete (`deleteByGuidsAndPostId()`: an unscoped delete once removed the rows of child templates and WPML translations, which reuse ids, leaving their pages behind).
 5. The free plugin must work without Pro: guard Pro-owned columns with `supportsScheduling()` / `supportsGeneratedAt()` (schema changes only apply on `admin_init`).
 6. The free plugin enforces no usage limit anywhere (see "No usage limits" below); Pro's licence decides only which Pro features load.
 7. `assets/*/groups-metabox.min.*` are what production loads (unminified only when `WP_DEBUG` is true, `GroupsMetaBoxAssets::useUnminifiedAssets`). There is no build script in this repo: after editing the source JS/CSS, regenerate the `.min` file or production keeps serving old code — and a stale `.min` is invisible on a `WP_DEBUG` dev site.
@@ -135,4 +136,5 @@ The self-hosted update checker (`PluginUpdateChecker`, talks to `license.rowspro
 ## Known leftovers (harmless; drop when convenient)
 
 - The `waiting` status is accepted but never set (see the status table).
+- `Helpers::deleteGroupsAndPagesByIds()` → `GroupRepository` → `GroupDeletionService`, and `GroupTableGateway::deleteByGuids()` / `getRowSproutPageIdsByGuids()`, work by group id without a template, so they would hit other templates' rows; nothing in either plugin calls them. Scope or remove them before using them.
 - Diagnosing a site: `wp rowsprout-support doctor` (read-only, from the development plugin). Run it before and after any deploy or queue-related change.

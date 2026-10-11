@@ -254,6 +254,33 @@ final class GroupTableGateway {
 		);
 	}
 
+	/**
+	 * Deletes rows of one template. A group id is only unique within its
+	 * template: a child template's groups and a WPML translation's often
+	 * have the same ids as the template they come from.
+	 *
+	 * @param array<int, string> $guids
+	 */
+	public static function deleteByGuidsAndPostId( array $guids, int $postId ): void {
+		global $wpdb;
+
+		$guids = self::sanitizeGuids( $guids );
+		if ( empty( $guids ) || $postId <= 0 ) {
+			return;
+		}
+
+		$table        = self::tableName();
+		$placeholders = implode( ',', array_fill( 0, count( $guids ), '%s' ) );
+
+		$wpdb->query(
+			$wpdb->prepare(
+				"DELETE FROM {$table} WHERE rowsprout_template_id = %d AND guid IN ({$placeholders})",
+				$postId,
+				...$guids
+			)
+		);
+	}
+
 	public static function findRowIdByGuidAndPostId( string $guid, int $postId ): ?int {
 		global $wpdb;
 		$table = self::tableName();
