@@ -43,6 +43,26 @@ final class GroupCsvImportResult {
 	/** @var bool */
 	public $saved = false;
 
+	/** @var int */
+	public $deleted = 0;
+
+	/**
+	 * True when groups are not in the file but no row matched a stored group:
+	 * such a file may not delete anything.
+	 *
+	 * @var bool
+	 */
+	public $deleteBlocked = false;
+
+	/** @var array<int, string> Titles of the groups no row is for (listed up to MAX_LISTED). */
+	private $missing = [];
+
+	/** @var int */
+	private $missingCount = 0;
+
+	/** @var int Groups of child templates that belong to them. */
+	private $missingChildGroups = 0;
+
 	public function addError( string $message ): void {
 		$this->errors[] = $message;
 	}
@@ -59,6 +79,14 @@ final class GroupCsvImportResult {
 		$this->skippedCount++;
 		if ( count( $this->skipped ) < self::MAX_LISTED ) {
 			$this->skipped[] = $message;
+		}
+	}
+
+	public function addMissing( string $title, int $childGroups ): void {
+		$this->missingCount++;
+		$this->missingChildGroups += $childGroups;
+		if ( count( $this->missing ) < self::MAX_LISTED ) {
+			$this->missing[] = $title;
 		}
 	}
 
@@ -80,6 +108,11 @@ final class GroupCsvImportResult {
 			'updated'       => $this->updated,
 			'unchanged'     => $this->unchanged,
 			'saved'         => $this->saved,
+			'missing'       => $this->missing,
+			'missingCount'  => $this->missingCount,
+			'missingChildGroups' => $this->missingChildGroups,
+			'deleteBlocked' => $this->deleteBlocked,
+			'deleted'       => $this->deleted,
 		];
 	}
 }

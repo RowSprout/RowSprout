@@ -718,7 +718,7 @@
 				template_id: cfg.templateId,
 				version: currentVersion(),
 				apply: apply ? '1' : '0',
-				payload: JSON.stringify(payload())
+				payload: JSON.stringify($.extend(payload(), { delete_missing: !!(apply && state.deleteMissing) }))
 			}
 		});
 	}
@@ -736,8 +736,46 @@
 		return $ul;
 	}
 
+	var importLabel = String($('#dp-csv-import').text() || '');
+
+	// Import is possible when the dry run found changes, or when the groups
+	// that are not in the file are to be deleted.
+	function updateImportButton() {
+		var deleting = !!state.deleteMissing;
+		$('#dp-csv-import')
+			.prop('disabled', !(state.changes || deleting))
+			.text(deleting ? fmt(i18n.importAndDelete, state.missingCount) : importLabel);
+	}
+
+	// The groups no row of the file is for, with the choice to delete them
+	// (and their pages, and their child templates' groups) as the editor
+	// does when they are removed there. Not offered on a child template, nor
+	// when no row matched a group (the wrong file must not empty a template).
+	function missingBox(result) {
+		var $box = $('<div class="dp-csv-box dp-csv-missing"/>');
+		$box.append($('<p/>').append($('<strong/>').text(fmt(i18n.missing, result.missingCount))));
+		var titles = (result.missing || []).slice();
+		if (result.missingCount > titles.length) {
+			titles.push(fmt(i18n.andMore, result.missingCount - titles.length));
+		}
+		$box.append(list(titles));
+		if (result.deleteBlocked) {
+			$box.append($('<p/>').text(i18n.deleteBlocked));
+			return $box;
+		}
+		$box.append($('<p/>').append($('<label/>')
+			.append($('<input type="checkbox" id="dp-csv-delete-missing"/>'))
+			.append(document.createTextNode(' ' + i18n.deleteMissing))));
+		var warning = i18n.deleteWarning + (result.missingChildGroups ? ' ' + fmt(i18n.deleteWarningChildren, result.missingChildGroups) : '');
+		$box.append($('<p class="dp-csv-delete-warning" id="dp-csv-delete-warning" hidden/>').text(warning));
+		return $box;
+	}
+
 	function renderSummary(result) {
 		var $summary = $('#dp-csv-summary').empty();
+		state.deleteMissing = false;
+		state.missingCount = result.missingCount || 0;
+		var deletable = !cfg.isChild && state.missingCount > 0 && !result.deleteBlocked;
 		$summary.append($('<p class="dp-csv-label"/>').text(i18n.summaryHeading));
 		var lines = [];
 		if (result.added) { lines.push(fmt(i18n.added, result.added)); }
@@ -745,12 +783,16 @@
 		if (result.unchanged) { lines.push(fmt(i18n.unchanged, result.unchanged)); }
 		if (result.newProperties && result.newProperties.length) { lines.push(fmt(i18n.newProperties, result.newProperties.join(', '))); }
 		if (result.skippedCount) { lines.push(fmt(i18n.skipped, result.skippedCount)); }
-		var changes = result.added || result.updated || (result.newProperties && result.newProperties.length);
+		var changes = !!(result.added || result.updated || (result.newProperties && result.newProperties.length));
+		state.changes = changes;
 		if (lines.length) {
 			$summary.append(list(lines).addClass('dp-csv-summary-list'));
 		}
-		if (!changes) {
+		if (!changes && !deletable) {
 			$summary.append($('<div class="dp-csv-box is-info"/>').append($('<p/>').text(i18n.nothing)));
+		}
+		if (!cfg.isChild && state.missingCount > 0) {
+			$summary.append(missingBox(result));
 		}
 		var notes = (result.warnings || []).concat(result.skipped || []);
 		if (notes.length) {
@@ -758,7 +800,7 @@
 				.append($('<p/>').append($('<strong/>').text(i18n.warnings)))
 				.append(list(notes)));
 		}
-		if (changes) {
+		if (changes || deletable) {
 			$summary.append($('<div class="dp-csv-box is-info"/>')
 				.append($('<p/>').text(i18n.saveNote))
 				.append($('<p/>').text(i18n.generate)));
@@ -766,8 +808,14 @@
 				$summary.append($('<div class="dp-csv-box"/>').append($('<p/>').append($('<strong/>').text(i18n.unsaved))));
 			}
 		}
-		$('#dp-csv-import').prop('disabled', !changes);
+		updateImportButton();
 	}
+
+	$modal.on('change', '#dp-csv-delete-missing', function() {
+		state.deleteMissing = this.checked;
+		$('#dp-csv-delete-warning').prop('hidden', !this.checked);
+		updateImportButton();
+	});
 
 	// Only when nothing was saved: a saved import reloads the page right away.
 	function renderDone(result) {
@@ -923,6 +971,7 @@
 		state.records = [];
 		state.mapping = [];
 		state.saved = false;
+		state.deleteMissing = false;
 		$('#dp-csv-file').val('');
 		$('#dp-csv-url').val(cfg.lastUrl || '');
 		$('#dp-csv-fetched').prop('hidden', true).text('');

@@ -99,8 +99,8 @@ final class GroupCsvSection {
 						<button type="button" class="button" id="dp-csv-open"<?php echo $disabled; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- a fixed attribute. ?>><?php esc_html_e( 'Import groups…', 'rowsprout' ); ?></button>
 					</div>
 					<p class="description"><?php echo esc_html( $isChild
-						? __( 'Updates this child template\'s values. Nothing is removed, and no pages are generated until you update the template.', 'rowsprout' )
-						: __( 'Adds and updates groups. Nothing is removed, and no pages are generated until you update the template.', 'rowsprout' ) ); ?></p>
+						? __( 'Updates this child template\'s values. No groups are added or removed, and no pages are generated until you update the template.', 'rowsprout' )
+						: __( 'Adds and updates groups, and can delete the groups that are not in the file. No pages are generated until you update the template.', 'rowsprout' ) ); ?></p>
 				</div>
 			</div>
 			<?php
@@ -413,6 +413,17 @@ final class GroupCsvSection {
 					'skipped'         => __( 'Rows skipped: %d', 'rowsprout' ),
 					'warnings'        => __( 'Check before you import', 'rowsprout' ),
 					'nothing'         => __( 'Nothing changes: every row matches a group that already has these values.', 'rowsprout' ),
+					/* translators: %d: number of groups. */
+					'missing'         => __( 'Groups of this template that are not in the file: %d', 'rowsprout' ),
+					/* translators: %d: number of further groups. */
+					'andMore'         => __( 'and %d more', 'rowsprout' ),
+					'deleteMissing'   => __( 'Delete these groups and their pages', 'rowsprout' ),
+					'deleteWarning'   => __( 'When you import, these groups and their pages are deleted permanently. This cannot be undone.', 'rowsprout' ),
+					/* translators: %d: number of groups of child templates. */
+					'deleteWarningChildren' => __( 'Child templates lose their groups for them too, with their pages: %d.', 'rowsprout' ),
+					/* translators: %d: number of groups to delete. */
+					'importAndDelete' => __( 'Import and delete (%d)', 'rowsprout' ),
+					'deleteBlocked'   => __( 'No row of the file matches a group of this template, so this file cannot delete groups: it may be the wrong file.', 'rowsprout' ),
 					'saveNote'        => __( 'When you click Import, the groups are saved right away and the page reloads automatically to show them.', 'rowsprout' ),
 					'reloading'       => __( 'Imported. Reloading the page…', 'rowsprout' ),
 					'unsaved'         => __( 'This template has changes that are not saved yet. They are lost when the page reloads after the import. Cancel and save the template first to keep them.', 'rowsprout' ),

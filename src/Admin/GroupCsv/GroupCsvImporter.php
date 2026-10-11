@@ -2,6 +2,7 @@
 
 namespace RowSprout\Admin\GroupCsv;
 
+use RowSprout\Admin\Metaboxes\GroupsMetaBoxAssets;
 use RowSprout\Core\Template\HrefUniquenessValidator;
 use RowSprout\Core\Template\Lifecycle\TemplateSyncMarker;
 use RowSprout\Core\Template\PayloadConfigBuilder;
@@ -22,13 +23,17 @@ if ( ! defined( 'ABSPATH' ) ) {
  * A row updates the group whose ID it has, else the group with its Href
  * value (or, without one, the URL its title gives, as a new group would get),
  * else it becomes a new group (which needs a title). Only mapped
- * columns are written, nothing is removed and nothing is generated: the
+ * columns are written and nothing is generated: the
  * template is stored like "Save template only". The new config is built the
  * way a save from the template form builds it (PayloadConfigBuilder), from
  * the stored groups with the file's values filled in, so codes, sanitizing
  * and field ids follow the same rules.
  *
- * A child template (GroupCsvTemplate) gets no new groups: a row that finds
+ * With delete_missing, the stored groups no row is for are deleted too, as
+ * removing them in the editor and saving would (also their child templates'
+ * groups); never when no row matches a stored group.
+ *
+ * A child template (GroupCsvTemplate) gets no new groups and loses none: a row that finds
  * none of its parent's groups is skipped. Its Title and Href only find the
  * row, and an empty cell means the value is inherited.
  */
@@ -57,6 +62,7 @@ final class GroupCsvImporter {
 	 *     @type array<int, array<string, mixed>>  $new_properties Per n: label, type, options and can_be_overruled.
 	 *     @type array<int, array<int, string>> $rows           The data rows (no header).
 	 *     @type array<int, int>                $row_numbers    Each row's number in the file, for messages.
+	 *     @type bool                           $delete_missing Delete the groups no row is for, with their pages.
 	 * }
 	 * @param bool   $apply           False for a dry run.
 	 * @param string $expectedVersion The config_updated_at the editor was rendered with.
@@ -236,6 +242,39 @@ final class GroupCsvImporter {
 			}
 		}
 
+		// The stored groups no row is for. A child template cannot lose
+		// groups (they are its parent's), and a file that matches none of
+		// the groups is most likely the wrong file: it must not empty the
+		// template.
+		if ( ! $template->isChild ) {
+			$missing = [];
+			for ( $position = 0; $position < $storedCount; $position++ ) {
+				if ( ! isset( $touchedBy[ $position ] ) ) {
+					$missing[] = $position;
+				}
+			}
+			$childGroupCounts = $missing !== [] ? GroupsMetaBoxAssets::childGroupCounts( $templateId ) : [];
+			foreach ( $missing as $position ) {
+				$id = (string) $rawRows[ $position ]['id'];
+				$result->addMissing( trim( (string) $rawRows[ $position ]['title'] ) !== '' ? (string) $rawRows[ $position ]['title'] : $id, $childGroupCounts[ $id ] ?? 0 );
+			}
+			$result->deleteBlocked = $missing !== [] && ( $result->updated + $result->unchanged ) === 0;
+
+			if ( ! empty( $payload['delete_missing'] ) && $missing !== [] ) {
+				if ( $result->deleteBlocked ) {
+					$result->addError( __( 'No row of the file matches a group of this template, so no groups were deleted: this may be the wrong file.', 'rowsprout' ) );
+					return $result;
+				}
+				foreach ( $missing as $position ) {
+					unset( $rawRows[ $position ] );
+				}
+				$result->deleted = count( $missing );
+			}
+		} elseif ( ! empty( $payload['delete_missing'] ) ) {
+			$result->addError( __( 'Groups cannot be deleted from a child template: its groups come from its parent template.', 'rowsprout' ) );
+			return $result;
+		}
+
 		$formRows = [];
 		foreach ( $rawRows as $row ) {
 			$formRows[] = [ 'id' => $row['id'], 'parent_id' => $row['parent_id'], 'fields' => $row['fields'] ];
@@ -276,7 +315,7 @@ final class GroupCsvImporter {
 			return $result;
 		}
 
-		if ( $result->added === 0 && $result->updated === 0 && $newColumns === [] ) {
+		if ( $result->added === 0 && $result->updated === 0 && $result->deleted === 0 && $newColumns === [] ) {
 			return $result;
 		}
 
@@ -288,8 +327,10 @@ final class GroupCsvImporter {
 
 		TemplateMeta::save( $templateId, $config );
 		// Like "Save template only": rows for the new groups, changed groups
-		// outdated, nothing generated or removed.
-		TemplateSyncMarker::markStaleFromSmallAdjustments( $templateId, $oldConfig, false );
+		// outdated, nothing generated. Deleted groups go the way a save from
+		// the editor removes them (QueueManager pruning): their rows and
+		// pages, and the groups their child templates have for them.
+		TemplateSyncMarker::markStaleFromSmallAdjustments( $templateId, $oldConfig, $result->deleted > 0 );
 		$result->saved = true;
 
 		return $result;

@@ -143,7 +143,7 @@ final class GroupsMetaBoxAssets {
 	 * @return array<string, int> Parent group id => number of groups of the
 	 *         template's child templates that belong to it.
 	 */
-	private static function childGroupCounts( int $postId ): array {
+	public static function childGroupCounts( int $postId ): array {
 		if ( $postId <= 0 ) {
 			return [];
 		}
