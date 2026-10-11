@@ -43,9 +43,6 @@ final class GroupCardRenderer {
 
 		echo '<div class="dp-group-card" data-row-idx="' . (int) $rowIdx . '" data-group-id="' . (int) $id . '" data-parent-id="' . (int) $parentId . '" data-inherited="' . ( $inherited ? '1' : '0' ) . '">';
 		echo '<div class="dp-group-head">';
-		// No drag handle on a child template's groups: their order is the
-		// parent's. The empty cell keeps the head's grid in place.
-		echo '<div class="dp-group-handle">' . ( $inherited ? '' : '&#9776;' ) . '</div>';
 		echo '<div class="dp-group-index">' . esc_html__( 'Group', 'rowsprout' ) . ' ' . (int) ( $rowIdx + 1 ) . '</div>';
 		echo '<div><span class="label">' . esc_html__( 'Title', 'rowsprout' ) . '</span>';
 		GroupFieldInputRenderer::render( $rowIdx, $titleCol ?: [ 'key' => 'title', 'type' => 'title', 'field_type' => 'text' ], $titleValue, $inherited );

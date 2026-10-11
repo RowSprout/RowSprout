@@ -4,9 +4,8 @@
 .dp-groups-list { display:flex; flex-direction:column; gap:10px; }
 .dp-group-card { border:1px solid #dcdcde; border-radius:8px; background:#fff; }
 .dp-group-card.is-new { animation:dpGroupFlash .9s ease-out; }
-.dp-group-head { display:grid; grid-template-columns:24px 90px minmax(180px,1fr) minmax(180px,1fr) auto auto; gap:8px; align-items:end; padding:10px; background:#f8f9fa; border-bottom:1px solid #dcdcde; cursor:pointer; }
+.dp-group-head { display:grid; grid-template-columns:90px minmax(180px,1fr) minmax(180px,1fr) auto auto; gap:8px; align-items:end; padding:10px; background:#f8f9fa; border-bottom:1px solid #dcdcde; cursor:pointer; }
 .dp-group-head .label { display:block; font-size:11px; color:#646970; margin-bottom:3px; }
-.dp-group-handle { cursor:move; text-align:center; font-size:15px; color:#646970; user-select:none; }
 .dp-group-index { font-weight:600; color:#1d2327; }
 .dp-group-head input[type='text'], .dp-group-head input[type='url'] { width:100%; }
 .dp-group-toggle { white-space:nowrap; }
@@ -57,12 +56,12 @@
 100% { box-shadow:0 0 0 0 rgba(34,197,94,0); border-color:#dcdcde; }
 }
 @media (max-width: 1024px) {
-.dp-group-head { grid-template-columns:24px 90px 1fr 1fr; }
+.dp-group-head { grid-template-columns:90px 1fr 1fr; }
 .dp-group-toggle, .dp-group-delete { justify-self:start; }
 }
 @media (max-width: 782px) {
 .dp-fields-grid { grid-template-columns:1fr; }
-.dp-group-head { grid-template-columns:24px 1fr; }
+.dp-group-head { grid-template-columns:1fr; }
 }
 
 /* Self-contained WP-admin-style controls, scoped to our own UI wrappers

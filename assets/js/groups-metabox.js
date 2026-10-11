@@ -390,7 +390,6 @@
 		var hrefInput = makeInput(rowIdx,hrefCol.key,hrefCol.type,'',resolveUiKind(hrefCol.type,hrefCol.fieldType),hrefCol.options);
 		return '<div class="dp-group-card" data-row-idx="'+rowIdx+'" data-inherited="0">'
 			+ '<div class="dp-group-head">'
-			+ '<div class="dp-group-handle">&#9776;</div>'
 			+ '<div class="dp-group-index">'+tGroup+' '+(rowIdx+1)+'</div>'
 			+ '<div><span class="label">Titel</span>'+titleInput+'</div>'
 			+ '<div><span class="label">Href</span>'+hrefInput+'<small class="dp-href-error-msg"></small></div>'
