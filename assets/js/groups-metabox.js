@@ -856,6 +856,63 @@
 		if($href.length && !$href.val().trim()){ $href.val(normalizeSlug(titleVal)); }
 	});
 
+	// PHP drops the fields past max_input_vars without an error, and the
+	// server then refuses to store this form's properties and groups
+	// (SavePost::requestWasTruncated()). Count what a save would post and
+	// warn before saving.
+	var dpMaxInputVars=parseInt(cfg.maxInputVars||0,10)||0;
+	var dpInputLimitOver=false;
+	var dpInputLimitText='';
+	function postedScope(){
+		var $tabs=$('[data-dp-template-tabs]').first();
+		var $modal=$tabs.closest('.dp-elementor-tab-body');
+		if($modal.length){ return $modal; }
+		// The block editor posts its base form and every meta box location form.
+		if($('.metabox-base-form').length){ return $('.metabox-base-form').add('form.metabox-location-normal, form.metabox-location-advanced, form.metabox-location-side'); }
+		var $form=$tabs.closest('form');
+		return $form.length ? $form : $tabs;
+	}
+	function postedFieldCount(){
+		var count=0;
+		postedScope().find(':input[name]').each(function(){
+			var type=String(this.type||'').toLowerCase();
+			if(this.disabled || ((type==='checkbox' || type==='radio') && !this.checked) || /^(file|submit|button|reset|image)$/.test(type)){ return; }
+			count+=(this.tagName==='SELECT' && this.multiple) ? $(this).find('option:selected').length : 1;
+		});
+		return count;
+	}
+	function checkInputLimit(){
+		if(dpMaxInputVars<=0){ return; }
+		var count=postedFieldCount();
+		// A margin for the few fields WordPress, the browser or Elementor add.
+		var over=count+20>=dpMaxInputVars;
+		dpInputLimitText=String(i18n.inputLimitWarning||'').replace('%1$d', count).replace('%2$d', dpMaxInputVars).replace('%3$d', Math.ceil((count+200)/500)*500);
+		$('.dp-input-limit-warning').toggle(over).find('p').text(dpInputLimitText);
+		var notices=window.wp && window.wp.data && window.wp.data.select && window.wp.data.select('core/editor') ? window.wp.data.dispatch('core/notices') : null;
+		if(notices && over!==dpInputLimitOver){
+			if(over){ notices.createWarningNotice(dpInputLimitText, { id:'rowsprout-input-limit', isDismissible:true }); } else { notices.removeNotice('rowsprout-input-limit'); }
+		}
+		dpInputLimitOver=over;
+	}
+	var dpInputLimitTimer=null;
+	function scheduleInputLimitCheck(){
+		window.clearTimeout(dpInputLimitTimer);
+		dpInputLimitTimer=window.setTimeout(checkInputLimit, 300);
+	}
+	if(dpMaxInputVars>0 && window.MutationObserver){
+		$('[data-dp-template-tabs]').each(function(){
+			new window.MutationObserver(scheduleInputLimitCheck).observe(this, { childList:true, subtree:true });
+		});
+	}
+	scheduleInputLimitCheck();
+	// The classic screen: ask before a save that would lose the groups.
+	$(document).on('submit', 'form#post', function(e){
+		checkInputLimit();
+		if(dpInputLimitOver && !window.confirm(dpInputLimitText+'\n\n'+String(i18n.inputLimitConfirm||''))){
+			e.preventDefault();
+		}
+	});
+
 	var dpMediaFrame;
 	$(document).on('click', '.dp-thumb-upload', function(e){
 		e.preventDefault();

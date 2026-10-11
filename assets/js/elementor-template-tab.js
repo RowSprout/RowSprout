@@ -91,10 +91,14 @@ jQuery(function ($) {
 		// dp_groups/rowsprout_page_href input, including bracket-notation
 		// array fields — sent as normal urlencoded form data below, which
 		// PHP's own $_POST parsing already understands natively.
-		var fields = $body.find(':input').serializeArray();
-		fields.push({ name: 'action', value: config.ajaxAction });
-		fields.push({ name: 'nonce', value: config.saveNonce });
-		fields.push({ name: 'post_id', value: String(config.postId) });
+		// action/nonce/post_id first: PHP drops the fields past max_input_vars,
+		// and without them the request would not even reach the handler that
+		// recognises a cut-off form (SavePost::requestWasTruncated()).
+		var fields = [
+			{ name: 'action', value: config.ajaxAction },
+			{ name: 'nonce', value: config.saveNonce },
+			{ name: 'post_id', value: String(config.postId) }
+		].concat($body.find(':input').serializeArray());
 
 		setSaveError('');
 		$btn.prop('disabled', true);

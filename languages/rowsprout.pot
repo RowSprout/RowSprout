@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-11T15:50:40+00:00\n"
+"POT-Creation-Date: 2026-10-11T18:10:10+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: rowsprout\n"
@@ -310,7 +310,7 @@ msgstr ""
 #: src/Admin/GroupCsv/GroupCsvSection.php:141
 #: src/Admin/GroupCsv/GroupCsvSection.php:265
 #: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:100
-#: src/ThirdParty/Elementor/TemplateEditorTab.php:234
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:241
 msgid "Close"
 msgstr ""
 
@@ -454,7 +454,7 @@ msgid "Label"
 msgstr ""
 
 #: src/Admin/GroupCsv/GroupCsvSection.php:290
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:74
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:79
 #: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:126
 #: src/Admin/Metaboxes/PropertyTableRenderer.php:35
 msgid "Overridable"
@@ -584,7 +584,7 @@ msgid "%s (finds the group)"
 msgstr ""
 
 #: src/Admin/GroupCsv/GroupCsvSection.php:394
-#: src/Admin/Metaboxes/TemplateTabsRenderer.php:131
+#: src/Admin/Metaboxes/TemplateTabsRenderer.php:132
 msgid "Properties"
 msgstr ""
 
@@ -611,7 +611,7 @@ msgid "Give the property a label."
 msgstr ""
 
 #: src/Admin/GroupCsv/GroupCsvSection.php:401
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:82
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:87
 msgid "This property title already exists in this template."
 msgstr ""
 
@@ -923,8 +923,8 @@ msgid "RowSprout Pro"
 msgstr ""
 
 #: src/Admin/Metaboxes.php:34
-#: src/ThirdParty/Elementor/TemplateEditorTab.php:150
-#: src/ThirdParty/Elementor/TemplateEditorTab.php:233
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:151
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:240
 #: src/ThirdParty/Elementor/Widgets/GridWidget.php:67
 #: src/ThirdParty/WPBakery/WPBakeryIntegration.php:144
 #: assets/js/blocks.js:39
@@ -946,18 +946,18 @@ msgid "Title"
 msgstr ""
 
 #: src/Admin/Metaboxes/GroupCardRenderer.php:46
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:62
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:64
 #: src/Admin/Metaboxes/RowRenderer.php:71
 msgid "Group"
 msgstr ""
 
 #: src/Admin/Metaboxes/GroupCardRenderer.php:54
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:63
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:65
 msgid "Expand"
 msgstr ""
 
 #: src/Admin/Metaboxes/GroupCardRenderer.php:56
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:67
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:69
 #: src/Admin/Metaboxes/RowRenderer.php:90
 msgid "Delete group"
 msgstr ""
@@ -967,97 +967,107 @@ msgid "Inherited from parent template"
 msgstr ""
 
 #: src/Admin/Metaboxes/GroupFieldInputRenderer.php:97
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:71
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:76
 #: src/Admin/Metaboxes/RowRenderer.php:119
 msgid "Select"
 msgstr ""
 
 #: src/Admin/Metaboxes/GroupFieldInputRenderer.php:98
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:72
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:77
 #: src/Admin/Metaboxes/RowRenderer.php:120
 msgid "Remove"
 msgstr ""
 
 #: src/Admin/Metaboxes/GroupFieldInputRenderer.php:110
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:73
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:78
 #: src/Admin/Metaboxes/RowRenderer.php:124
 #: src/ThirdParty/Elementor/Widgets/GridWidget.php:142
 #: src/ThirdParty/WPBakery/WPBakeryIntegration.php:147
 msgid "Yes"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:64
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:66
 msgid "Collapse"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:65
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:67
 #: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:161
 msgid "Expand all"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:66
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:68
 msgid "Collapse all"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:68
+#. translators: 1: number of form fields, 2: the server's max_input_vars, 3: a suggested higher value.
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:71
+#, php-format
+msgid "This template has %1$d form fields, but the server accepts %2$d (the PHP setting max_input_vars). If you save now, the changes on its General, Properties and Groups tabs are not stored. Ask your host to raise max_input_vars to at least %3$d, or change the groups with \"Import groups\" on the General tab."
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:72
+msgid "Save anyway? Title, content and status are saved; the properties and groups are not."
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:73
 msgid "When you save the template, this group's page is deleted, together with the page a child template made for this group. Delete the group?"
 msgstr ""
 
 #. translators: %d: number of pages of child templates (2 or more).
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:70
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:75
 #, php-format
 msgid "When you save the template, this group's page is deleted, together with the %d pages that child templates made for this group. Delete the group?"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:75
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:80
 #: src/Admin/Metaboxes/PropertyTableRenderer.php:35
 msgid "Fixed"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:76
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:81
 #: src/Admin/Metaboxes/PropertyTableRenderer.php:56
 msgid "Delete"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:77
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:82
 #: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:82
 #: src/Admin/Metaboxes/ParentSyncPayloadRenderer.php:34
 msgid "No properties added yet."
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:78
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:83
 msgid "Could not load parent template data."
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:79
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:84
 msgid "Enter a valid URL (http(s)://...)"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:80
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:85
 msgid "Enter a valid email address."
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:81
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:86
 msgid "This type can only be added once."
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:83
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:88
 msgid "This URL/slug is already used by another group in this template."
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:84
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:89
 msgid "Select or upload an image"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:85
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:90
 msgid "Use this image"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:86
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:91
 msgid "Changing the parent replaces the current groups with groups inherited from the new parent. Your own group data (titles, hrefs, fields) will be lost. Continue?"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:87
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:92
 msgid "Removing the parent resets the groups to a single empty group. Your current group data (titles, hrefs, fields) will be lost. Continue?"
 msgstr ""
 
@@ -1084,7 +1094,7 @@ msgid "You do not have permission to edit templates."
 msgstr ""
 
 #: src/Admin/Metaboxes/ParentPayloadAjaxHandler.php:33
-#: src/ThirdParty/Elementor/TemplateEditorTab.php:182
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:183
 msgid "You do not have permission to edit this template."
 msgstr ""
 
@@ -1136,11 +1146,11 @@ msgstr ""
 msgid "Remove property"
 msgstr ""
 
-#: src/Admin/Metaboxes/TemplateTabsRenderer.php:130
+#: src/Admin/Metaboxes/TemplateTabsRenderer.php:131
 msgid "General"
 msgstr ""
 
-#: src/Admin/Metaboxes/TemplateTabsRenderer.php:132
+#: src/Admin/Metaboxes/TemplateTabsRenderer.php:133
 #: src/Admin/TemplateTransferPage.php:246
 msgid "Groups"
 msgstr ""
@@ -1560,19 +1570,25 @@ msgstr ""
 msgid "Search in RowSprout Template Pages"
 msgstr ""
 
-#: src/Core/SavePost.php:158
+#. translators: %d: the server's max_input_vars value.
+#: src/Core/SavePost.php:164
+#, php-format
+msgid "Properties, groups and the Href were not saved: this template has more form fields than the server accepts (the PHP setting max_input_vars is %d), so the last ones were cut off. Ask your host to raise max_input_vars, or change the groups with \"Import groups\" on the General tab. (Title, content and status were saved normally.)"
+msgstr ""
+
+#: src/Core/SavePost.php:221
 msgid "The template is saved, but its pages are not generated: it is a child template, and its parent template has not generated any pages yet. Generate the parent's pages first, then save this template again to generate its pages."
 msgstr ""
 
-#: src/Core/SavePost.php:179
+#: src/Core/SavePost.php:242
 msgid "Properties and groups were not saved: this template was changed elsewhere (e.g. via the API) after this page was loaded. Reload the page and reapply your property/group changes. (Title, content, and status were saved normally.)"
 msgstr ""
 
-#: src/Core/SavePost.php:589
+#: src/Core/SavePost.php:662
 msgid "The parent was not saved: the chosen parent is itself a child template. Templates can only be nested one level deep, so choose a template without a parent."
 msgstr ""
 
-#: src/Core/SavePost.php:591
+#: src/Core/SavePost.php:664
 msgid "The parent was not saved: this template has child templates, so it cannot have a parent itself. Templates can only be nested one level deep."
 msgstr ""
 
@@ -1796,23 +1812,23 @@ msgstr ""
 msgid "-- Select --"
 msgstr ""
 
-#: src/ThirdParty/Elementor/TemplateEditorTab.php:178
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:179
 msgid "Invalid template."
 msgstr ""
 
-#: src/ThirdParty/Elementor/TemplateEditorTab.php:240
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:247
 msgid "Save"
 msgstr ""
 
-#: src/ThirdParty/Elementor/TemplateEditorTab.php:276
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:283
 msgid "Preview group"
 msgstr ""
 
-#: src/ThirdParty/Elementor/TemplateEditorTab.php:284
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:291
 msgid "Determines which group the widgets and tags show in this editor. After choosing, click \"Refresh preview\" to update the preview. Has no effect on the actual pages."
 msgstr ""
 
-#: src/ThirdParty/Elementor/TemplateEditorTab.php:312
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:319
 msgid "Refresh preview"
 msgstr ""
 

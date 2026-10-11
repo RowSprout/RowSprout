@@ -125,6 +125,7 @@ final class TemplateTabsRenderer {
 			}
 		' );
 		?>
+		<div class="notice notice-warning inline dp-input-limit-warning" style="display:none"><p></p></div>
 		<div class="dp-template-tabs" data-dp-template-tabs>
 			<div class="dp-template-tabs__nav" role="tablist" aria-orientation="vertical">
 				<button type="button" class="is-active" role="tab" aria-selected="true" data-tab-target="dp-tab-general"><?php esc_html_e( 'General', 'rowsprout' ); ?></button>
@@ -152,6 +153,8 @@ final class TemplateTabsRenderer {
 				<?php endforeach; ?>
 			</div>
 		</div>
+		<?php // The form's last field: a request without it was cut off at max_input_vars (SavePost::requestWasTruncated()). ?>
+		<input type="hidden" name="<?php echo esc_attr( SavePost::FORM_COMPLETE_FIELD ); ?>" value="1" />
 		<?php
 		GroupsMetaBoxRenderer::renderScripts( $post );
 

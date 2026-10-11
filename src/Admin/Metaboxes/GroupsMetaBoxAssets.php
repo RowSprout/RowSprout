@@ -55,6 +55,8 @@ final class GroupsMetaBoxAssets {
 			'uiTypeKindMap'      => FieldUiResolver::getClientTypeKindMap(),
 			'uiValidationMap'    => FieldUiResolver::getClientValidationMap(),
 			'overridableAllowed' => true,
+			// PHP drops the fields past this; the editor warns before saving.
+			'maxInputVars'       => (int) ini_get( 'max_input_vars' ),
 			// Parent group id => how many groups its child templates have for
 			// it: deleting the group deletes those too (QueueManager).
 			'childGroupCounts'   => self::childGroupCounts( $postId ),
@@ -65,6 +67,9 @@ final class GroupsMetaBoxAssets {
 				'expandAll'                => __( 'Expand all', 'rowsprout' ),
 				'collapseAll'              => __( 'Collapse all', 'rowsprout' ),
 				'deleteGroup'              => __( 'Delete group', 'rowsprout' ),
+				/* translators: 1: number of form fields, 2: the server's max_input_vars, 3: a suggested higher value. */
+				'inputLimitWarning'        => __( 'This template has %1$d form fields, but the server accepts %2$d (the PHP setting max_input_vars). If you save now, the changes on its General, Properties and Groups tabs are not stored. Ask your host to raise max_input_vars to at least %3$d, or change the groups with "Import groups" on the General tab.', 'rowsprout' ),
+				'inputLimitConfirm'        => __( 'Save anyway? Title, content and status are saved; the properties and groups are not.', 'rowsprout' ),
 				'deleteGroupChild'         => __( 'When you save the template, this group\'s page is deleted, together with the page a child template made for this group. Delete the group?', 'rowsprout' ),
 				/* translators: %d: number of pages of child templates (2 or more). */
 				'deleteGroupChildren'      => __( 'When you save the template, this group\'s page is deleted, together with the %d pages that child templates made for this group. Delete the group?', 'rowsprout' ),
