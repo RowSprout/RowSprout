@@ -668,8 +668,15 @@
 		}
 	}
 
+	// Deleting a parent group deletes the groups its child templates have for
+	// it on save (QueueManager::pruneChildGroupsOf()): say so first.
 	$(document).on('click', '.dp-group-delete', function(){
-		$(this).closest('.dp-group-card').remove();
+		var $card=$(this).closest('.dp-group-card');
+		var childCount=parseInt((cfg.childGroupCounts||{})[String($card.attr('data-group-id')||'')]||0,10)||0;
+		if(childCount>0 && !window.confirm(childCount===1 ? String(i18n.deleteGroupChild||'') : String(i18n.deleteGroupChildren||'').replace('%d', childCount))){
+			return;
+		}
+		$card.remove();
 		updateRowIndexes();
 		refreshToggleAllButtonState();
 	});

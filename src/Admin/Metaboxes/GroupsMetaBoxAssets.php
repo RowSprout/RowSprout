@@ -3,6 +3,7 @@
 namespace RowSprout\Admin\Metaboxes;
 
 use RowSprout\Core\PostTypes;
+use RowSprout\Core\TemplateMeta;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -54,6 +55,9 @@ final class GroupsMetaBoxAssets {
 			'uiTypeKindMap'      => FieldUiResolver::getClientTypeKindMap(),
 			'uiValidationMap'    => FieldUiResolver::getClientValidationMap(),
 			'overridableAllowed' => true,
+			// Parent group id => how many groups its child templates have for
+			// it: deleting the group deletes those too (QueueManager).
+			'childGroupCounts'   => self::childGroupCounts( $postId ),
 			'i18n'               => [
 				'group'                    => __( 'Group', 'rowsprout' ),
 				'expand'                   => __( 'Expand', 'rowsprout' ),
@@ -61,6 +65,9 @@ final class GroupsMetaBoxAssets {
 				'expandAll'                => __( 'Expand all', 'rowsprout' ),
 				'collapseAll'              => __( 'Collapse all', 'rowsprout' ),
 				'deleteGroup'              => __( 'Delete group', 'rowsprout' ),
+				'deleteGroupChild'         => __( 'When you save the template, this group\'s page is deleted, together with the page a child template made for this group. Delete the group?', 'rowsprout' ),
+				/* translators: %d: number of pages of child templates (2 or more). */
+				'deleteGroupChildren'      => __( 'When you save the template, this group\'s page is deleted, together with the %d pages that child templates made for this group. Delete the group?', 'rowsprout' ),
 				'select'                   => __( 'Select', 'rowsprout' ),
 				'remove'                   => __( 'Remove', 'rowsprout' ),
 				'yes'                      => __( 'Yes', 'rowsprout' ),
@@ -130,6 +137,36 @@ final class GroupsMetaBoxAssets {
 			}
 		}
 		return $map;
+	}
+
+	/**
+	 * @return array<string, int> Parent group id => number of groups of the
+	 *         template's child templates that belong to it.
+	 */
+	private static function childGroupCounts( int $postId ): array {
+		if ( $postId <= 0 ) {
+			return [];
+		}
+		$childIds = get_posts( [
+			'post_type'        => PostTypes::TEMPLATE,
+			'post_parent'      => $postId,
+			'post_status'      => 'any',
+			'posts_per_page'   => -1,
+			'fields'           => 'ids',
+			'suppress_filters' => true,
+		] );
+
+		$counts = [];
+		foreach ( array_map( 'intval', $childIds ) as $childId ) {
+			foreach ( (array) ( TemplateMeta::get( $childId )['groups'] ?? [] ) as $group ) {
+				$parentGroupId = is_array( $group ) ? absint( $group['parent_id'] ?? 0 ) : 0;
+				if ( $parentGroupId > 0 ) {
+					$counts[ (string) $parentGroupId ] = ( $counts[ (string) $parentGroupId ] ?? 0 ) + 1;
+				}
+			}
+		}
+
+		return $counts;
 	}
 
 	private static function useUnminifiedAssets(): bool {

@@ -4,6 +4,8 @@ namespace RowSprout\Core\Scheduler;
 
 use RowSprout\Core\Groups\GroupTableGateway;
 use RowSprout\Core\Helpers;
+use RowSprout\Core\PostTypes;
+use RowSprout\Core\TemplateMeta;
 use RowSprout\Core\Template\Lifecycle\TemplateGroupActionUnscheduler;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -276,6 +278,33 @@ final class QueueManager {
 	}
 
 	/**
+	 * Only the pruning half of syncGroupStructure(): removes the rows and
+	 * pages of groups the template's config no longer has, without adding
+	 * rows for new ones. For a draft or pending template, which gets no
+	 * rows for new groups until it is published, but whose removed groups
+	 * must go the same way as a published template's.
+	 */
+	public static function pruneRemovedGroups( int $postId ): void {
+		$currentGuids = [];
+		foreach ( self::getQueueGroups( $postId ) as $group ) {
+			[ $groupGuid ] = self::resolveGroupIdentifiers( $group );
+			if ( $groupGuid !== '' ) {
+				$currentGuids[ $groupGuid ] = true;
+			}
+		}
+
+		self::pruneOrphanedGroups( $postId, $currentGuids );
+	}
+
+	/**
+	 * Deletes the rows and pages of the template's groups that are no longer
+	 * in its config — only this template's: a group id is only unique within
+	 * its template. Then the same for its child templates: a child group
+	 * belongs to a parent group, so it goes with it (as a whole child
+	 * template goes with its parent, TemplateDeletionManager). Otherwise its
+	 * page would stay behind, moved to the top level when WordPress deletes
+	 * the parent page, and never be built again.
+	 *
 	 * @param array<string, bool> $currentGuids
 	 */
 	private static function pruneOrphanedGroups( int $postId, array $currentGuids ): void {
@@ -300,7 +329,42 @@ final class QueueManager {
 		}
 
 		if ( ! empty( $orphanedGuids ) ) {
-			GroupTableGateway::deleteByGuids( $orphanedGuids );
+			GroupTableGateway::deleteByGuidsAndPostId( $orphanedGuids, $postId );
+			self::pruneChildGroupsOf( $postId, $orphanedGuids );
+		}
+	}
+
+	/**
+	 * Removes the groups of a template's child templates that belong to its
+	 * removed groups, from each child's config, and prunes their rows and
+	 * pages. Templates nest one level, so this does not recurse further.
+	 *
+	 * @param array<int, string> $parentGuids
+	 */
+	private static function pruneChildGroupsOf( int $parentId, array $parentGuids ): void {
+		$removed  = array_fill_keys( array_map( 'strval', $parentGuids ), true );
+		$childIds = get_posts( [
+			'post_type'        => PostTypes::TEMPLATE,
+			'post_parent'      => $parentId,
+			'post_status'      => 'any',
+			'posts_per_page'   => -1,
+			'fields'           => 'ids',
+			'suppress_filters' => true,
+		] );
+
+		foreach ( array_map( 'intval', $childIds ) as $childId ) {
+			$config = TemplateMeta::get( $childId );
+			$groups = array_values( array_filter( (array) ( $config['groups'] ?? [] ), 'is_array' ) );
+			$kept   = array_values( array_filter( $groups, static function ( array $group ) use ( $removed ): bool {
+				return ! isset( $removed[ (string) absint( $group['parent_id'] ?? 0 ) ] );
+			} ) );
+
+			if ( count( $kept ) !== count( $groups ) ) {
+				$config['groups'] = $kept;
+				TemplateMeta::save( $childId, $config );
+			}
+
+			self::pruneRemovedGroups( $childId );
 		}
 	}
 
