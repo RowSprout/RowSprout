@@ -278,9 +278,41 @@ final class SavePost {
 		'dp_columns',
 		'dp_all_columns',
 		'dp_groups',
+		'dp_payload',
 		'rowsprout_page_save_action',
 		'rowsprout_page_force_full_regenerate',
 	];
+
+	/**
+	 * The editors post the properties and groups packed into one JSON field
+	 * (groups-metabox.js, packTemplateFields()), so a template with many
+	 * groups stays below max_input_vars. Unpacks it into the dp_columns /
+	 * dp_all_columns / dp_groups the form would otherwise post; a request
+	 * without it, or with it empty (a form from before this, a pack that was
+	 * undone), is used as is. An unreadable payload leaves none of the three,
+	 * so nothing of them is stored.
+	 *
+	 * @param array<string, mixed> $input Unslashed request fields.
+	 * @return array<string, mixed>
+	 */
+	public static function unpackFormPayload( array $input ): array {
+		if ( ! isset( $input['dp_payload'] ) || $input['dp_payload'] === '' ) {
+			unset( $input['dp_payload'] );
+			return $input;
+		}
+		$packed = is_string( $input['dp_payload'] ) ? json_decode( $input['dp_payload'], true ) : null;
+		unset( $input['dp_payload'], $input['dp_columns'], $input['dp_all_columns'], $input['dp_groups'] );
+		if ( ! is_array( $packed ) ) {
+			return $input;
+		}
+		foreach ( [ 'dp_columns', 'dp_all_columns', 'dp_groups' ] as $key ) {
+			if ( isset( $packed[ $key ] ) && is_array( $packed[ $key ] ) ) {
+				$input[ $key ] = $packed[ $key ];
+			}
+		}
+
+		return $input;
+	}
 
 	public static function renderNonceField(): void {
 		wp_nonce_field( self::NONCE_ACTION, self::NONCE_FIELD );
@@ -334,7 +366,7 @@ final class SavePost {
 			}
 		}
 
-		return $input;
+		return self::unpackFormPayload( $input );
 	}
 
 	/**

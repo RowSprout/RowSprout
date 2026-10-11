@@ -195,12 +195,19 @@ final class TemplateEditorTab {
 
 		$existingConfig = TemplateMeta::get( $postId );
 
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- structured nested payload, sanitized per-field by PayloadConfigBuilder::build() below against the template's known field schema; a blanket sanitize_text_field() would corrupt array structure. Nonce already verified via check_ajax_referer() above.
-		$rawCols    = isset( $_POST['dp_columns'] ) && is_array( $_POST['dp_columns'] ) ? (array) wp_unslash( $_POST['dp_columns'] ) : [];
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- see $rawCols above.
-		$rawAllCols = isset( $_POST['dp_all_columns'] ) && is_array( $_POST['dp_all_columns'] ) ? (array) wp_unslash( $_POST['dp_all_columns'] ) : [];
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- see $rawCols above.
-		$rawRows    = isset( $_POST['dp_groups'] ) && is_array( $_POST['dp_groups'] ) ? (array) wp_unslash( $_POST['dp_groups'] ) : [];
+		// The modal posts the properties and groups packed into one field,
+		// like the template form (SavePost::unpackFormPayload()).
+		$posted = [];
+		foreach ( [ 'dp_columns', 'dp_all_columns', 'dp_groups', 'dp_payload' ] as $key ) {
+			if ( isset( $_POST[ $key ] ) ) {
+				// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- structured nested payload, sanitized per-field by PayloadConfigBuilder::build() below against the template's known field schema; a blanket sanitize_text_field() would corrupt array structure. Nonce already verified via check_ajax_referer() above.
+				$posted[ $key ] = wp_unslash( $_POST[ $key ] );
+			}
+		}
+		$posted     = SavePost::unpackFormPayload( $posted );
+		$rawCols    = isset( $posted['dp_columns'] ) && is_array( $posted['dp_columns'] ) ? $posted['dp_columns'] : [];
+		$rawAllCols = isset( $posted['dp_all_columns'] ) && is_array( $posted['dp_all_columns'] ) ? $posted['dp_all_columns'] : [];
+		$rawRows    = isset( $posted['dp_groups'] ) && is_array( $posted['dp_groups'] ) ? $posted['dp_groups'] : [];
 
 		$config = PayloadConfigBuilder::build( $templateHref, $rawCols, $rawAllCols, $rawRows, $existingConfig, $postId );
 
