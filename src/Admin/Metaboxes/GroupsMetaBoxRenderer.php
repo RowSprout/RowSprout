@@ -170,8 +170,15 @@ self::renderGroupCard( $rowIdx, $group, $columns, (int) $post->ID, $parentGroup 
 ?>
 <?php endforeach; ?>
 </div>
+<?php
+// A child template's groups come from its parent: no adding there.
+// groups-metabox.js keeps this in step with the classic editor's Parent
+// dropdown (refreshAddGroupButtonState()).
+$isChild = (int) wp_get_post_parent_id( (int) $post->ID ) > 0;
+?>
 <div class="dp-section-top">
-<button type="button" id="dp-add-group-btn" class="button button-primary">+ <?php esc_html_e( 'Add group', 'rowsprout' ); ?></button>
+<button type="button" id="dp-add-group-btn" class="button button-primary"<?php echo $isChild ? ' disabled="disabled" style="display:none"' : ''; ?>>+ <?php esc_html_e( 'Add group', 'rowsprout' ); ?></button>
+<p class="description" id="dp-child-groups-note"<?php echo $isChild ? '' : ' style="display:none"'; ?>><?php esc_html_e( 'The groups of a child template come from its parent template. Add groups to the parent template.', 'rowsprout' ); ?></p>
 </div>
 </div>
 <?php
