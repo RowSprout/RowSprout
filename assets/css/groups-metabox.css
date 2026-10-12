@@ -177,7 +177,10 @@
 .dp-csv-recognised[hidden] { display:none; }
 .dp-csv-url { flex:1 1 320px; min-width:0; }
 .dp-csv-fetched { margin:6px 0 0; color:#1e4d2b; }
-.dp-csv-delete-warning { color:#d63638; font-weight:600; }
+.dp-csv-delete-warning { color:#8a2424; }
+.dp-csv-delete-warning ul { margin:6px 0 0 18px; list-style:disc; }
+.dp-csv-delete-warning li { margin:2px 0; }
+.dp-csv-delete-warning li:first-child { font-weight:600; }
 :is(.dp-template-tabs, .dp-elementor-tab-modal, .dp-csv-modal) .dp-csv-missing label { font-weight:400; }
 .dp-csv-help { margin:0 0 8px; }
 .dp-csv-preview { max-height:300px; overflow:auto; border:1px solid #c3c4c7; border-radius:4px; }

@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-12T07:41:20+00:00\n"
+"POT-Creation-Date: 2026-10-12T08:59:23+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: rowsprout\n"
@@ -135,7 +135,7 @@ msgstr ""
 #. translators: %d: number of further names.
 #: src/Admin/GroupCsv/GroupCsvImporter.php:318
 #: src/Admin/GroupCsv/GroupCsvImporter.php:331
-#: src/Admin/GroupCsv/GroupCsvSection.php:432
+#: src/Admin/GroupCsv/GroupCsvSection.php:435
 #: src/Admin/TemplateTransferPage.php:472
 #, php-format
 msgid "and %d more"
@@ -505,7 +505,7 @@ msgid "The file could not be read."
 msgstr ""
 
 #: src/Admin/GroupCsv/GroupCsvSection.php:378
-msgid "Enter a URL and click Fetch first."
+msgid "Enter a URL first."
 msgstr ""
 
 #: src/Admin/GroupCsv/GroupCsvSection.php:379
@@ -676,106 +676,120 @@ msgstr ""
 msgid "Nothing changes: every row matches a group that already has these values."
 msgstr ""
 
-#. translators: %d: number of groups.
+#. translators: %d: number of groups (1).
 #: src/Admin/GroupCsv/GroupCsvSection.php:430
 #, php-format
-msgid "Groups of this template that are not in the file: %d"
+msgid "%d group of this template is not in the file"
+msgstr ""
+
+#. translators: %d: number of groups (2 or more).
+#: src/Admin/GroupCsv/GroupCsvSection.php:432
+#, php-format
+msgid "%d groups of this template are not in the file"
 msgstr ""
 
 #: src/Admin/GroupCsv/GroupCsvSection.php:433
-msgid "Delete these groups and their pages"
+msgid "No row of the file has their ID or URL. Unless you choose to delete them below, they stay exactly as they are, with their pages."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:434
-msgid "When you import, these groups and their pages are deleted permanently. This cannot be undone."
+#: src/Admin/GroupCsv/GroupCsvSection.php:436
+msgid "Delete these groups when importing, with their pages"
+msgstr ""
+
+#: src/Admin/GroupCsv/GroupCsvSection.php:437
+msgid "When you click \"Import and delete\", these groups are deleted permanently, together with the pages generated for them. This cannot be undone."
 msgstr ""
 
 #. translators: %d: number of groups of child templates.
-#: src/Admin/GroupCsv/GroupCsvSection.php:436
+#: src/Admin/GroupCsv/GroupCsvSection.php:439
 #, php-format
-msgid "Child templates lose their groups for them too, with their pages: %d."
+msgid "Child templates have %d groups for them: those groups and their pages are deleted too."
+msgstr ""
+
+#: src/Admin/GroupCsv/GroupCsvSection.php:440
+msgid "Is a group missing by mistake, for example because the file is a filtered or partial export? Then cancel and import the complete file."
 msgstr ""
 
 #. translators: %d: number of groups to delete.
-#: src/Admin/GroupCsv/GroupCsvSection.php:438
+#: src/Admin/GroupCsv/GroupCsvSection.php:442
 #, php-format
 msgid "Import and delete (%d)"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:439
+#: src/Admin/GroupCsv/GroupCsvSection.php:443
 msgid "No row of the file matches a group of this template, so this file cannot delete groups: it may be the wrong file."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:440
+#: src/Admin/GroupCsv/GroupCsvSection.php:444
 msgid "When you click Import, the groups are saved right away and the page reloads automatically to show them."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:441
+#: src/Admin/GroupCsv/GroupCsvSection.php:445
 msgid "Imported. Reloading the page…"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:442
+#: src/Admin/GroupCsv/GroupCsvSection.php:446
 msgid "This template has changes that are not saved yet. They are lost when the page reloads after the import. Cancel and save the template first to keep them."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:444
+#: src/Admin/GroupCsv/GroupCsvSection.php:448
 msgid "No pages are generated yet: after the import, update the template with \"Create & update pages\" to generate them."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:445
+#: src/Admin/GroupCsv/GroupCsvSection.php:449
 msgid "Pages are generated when you publish the template."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:446
+#: src/Admin/GroupCsv/GroupCsvSection.php:450
 msgid "Nothing was changed."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:447
+#: src/Admin/GroupCsv/GroupCsvSection.php:451
 msgid "The server did not answer as expected. Try again."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:460
+#: src/Admin/GroupCsv/GroupCsvSection.php:464
 msgid "You are not allowed to export the groups of this template."
 msgstr ""
 
 #. translators: %s: error message.
-#: src/Admin/GroupCsv/GroupCsvSection.php:510
+#: src/Admin/GroupCsv/GroupCsvSection.php:514
 #, php-format
 msgid "The URL could not be fetched: %s"
 msgstr ""
 
 #. translators: %d: HTTP status code, 401 or 403.
-#: src/Admin/GroupCsv/GroupCsvSection.php:522
+#: src/Admin/GroupCsv/GroupCsvSection.php:526
 #, php-format
 msgid "The URL asks for a sign-in (HTTP status %d). For a Google sheet, share it with \"Anyone with the link\"."
 msgstr ""
 
 #. translators: %d: HTTP status code such as 404.
-#: src/Admin/GroupCsv/GroupCsvSection.php:529
+#: src/Admin/GroupCsv/GroupCsvSection.php:533
 #, php-format
 msgid "The URL answered with HTTP status %d instead of a file."
 msgstr ""
 
 #. translators: %s: maximum size such as "10 MB".
-#: src/Admin/GroupCsv/GroupCsvSection.php:536
+#: src/Admin/GroupCsv/GroupCsvSection.php:540
 #, php-format
 msgid "The file is larger than %s."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:541
+#: src/Admin/GroupCsv/GroupCsvSection.php:545
 msgid "The URL gave an empty file."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:546
+#: src/Admin/GroupCsv/GroupCsvSection.php:550
 msgid "This URL gives a web page, not a CSV file. For a Google sheet, share it with \"Anyone with the link\"."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:569
-#: src/Admin/GroupCsv/GroupCsvSection.php:598
+#: src/Admin/GroupCsv/GroupCsvSection.php:573
+#: src/Admin/GroupCsv/GroupCsvSection.php:602
 msgid "You are not allowed to import groups into this template."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:574
+#: src/Admin/GroupCsv/GroupCsvSection.php:578
 msgid "Enter a URL that starts with http:// or https://."
 msgstr ""
 

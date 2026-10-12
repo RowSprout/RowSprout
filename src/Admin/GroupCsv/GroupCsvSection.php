@@ -375,7 +375,7 @@ final class GroupCsvSection {
 					],
 					'noFile'          => __( 'Choose a file first.', 'rowsprout' ),
 					'readError'       => __( 'The file could not be read.', 'rowsprout' ),
-					'noUrl'           => __( 'Enter a URL and click Fetch first.', 'rowsprout' ),
+					'noUrl'           => __( 'Enter a URL first.', 'rowsprout' ),
 					'fetching'        => __( 'Fetching…', 'rowsprout' ),
 					/* translators: 1: file name, 2: file size such as "12 KB". */
 					'fetched'         => __( 'Fetched %1$s (%2$s).', 'rowsprout' ),
@@ -426,14 +426,18 @@ final class GroupCsvSection {
 					'skipped'         => __( 'Rows skipped: %d', 'rowsprout' ),
 					'warnings'        => __( 'Check before you import', 'rowsprout' ),
 					'nothing'         => __( 'Nothing changes: every row matches a group that already has these values.', 'rowsprout' ),
-					/* translators: %d: number of groups. */
-					'missing'         => __( 'Groups of this template that are not in the file: %d', 'rowsprout' ),
+					/* translators: %d: number of groups (1). */
+					'missingOne'      => __( '%d group of this template is not in the file', 'rowsprout' ),
+					/* translators: %d: number of groups (2 or more). */
+					'missingMany'     => __( '%d groups of this template are not in the file', 'rowsprout' ),
+					'missingExplain'  => __( 'No row of the file has their ID or URL. Unless you choose to delete them below, they stay exactly as they are, with their pages.', 'rowsprout' ),
 					/* translators: %d: number of further groups. */
 					'andMore'         => __( 'and %d more', 'rowsprout' ),
-					'deleteMissing'   => __( 'Delete these groups and their pages', 'rowsprout' ),
-					'deleteWarning'   => __( 'When you import, these groups and their pages are deleted permanently. This cannot be undone.', 'rowsprout' ),
+					'deleteMissing'   => __( 'Delete these groups when importing, with their pages', 'rowsprout' ),
+					'deleteWarning'   => __( 'When you click "Import and delete", these groups are deleted permanently, together with the pages generated for them. This cannot be undone.', 'rowsprout' ),
 					/* translators: %d: number of groups of child templates. */
-					'deleteWarningChildren' => __( 'Child templates lose their groups for them too, with their pages: %d.', 'rowsprout' ),
+					'deleteWarningChildren' => __( 'Child templates have %d groups for them: those groups and their pages are deleted too.', 'rowsprout' ),
+					'deleteWarningTip' => __( 'Is a group missing by mistake, for example because the file is a filtered or partial export? Then cancel and import the complete file.', 'rowsprout' ),
 					/* translators: %d: number of groups to delete. */
 					'importAndDelete' => __( 'Import and delete (%d)', 'rowsprout' ),
 					'deleteBlocked'   => __( 'No row of the file matches a group of this template, so this file cannot delete groups: it may be the wrong file.', 'rowsprout' ),
