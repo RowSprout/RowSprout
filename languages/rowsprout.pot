@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-12T13:44:16+00:00\n"
+"POT-Creation-Date: 2026-10-12T17:49:18+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: rowsprout\n"
@@ -20,7 +20,7 @@ msgstr ""
 #: src/Admin/Menu.php:29
 #: src/Admin/MenuRegistrar.php:15
 #: src/Admin/MenuRegistrar.php:16
-#: src/ThirdParty/Elementor/ElementorIntegration.php:147
+#: src/ThirdParty/Elementor/ElementorIntegration.php:149
 msgid "RowSprout"
 msgstr ""
 
@@ -1643,7 +1643,7 @@ msgid "(opens in a new tab)"
 msgstr ""
 
 #: src/Blocks/BlockRegistry.php:43
-#: src/ThirdParty/Elementor/ElementorIntegration.php:154
+#: src/ThirdParty/Elementor/ElementorIntegration.php:156
 #: src/ThirdParty/WPBakery/WPBakeryIntegration.php:140
 msgid "RowSprout pages"
 msgstr ""
@@ -1660,6 +1660,86 @@ msgstr ""
 
 #: src/Core/Blueprint/RowSproutPageBlueprint.php:63
 msgid "RowSprout page"
+msgstr ""
+
+#: src/Core/Conditions/ConditionEvaluator.php:42
+msgid "is empty"
+msgstr ""
+
+#: src/Core/Conditions/ConditionEvaluator.php:43
+msgid "is not empty"
+msgstr ""
+
+#: src/Core/Conditions/ConditionEvaluator.php:44
+msgid "is equal to"
+msgstr ""
+
+#: src/Core/Conditions/ConditionEvaluator.php:45
+msgid "is not equal to"
+msgstr ""
+
+#: src/Core/Conditions/ConditionEvaluator.php:46
+msgid "contains"
+msgstr ""
+
+#: src/Core/Conditions/ConditionEvaluator.php:47
+msgid "does not contain"
+msgstr ""
+
+#: src/Core/Conditions/ConditionEvaluator.php:48
+msgid "starts with"
+msgstr ""
+
+#: src/Core/Conditions/ConditionEvaluator.php:49
+msgid "is greater than / after"
+msgstr ""
+
+#: src/Core/Conditions/ConditionEvaluator.php:50
+msgid "is greater than or equal to"
+msgstr ""
+
+#: src/Core/Conditions/ConditionEvaluator.php:51
+msgid "is less than / before"
+msgstr ""
+
+#: src/Core/Conditions/ConditionEvaluator.php:52
+msgid "is less than or equal to"
+msgstr ""
+
+#: src/Core/Conditions/ConditionEvaluator.php:53
+msgid "is between"
+msgstr ""
+
+#: src/Core/Conditions/ConditionEvaluator.php:54
+msgid "date: year is"
+msgstr ""
+
+#: src/Core/Conditions/ConditionEvaluator.php:55
+msgid "date: is today"
+msgstr ""
+
+#: src/Core/Conditions/ConditionEvaluator.php:56
+msgid "date: is in the past"
+msgstr ""
+
+#: src/Core/Conditions/ConditionEvaluator.php:57
+msgid "date: is in the future"
+msgstr ""
+
+#: src/Core/Conditions/ConditionEvaluator.php:58
+msgid "date: within the next … days"
+msgstr ""
+
+#: src/Core/Conditions/ConditionEvaluator.php:59
+msgid "date: within the last … days"
+msgstr ""
+
+#: src/Core/Conditions/ConditionEvaluator.php:60
+msgid "checkbox: is checked"
+msgstr ""
+
+#: src/Core/Conditions/ConditionEvaluator.php:61
+msgid "checkbox: is not checked"
 msgstr ""
 
 #: src/Core/Grid/PageGridRenderer.php:43
@@ -2144,6 +2224,174 @@ msgstr ""
 msgid "Optional: take the button text from a Text field property."
 msgstr ""
 
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:50
+msgid "If / then"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:84
+msgid "A property"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:85
+msgid "Own text"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:91
+msgid "If … then"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:100
+msgid "The cases are tried from top to bottom; the first one whose rules match is shown. A date is written as YYYY-MM-DD."
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:109
+msgid "Name"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:111
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:226
+msgid "Case"
+msgstr ""
+
+#. translators: %d: rule number, 2 or 3.
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:121
+#, php-format
+msgid "Rule %d"
+msgstr ""
+
+#. translators: %d: rule number.
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:133
+msgid "If property"
+msgstr ""
+
+#. translators: %d: rule number.
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:133
+#, php-format
+msgid "Property (rule %d)"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:144
+msgid "Operator"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:154
+msgid "Value"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:163
+msgid "And"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:173
+msgid "Show when"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:176
+msgid "all rules match"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:177
+msgid "any rule matches"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:193
+msgid "Then show"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:203
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:252
+msgid "Property"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:213
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:262
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:273
+#: src/ThirdParty/Elementor/Widgets/HeadingWidget.php:95
+#: src/ThirdParty/Elementor/Widgets/TextareaWidget.php:74
+msgid "Text"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:223
+msgid "Cases"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:236
+msgid "Otherwise"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:243
+msgid "Show"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:245
+msgid "Nothing"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:280
+#: src/ThirdParty/Elementor/Widgets/HeadingWidget.php:67
+msgid "HTML tag"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:289
+msgid "Alignment"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:292
+msgid "Left"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:293
+msgid "Center"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:294
+msgid "Right"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:295
+msgid "Justified"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:312
+#: src/ThirdParty/Elementor/Widgets/HeadingWidget.php:111
+#: src/ThirdParty/Elementor/Widgets/TextareaWidget.php:90
+msgid "Text color"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:512
+msgid "This template has no groups yet, so no case can be checked."
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:514
+msgid "Preview group: no case matches, so \"Otherwise\" is shown."
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:516
+msgid "Preview group: no case matches, and \"Otherwise\" shows nothing."
+msgstr ""
+
+#. translators: 1: case number, 2: case name.
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:520
+#, php-format
+msgid "Preview group: case %1$d (%2$s) matches."
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:524
+msgid "A rule depends on today: the page checks it again when it is shown."
+msgstr ""
+
+#. translators: %s: comma-separated property codes.
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:528
+#, php-format
+msgid "Not in this template (these rules never match): %s"
+msgstr ""
+
+#. translators: %d: case number.
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:532
+#, php-format
+msgid "Case %d has no rule with a property yet and is skipped."
+msgstr ""
+
 #: src/ThirdParty/Elementor/Widgets/GridWidget.php:77
 msgid "Sort direction"
 msgstr ""
@@ -2304,10 +2552,6 @@ msgstr ""
 msgid "Content"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/HeadingWidget.php:67
-msgid "HTML tag"
-msgstr ""
-
 #: src/ThirdParty/Elementor/Widgets/HeadingWidget.php:84
 #: src/ThirdParty/Elementor/Widgets/TextareaWidget.php:62
 msgid "Fallback text"
@@ -2315,16 +2559,6 @@ msgstr ""
 
 #: src/ThirdParty/Elementor/Widgets/HeadingWidget.php:86
 msgid "Lorem ipsum dolor sit amet"
-msgstr ""
-
-#: src/ThirdParty/Elementor/Widgets/HeadingWidget.php:95
-#: src/ThirdParty/Elementor/Widgets/TextareaWidget.php:74
-msgid "Text"
-msgstr ""
-
-#: src/ThirdParty/Elementor/Widgets/HeadingWidget.php:111
-#: src/ThirdParty/Elementor/Widgets/TextareaWidget.php:90
-msgid "Text color"
 msgstr ""
 
 #: src/ThirdParty/Elementor/Widgets/TextareaWidget.php:65
