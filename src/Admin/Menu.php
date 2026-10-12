@@ -169,14 +169,25 @@ final class Menu
 
                 <?php \RowSprout\Core\PageEditing::renderSettingsFields(); ?>
 
+                <?php
+                /**
+                 * Lets an add-on such as RowSprout Pro add its own settings
+                 * sections to this form, saved with its one button. The form
+                 * posts back to this page; save on 'admin_init' when your own
+                 * nonce field is in $_POST (as PageEditing::handleSave() does).
+                 */
+                do_action('rowsprout_settings_page_fields');
+                ?>
+
                 <?php submit_button(); ?>
             </form>
 
             <?php
 
             /**
-             * Lets an add-on such as RowSprout Pro append its own settings
-             * sections below these, without the base plugin knowing it exists.
+             * Lets an add-on such as RowSprout Pro append more below the
+             * settings form (with a form of its own); fields that belong to
+             * the settings go in 'rowsprout_settings_page_fields'.
              */
             do_action('rowsprout_settings_page_after_permalink');
             ?>
