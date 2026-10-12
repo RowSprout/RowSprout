@@ -94,6 +94,7 @@ final class MenuRegistrar {
 			'edit.php?post_type=' . PostTypes::TEMPLATE,  // Templates
 			'edit.php?post_type=' . PostTypes::PAGE,       // Pages
 			'rowsprout-batch-scheduling',        // Throttling (Pro)
+			'rowsprout-syncs',                   // Syncs (Pro)
 			TemplateTransferPage::PAGE_SLUG,     // Import / Export
 			'rowsprout_settings',                        // Settings
 			'rowsprout-license',                 // License (Pro)
