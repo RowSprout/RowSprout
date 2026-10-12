@@ -277,6 +277,27 @@ final class GroupCsvParser {
 	}
 
 	/**
+	 * The read settings the wizard starts with for a file (its loadBuffer()):
+	 * the detected encoding and delimiter, double quotes, a header row, and
+	 * row 2 as the start when Excel's "sep=" line comes first.
+	 *
+	 * @return array{encoding: string, delimiters: string, qualifier: string, consecutive: bool, start_row: int, headers: bool}
+	 */
+	public static function detectSettings( string $bytes ): array {
+		$encoding  = self::detectEncoding( $bytes )['encoding'];
+		$delimiter = self::detectDelimiter( self::decode( $bytes, $encoding ) );
+
+		return [
+			'encoding'    => $encoding,
+			'delimiters'  => $delimiter['delimiter'],
+			'qualifier'   => '"',
+			'consecutive' => false,
+			'start_row'   => $delimiter['sepLine'] ? 2 : 1,
+			'headers'     => true,
+		];
+	}
+
+	/**
 	 * A file read with the given settings (see settings()).
 	 *
 	 * @param array{encoding: string, delimiters: string, qualifier: string, consecutive: bool, start_row: int, headers: bool} $settings
