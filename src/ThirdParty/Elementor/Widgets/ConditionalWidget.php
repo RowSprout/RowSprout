@@ -20,7 +20,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * "If / then": shows one of several outputs depending on the current page's
  * property values. Cases are tried in order, each with up to three rules
- * (fixed slots: Elementor cannot nest repeaters); the first that matches is
+ * (fixed slots: Elementor cannot nest repeaters; each with an operator
+ * list per kind of property, shown for the chosen property's kind); the
+ * first that matches is
  * shown, else "Otherwise". An output is a property (formatted as the block
  * bindings format it) or own text with @code_…@ tokens (replaced when the
  * page is generated; in the editor for the preview group).
@@ -73,14 +75,8 @@ final class ConditionalWidget extends Widget_Base {
 	protected function register_controls() {
 		$properties = PageFieldResolver::getFieldCodeOptions( null );
 		$outputs    = self::outputOptions();
-		$operators  = [];
-		foreach ( ConditionEvaluator::operators() as $id => $operator ) {
-			$operators[ $id ] = $operator['label'];
-		}
-		$noArg   = array_keys( array_filter( ConditionEvaluator::operators(), static function ( array $operator ): bool {
-			return $operator['args'] === 0;
-		} ) );
-		$sources = [
+		$byKind     = self::codesByKind();
+		$sources    = [
 			'property' => __( 'A property', 'rowsprout' ),
 			'text'     => __( 'Own text', 'rowsprout' ),
 		];
@@ -138,32 +134,48 @@ final class ConditionalWidget extends Widget_Base {
 					'separator' => $slot === 1 ? 'before' : 'default',
 				]
 			);
-			$repeater->add_control(
-				'rule' . $slot . '_operator',
-				[
-					'label'     => __( 'Operator', 'rowsprout' ),
-					'type'      => Controls_Manager::SELECT,
-					'options'   => $operators,
-					'default'   => 'is_not_empty',
-					'condition' => $on,
-				]
-			);
+			// One operator list per kind of property, shown for the properties of
+			// that kind (Elementor cannot change a list's options on the fly).
+			$withValue  = [];
+			$withSecond = [];
+			foreach ( $byKind as $kind => $codes ) {
+				$control = 'rule' . $slot . '_op_' . $kind;
+				$repeater->add_control(
+					$control,
+					[
+						'label'     => __( 'Operator', 'rowsprout' ),
+						'type'      => Controls_Manager::SELECT,
+						'options'   => ConditionEvaluator::operatorsFor( $kind ),
+						'default'   => ConditionEvaluator::defaultOperator( $kind ),
+						'condition' => $on + [ 'rule' . $slot . '_field' => $codes ],
+					]
+				);
+				$takesValue = array_values( array_filter( array_keys( ConditionEvaluator::operatorsFor( $kind ) ), static function ( string $operator ): bool {
+					return ConditionEvaluator::argCount( $operator ) > 0;
+				} ) );
+				if ( $takesValue !== [] ) {
+					$withValue[] = self::termsFor( $slot, $codes, $control, $takesValue );
+				}
+				if ( isset( ConditionEvaluator::operatorsFor( $kind )['between'] ) ) {
+					$withSecond[] = self::termsFor( $slot, $codes, $control, [ 'between' ] );
+				}
+			}
 			$repeater->add_control(
 				'rule' . $slot . '_value',
 				[
-					'label'     => __( 'Value', 'rowsprout' ),
-					'type'      => Controls_Manager::TEXT,
-					'default'   => '',
-					'condition' => $on + [ 'rule' . $slot . '_operator!' => $noArg ],
+					'label'      => __( 'Value', 'rowsprout' ),
+					'type'       => Controls_Manager::TEXT,
+					'default'    => '',
+					'conditions' => self::visibleWhen( $slot, $withValue ),
 				]
 			);
 			$repeater->add_control(
 				'rule' . $slot . '_value2',
 				[
-					'label'     => __( 'And', 'rowsprout' ),
-					'type'      => Controls_Manager::TEXT,
-					'default'   => '',
-					'condition' => $on + [ 'rule' . $slot . '_operator' => 'between' ],
+					'label'      => __( 'And', 'rowsprout' ),
+					'type'       => Controls_Manager::TEXT,
+					'default'    => '',
+					'conditions' => self::visibleWhen( $slot, $withSecond ),
 				]
 			);
 		}
@@ -357,7 +369,7 @@ final class ConditionalWidget extends Widget_Base {
 	 * @param array<int, mixed>         $cases
 	 * @param array<string, mixed>|null $group
 	 * @param string|null               $today Y-m-d, for tests.
-	 * @return array{chosen: int|string|null, entries: array<int, int|string>, client: array<string, mixed>|null, missing: array<int, string>, empty: array<int, int>}
+	 * @return array{chosen: int|string|null, entries: array<int, int|string>, client: array<string, mixed>|null, missing: array<int, string>, empty: array<int, int>, changed: array<int, array{0: int, 1: int}>}
 	 */
 	public static function decide( array $cases, bool $hasElse, ?array $group, ?string $today = null ): array {
 		$entries = [];
@@ -365,6 +377,7 @@ final class ConditionalWidget extends Widget_Base {
 		$chosen  = null;
 		$missing = [];
 		$empty   = [];
+		$changed = [];
 		$relative = false;
 		$final   = false;
 
@@ -386,10 +399,15 @@ final class ConditionalWidget extends Widget_Base {
 					$results[] = false;
 					continue;
 				}
-				$result = ConditionEvaluator::test( $field['value'], $field['type'], $rule['operator'], $rule['value'], $rule['value2'], $today );
-				$day    = ConditionEvaluator::isRelative( $rule['operator'] ) ? ConditionEvaluator::dayOf( $field['value'], $field['type'] ) : null;
+				$fallback = false;
+				$operator = self::operatorFor( $rule, ConditionEvaluator::kindOf( $field['type'] ), $fallback );
+				if ( $fallback ) {
+					$changed[] = [ $index, $rule['slot'] ];
+				}
+				$result = ConditionEvaluator::test( $field['value'], $field['type'], $operator, $rule['value'], $rule['value2'], $today );
+				$day    = ConditionEvaluator::isRelative( $operator ) ? ConditionEvaluator::dayOf( $field['value'], $field['type'] ) : null;
 				if ( $day !== null ) {
-					$dynamic[] = [ 'd' => $day, 'o' => $rule['operator'], 'n' => max( 0, (int) $rule['value'] ) ];
+					$dynamic[] = [ 'd' => $day, 'o' => $operator, 'n' => max( 0, (int) $rule['value'] ) ];
 				} else {
 					$static[] = $result;
 				}
@@ -429,6 +447,7 @@ final class ConditionalWidget extends Widget_Base {
 			'client'  => $relative ? [ 'offset' => (int) round( wp_timezone()->getOffset( new \DateTimeImmutable( 'now' ) ) / 60 ), 'cases' => $client ] : null,
 			'missing' => array_values( array_unique( $missing ) ),
 			'empty'   => $empty,
+			'changed' => $changed,
 		];
 	}
 
@@ -437,29 +456,106 @@ final class ConditionalWidget extends Widget_Base {
 	 * with a property chosen.
 	 *
 	 * @param array<string, mixed> $case
-	 * @return array<int, array{field: string, operator: string, value: string, value2: string}>
+	 * @return array<int, array{slot: int, field: string, operators: array<string, string>, value: string, value2: string}>
 	 */
 	private static function rules( array $case ): array {
-		$rules     = [];
-		$operators = ConditionEvaluator::operators();
+		$rules = [];
 		for ( $slot = 1; $slot <= self::RULE_SLOTS; $slot++ ) {
 			if ( $slot > 1 && ( $case[ 'rule' . $slot . '_on' ] ?? '' ) !== 'yes' ) {
 				continue;
 			}
-			$field    = (string) ( $case[ 'rule' . $slot . '_field' ] ?? '' );
-			$operator = (string) ( $case[ 'rule' . $slot . '_operator' ] ?? '' );
-			if ( $field === '' || ! isset( $operators[ $operator ] ) ) {
+			$field = (string) ( $case[ 'rule' . $slot . '_field' ] ?? '' );
+			if ( $field === '' ) {
 				continue;
 			}
+			$operators = [];
+			foreach ( ConditionEvaluator::kinds() as $kind ) {
+				if ( isset( $case[ 'rule' . $slot . '_op_' . $kind ] ) ) {
+					$operators[ $kind ] = (string) $case[ 'rule' . $slot . '_op_' . $kind ];
+				}
+			}
 			$rules[] = [
-				'field'    => $field,
-				'operator' => $operator,
-				'value'    => (string) ( $case[ 'rule' . $slot . '_value' ] ?? '' ),
-				'value2'   => (string) ( $case[ 'rule' . $slot . '_value2' ] ?? '' ),
+				'slot'      => $slot,
+				'field'     => $field,
+				'operators' => $operators,
+				'value'     => (string) ( $case[ 'rule' . $slot . '_value' ] ?? '' ),
+				'value2'    => (string) ( $case[ 'rule' . $slot . '_value2' ] ?? '' ),
 			];
 		}
 
 		return $rules;
+	}
+
+	/**
+	 * The operator a rule uses for its property's kind: the one chosen in that
+	 * kind's list, else the kind's default ($fallback then says so: the list
+	 * had something that does not fit, or nothing while other kinds' lists
+	 * had a choice, e.g. after the property's type changed).
+	 *
+	 * @param array{operators: array<string, string>} $rule
+	 */
+	private static function operatorFor( array $rule, string $kind, bool &$fallback ): string {
+		$chosen   = $rule['operators'][ $kind ] ?? '';
+		$fallback = false;
+		if ( isset( ConditionEvaluator::operatorsFor( $kind )[ $chosen ] ) ) {
+			return $chosen;
+		}
+		$fallback = $chosen !== '' || $rule['operators'] !== [];
+
+		return ConditionEvaluator::defaultOperator( $kind );
+	}
+
+	/**
+	 * The current template's property codes by the kind their type compares
+	 * as (only the kinds the template has).
+	 *
+	 * @return array<string, array<int, string>>
+	 */
+	private static function codesByKind(): array {
+		$byKind = [];
+		foreach ( (array) ( TemplateMeta::get( PageFieldResolver::resolveCurrentTemplateId() )['field_types'] ?? [] ) as $definition ) {
+			$code = is_array( $definition ) ? (string) ( $definition['code'] ?? '' ) : '';
+			if ( $code !== '' ) {
+				$byKind[ ConditionEvaluator::kindOf( (string) ( $definition['type'] ?? '' ) ) ][] = $code;
+			}
+		}
+
+		return $byKind;
+	}
+
+	/**
+	 * Terms for "this rule's property is one of $codes and that kind's
+	 * operator is one of $operators".
+	 *
+	 * @param array<int, string> $codes
+	 * @param array<int, string> $operators
+	 * @return array<string, mixed>
+	 */
+	private static function termsFor( int $slot, array $codes, string $control, array $operators ): array {
+		return [
+			'relation' => 'and',
+			'terms'    => [
+				[ 'name' => 'rule' . $slot . '_field', 'operator' => 'in', 'value' => $codes ],
+				[ 'name' => $control, 'operator' => 'in', 'value' => $operators ],
+			],
+		];
+	}
+
+	/**
+	 * Shown when one of $alternatives holds (and rule 2/3 is switched on).
+	 *
+	 * @param array<int, array<string, mixed>> $alternatives
+	 * @return array<string, mixed>
+	 */
+	private static function visibleWhen( int $slot, array $alternatives ): array {
+		// Nothing can need it: a condition that never holds.
+		$any   = $alternatives === [] ? [ [ 'name' => 'rule' . $slot . '_field', 'operator' => '===', 'value' => '__never__' ] ] : $alternatives;
+		$terms = [ [ 'relation' => 'or', 'terms' => $any ] ];
+		if ( $slot > 1 ) {
+			array_unshift( $terms, [ 'name' => 'rule' . $slot . '_on', 'operator' => '===', 'value' => 'yes' ] );
+		}
+
+		return [ 'relation' => 'and', 'terms' => $terms ];
 	}
 
 	/**
@@ -526,6 +622,10 @@ final class ConditionalWidget extends Widget_Base {
 		if ( $decision['missing'] !== [] && $context !== null ) {
 			/* translators: %s: comma-separated property codes. */
 			$notes[] = sprintf( __( 'Not in this template (these rules never match): %s', 'rowsprout' ), implode( ', ', $decision['missing'] ) );
+		}
+		foreach ( $decision['changed'] as [ $index, $slot ] ) {
+			/* translators: 1: case number, 2: rule number. */
+			$notes[] = sprintf( __( 'Case %1$d, rule %2$d: the operator does not fit the property\'s type (changed?), so "is not empty" / "is checked" is used. Choose the operator again.', 'rowsprout' ), (int) $index + 1, (int) $slot );
 		}
 		foreach ( $decision['empty'] as $index ) {
 			/* translators: %d: case number. */

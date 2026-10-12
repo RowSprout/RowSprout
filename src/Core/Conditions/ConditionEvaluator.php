@@ -62,6 +62,78 @@ final class ConditionEvaluator {
 		];
 	}
 
+	/**
+	 * The operators that fit a kind, labelled for it ("is before" for a date,
+	 * "contains the item" for a list), in the order an editor offers them.
+	 *
+	 * @return array<string, string> operator => label
+	 */
+	public static function operatorsFor( string $kind ): array {
+		$empty = [
+			'is_empty'     => __( 'is empty', 'rowsprout' ),
+			'is_not_empty' => __( 'is not empty', 'rowsprout' ),
+		];
+		switch ( $kind ) {
+			case self::KIND_NUMBER:
+				return $empty + [
+					'equals'     => __( 'is equal to', 'rowsprout' ),
+					'not_equals' => __( 'is not equal to', 'rowsprout' ),
+					'gt'         => __( 'is greater than', 'rowsprout' ),
+					'gte'        => __( 'is greater than or equal to', 'rowsprout' ),
+					'lt'         => __( 'is less than', 'rowsprout' ),
+					'lte'        => __( 'is less than or equal to', 'rowsprout' ),
+					'between'    => __( 'is between', 'rowsprout' ),
+				];
+			case self::KIND_DATE:
+				return $empty + [
+					'equals'    => __( 'is on', 'rowsprout' ),
+					'year_is'   => __( 'is in the year', 'rowsprout' ),
+					'lt'        => __( 'is before', 'rowsprout' ),
+					'gt'        => __( 'is after', 'rowsprout' ),
+					'between'   => __( 'is between', 'rowsprout' ),
+					'is_today'  => __( 'is today', 'rowsprout' ),
+					'in_past'   => __( 'is in the past', 'rowsprout' ),
+					'in_future' => __( 'is in the future', 'rowsprout' ),
+					'next_days' => __( 'is within the next … days', 'rowsprout' ),
+					'last_days' => __( 'is within the last … days', 'rowsprout' ),
+				];
+			case self::KIND_BOOL:
+				return [
+					'is_checked'     => __( 'is checked', 'rowsprout' ),
+					'is_not_checked' => __( 'is not checked', 'rowsprout' ),
+				];
+			case self::KIND_LIST:
+				return $empty + [
+					'equals'   => __( 'contains the item', 'rowsprout' ),
+					'contains' => __( 'has an item containing', 'rowsprout' ),
+					'gt'       => __( 'has more than … items', 'rowsprout' ),
+					'lt'       => __( 'has fewer than … items', 'rowsprout' ),
+				];
+			default:
+				return $empty + [
+					'equals'       => __( 'is equal to', 'rowsprout' ),
+					'not_equals'   => __( 'is not equal to', 'rowsprout' ),
+					'contains'     => __( 'contains', 'rowsprout' ),
+					'not_contains' => __( 'does not contain', 'rowsprout' ),
+					'starts_with'  => __( 'starts with', 'rowsprout' ),
+				];
+		}
+	}
+
+	/**
+	 * The operator a new rule on a property of this kind starts with.
+	 */
+	public static function defaultOperator( string $kind ): string {
+		return $kind === self::KIND_BOOL ? 'is_checked' : 'is_not_empty';
+	}
+
+	/**
+	 * @return array<int, string>
+	 */
+	public static function kinds(): array {
+		return [ self::KIND_TEXT, self::KIND_NUMBER, self::KIND_DATE, self::KIND_BOOL, self::KIND_LIST ];
+	}
+
 	public static function isRelative( string $operator ): bool {
 		return in_array( $operator, self::RELATIVE, true );
 	}
