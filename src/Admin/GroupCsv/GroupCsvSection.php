@@ -173,7 +173,7 @@ final class GroupCsvSection {
 						</p>
 						<p data-csv-source-row="file">
 							<label for="dp-csv-file"><?php esc_html_e( 'File', 'rowsprout' ); ?></label><br />
-							<input type="file" id="dp-csv-file" accept=".csv,.txt,.tsv,.xlsx,text/csv,text/plain,text/tab-separated-values,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
+							<input type="file" id="dp-csv-file" accept=".csv,.txt,.tsv,.xlsx,.json,text/csv,text/plain,text/tab-separated-values,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/json" />
 							<span class="description"><?php esc_html_e( 'CSV, text or an Excel workbook (.xlsx).', 'rowsprout' ); ?></span>
 						</p>
 						<div data-csv-source-row="url" hidden>
@@ -427,9 +427,8 @@ final class GroupCsvSection {
 				'readError'       => __( 'The file could not be read.', 'rowsprout' ),
 				'noUrl'           => __( 'Enter a URL first.', 'rowsprout' ),
 				'fetching'        => __( 'Fetching…', 'rowsprout' ),
-				'readingWorkbook' => __( 'Reading the workbook…', 'rowsprout' ),
-				/* translators: %s: what the parts are called, e.g. "List". */
-				'chooseSheet'     => __( 'This file has more than one. Choose the %s to import.', 'rowsprout' ),
+				'readingWorkbook' => __( 'Reading the file…', 'rowsprout' ),
+				'chooseSheet'     => __( 'This file has more than one. Choose the one to import.', 'rowsprout' ),
 				/* translators: 1: file name, 2: file size such as "12 KB". */
 				'fetched'         => __( 'Fetched %1$s (%2$s).', 'rowsprout' ),
 				'emptyFile'       => __( 'The file is empty.', 'rowsprout' ),
@@ -441,6 +440,8 @@ final class GroupCsvSection {
 				'recognised'      => __( 'Columns: %1$d · Rows to import: %2$d · Separated by: %3$s. Not right? Choose other delimiters in the next step.', 'rowsprout' ),
 				/* translators: 1: number of columns, 2: number of rows, 3: worksheet name. */
 				'recognisedSheet' => __( 'Columns: %1$d · Rows to import: %2$d · From the worksheet "%3$s".', 'rowsprout' ),
+				/* translators: 1: number of columns, 2: number of rows, 3: what the part is called (e.g. "List"), 4: its name (e.g. "data.items"). */
+				'recognisedPart'  => __( 'Columns: %1$d · Rows to import: %2$d · %3$s: "%4$s".', 'rowsprout' ),
 				'delimiterNames'  => [
 					'tab'       => __( 'tabs', 'rowsprout' ),
 					'semicolon' => __( 'semicolons', 'rowsprout' ),

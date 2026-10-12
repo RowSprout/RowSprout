@@ -45,9 +45,11 @@
 		newProperties: [],
 		busy: false,
 		fetchedUrl: '',
-		// An Excel workbook: the worksheet read, the URL it is for, the uploaded file.
+		// An Excel workbook or a JSON feed: the worksheet or list read, the URL it
+		// is for, what the converter calls the parts ('' = worksheet), the uploaded file.
 		sheet: '',
 		sheetFor: '',
+		sheetLabel: '',
 		file: null,
 		saved: false
 	};
@@ -395,10 +397,12 @@
 		$preview.append($('<table/>').append($('<thead/>').append($headRow)).append($body));
 
 		var data = table();
-		// A workbook was turned into CSV on the server: name the worksheet, not a delimiter.
-		$recognised.text(state.sheet
-			? fmt(i18n.recognisedSheet, data.width, data.rows.length, state.sheet)
-			: fmt(i18n.recognised, data.width, data.rows.length, delimiterSummary())).prop('hidden', false);
+		// A workbook or feed was turned into CSV on the server: name the worksheet or list, not a delimiter.
+		$recognised.text(!state.sheet
+			? fmt(i18n.recognised, data.width, data.rows.length, delimiterSummary())
+			: state.sheetLabel
+				? fmt(i18n.recognisedPart, data.width, data.rows.length, state.sheetLabel, state.sheet)
+				: fmt(i18n.recognisedSheet, data.width, data.rows.length, state.sheet)).prop('hidden', false);
 	}
 
 	function renderPreview() {
@@ -1150,7 +1154,8 @@
 	var sheetHelp = String($('#dp-csv-sheet-help').text() || '');
 	function showSheets(sheets, sheet, label) {
 		$('#dp-csv-sheet-label').text(label || sheetLabel);
-		$('#dp-csv-sheet-help').text(label ? fmt(i18n.chooseSheet, label) : sheetHelp);
+		$('#dp-csv-sheet-help').text(label ? i18n.chooseSheet : sheetHelp);
+		state.sheetLabel = String(label || '');
 		var $select = $('#dp-csv-sheet').empty();
 		(sheets || []).forEach(function(name) {
 			$select.append($('<option/>').val(String(name)).text(String(name)));
@@ -1169,13 +1174,22 @@
 		return bytes.buffer;
 	}
 
-	// A zip (.xlsx) or an old Office file: the browser cannot read it as text.
-	function isSpreadsheet(buffer) {
+	// A zip (.xlsx) or an old Office file, which the browser cannot read as
+	// text, or JSON (an add-on converts it; without one the server says so).
+	function needsConverting(buffer) {
 		var b = new Uint8Array(buffer.slice(0, 4));
-		return (b[0] === 0x50 && b[1] === 0x4B && b[2] === 0x03 && b[3] === 0x04) || (b[0] === 0xD0 && b[1] === 0xCF && b[2] === 0x11 && b[3] === 0xE0);
+		if ((b[0] === 0x50 && b[1] === 0x4B && b[2] === 0x03 && b[3] === 0x04) || (b[0] === 0xD0 && b[1] === 0xCF && b[2] === 0x11 && b[3] === 0xE0)) {
+			return true;
+		}
+		var head = new Uint8Array(buffer.slice(0, 64));
+		var i = head[0] === 0xEF && head[1] === 0xBB && head[2] === 0xBF ? 3 : 0;
+		while (i < head.length && (head[i] === 0x20 || head[i] === 0x09 || head[i] === 0x0A || head[i] === 0x0D)) {
+			i++;
+		}
+		return head[i] === 0x7B || head[i] === 0x5B;
 	}
 
-	// The server turns an uploaded workbook into CSV, for one worksheet.
+	// The server turns an uploaded workbook (or JSON) into CSV, for one worksheet (or list).
 	function convertFile(file, sheet) {
 		var data = new window.FormData();
 		data.append('action', cfg.convertAction);
@@ -1269,7 +1283,7 @@
 		}
 		var reader = new FileReader();
 		reader.onload = function() {
-			if (isSpreadsheet(reader.result)) {
+			if (needsConverting(reader.result)) {
 				state.file = file;
 				convertFile(file, '');
 				return;
@@ -1290,9 +1304,10 @@
 	function fetchExtra() {
 		var extra = {};
 		$modal.find('[data-csv-fetch-extra]').each(function() {
-			var key = String($(this).data('csvExtra') || this.id || '');
+			var $control = $(this);
+			var key = String($control.data('csvExtra') || this.id || '');
 			if (key) {
-				extra[key] = String($(this).val() || '');
+				extra[key] = $control.is(':checkbox') ? ($control.is(':checked') ? '1' : '') : String($control.val() || '');
 			}
 		});
 		return extra;
