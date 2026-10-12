@@ -123,10 +123,10 @@ final class ChildTemplateAdminUx {
 			$actions['trash'] = '<a href="' . esc_url( get_delete_post_link( $post->ID ) ) . '" class="submitdelete" aria-label="' . esc_attr(
 				sprintf(
 					/* translators: %s: template title. */
-					__( 'Move &#8220;%s&#8221; and its child pages to the Trash', 'rowsprout' ),
+					__( 'Move &#8220;%s&#8221; and its child templates to the Trash', 'rowsprout' ),
 					$post->post_title
 				)
-			) . '">' . esc_html__( 'Trash with Child pages', 'rowsprout' ) . '</a>';
+			) . '">' . esc_html__( 'Trash with Child Templates', 'rowsprout' ) . '</a>';
 		}
 
 		// Restoring a child template also restores its parent (see

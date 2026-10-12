@@ -51,7 +51,7 @@ final class Menu
             ],
             [
                 __('Add properties', 'rowsprout'),
-                __('Properties are the parts that differ per page: a title, a URL, a text, a link, an email address. Place a property in your design with its code (shown on the Properties tab, for example @code_city_123@) or with one with the widgets.', 'rowsprout'),
+                __('Properties are the parts that differ per page: a title, a URL, a text, a link, an email address. Place a property in your design with its code (shown on the Properties tab, for example @code_city_123@) or with one of the widgets.', 'rowsprout'),
             ],
             [
                 __('Add groups', 'rowsprout'),
