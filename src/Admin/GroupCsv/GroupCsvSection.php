@@ -183,6 +183,19 @@ final class GroupCsvSection {
 								<button type="button" class="button" id="dp-csv-fetch"><?php esc_html_e( 'Fetch', 'rowsprout' ); ?></button>
 							</div>
 							<p class="description"><?php esc_html_e( 'A CSV, text or Excel (.xlsx) file on the web, or a Google Sheets link of a sheet shared with "Anyone with the link".', 'rowsprout' ); ?></p>
+							<?php
+							/**
+							 * Prints more below the URL in the wizard's first step (RowSprout
+							 * Pro: a request header for APIs). A control marked
+							 * data-csv-fetch-extra goes with the fetch request as extra[<key>]
+							 * (its data-csv-extra key, the rowsprout_group_csv_fetch_args
+							 * filter gets it); data-csv-extra also puts it in the import
+							 * request's extra.
+							 *
+							 * @param \WP_Post $post The template.
+							 */
+							do_action( 'rowsprout_group_csv_wizard_source', $post );
+							?>
 							<p class="dp-csv-fetched" id="dp-csv-fetched" hidden></p>
 							<p class="dp-csv-tab-row" id="dp-csv-tab-row" hidden>
 								<label for="dp-csv-tab"><?php esc_html_e( 'Tab', 'rowsprout' ); ?></label><br />
@@ -191,9 +204,9 @@ final class GroupCsvSection {
 							</p>
 						</div>
 						<p class="dp-csv-sheet-row" id="dp-csv-sheet-row" hidden>
-							<label for="dp-csv-sheet"><?php esc_html_e( 'Worksheet', 'rowsprout' ); ?></label><br />
+							<label for="dp-csv-sheet" id="dp-csv-sheet-label"><?php esc_html_e( 'Worksheet', 'rowsprout' ); ?></label><br />
 							<select id="dp-csv-sheet"></select>
-							<span class="description"><?php esc_html_e( 'This workbook has several worksheets. Choose the one to import.', 'rowsprout' ); ?></span>
+							<span class="description" id="dp-csv-sheet-help"><?php esc_html_e( 'This workbook has several worksheets. Choose the one to import.', 'rowsprout' ); ?></span>
 						</p>
 						<div class="dp-csv-fields">
 							<p>
@@ -415,6 +428,8 @@ final class GroupCsvSection {
 				'noUrl'           => __( 'Enter a URL first.', 'rowsprout' ),
 				'fetching'        => __( 'Fetching…', 'rowsprout' ),
 				'readingWorkbook' => __( 'Reading the workbook…', 'rowsprout' ),
+				/* translators: %s: what the parts are called, e.g. "List". */
+				'chooseSheet'     => __( 'This file has more than one. Choose the %s to import.', 'rowsprout' ),
 				/* translators: 1: file name, 2: file size such as "12 KB". */
 				'fetched'         => __( 'Fetched %1$s (%2$s).', 'rowsprout' ),
 				'emptyFile'       => __( 'The file is empty.', 'rowsprout' ),
@@ -623,13 +638,24 @@ final class GroupCsvSection {
 	 * @return array{content?:string, name?:string, size?:string, error?:string}
 	 *         The file's bytes, a file name and a readable size; or an error.
 	 */
-	public static function fetch( string $url ): array {
-		$url      = self::normalizeUrl( $url );
-		$response = wp_safe_remote_get( $url, [
+	public static function fetch( string $url, array $extra = [] ): array {
+		$url = self::normalizeUrl( $url );
+
+		/**
+		 * The request that fetches a group import's URL (wp_safe_remote_get()
+		 * arguments), e.g. to add a header an API needs (RowSprout Pro).
+		 *
+		 * @param array<string, mixed> $args
+		 * @param string               $url
+		 * @param array<string, mixed> $extra Values an add-on put in the wizard
+		 *                                    (data-csv-fetch-extra), or keeps for a sync.
+		 */
+		$args = (array) apply_filters( 'rowsprout_group_csv_fetch_args', [
 			'timeout'             => 20,
 			'redirection'         => 5,
 			'limit_response_size' => self::MAX_URL_BYTES + 1,
-		] );
+		], $url, $extra );
+		$response = wp_safe_remote_get( $url, $args );
 		if ( is_wp_error( $response ) ) {
 			return [ 'error' => sprintf(
 				/* translators: %s: error message. */
@@ -700,7 +726,7 @@ final class GroupCsvSection {
 			wp_send_json_error( [ 'errors' => [ __( 'Enter a URL that starts with http:// or https://.', 'rowsprout' ) ] ] );
 		}
 
-		$file = self::fetch( $url );
+		$file = self::fetch( $url, self::postedExtra() );
 		if ( isset( $file['error'] ) ) {
 			wp_send_json_error( [ 'errors' => [ $file['error'] ] ] );
 		}
@@ -733,7 +759,27 @@ final class GroupCsvSection {
 			'format'  => $converted['format'],
 			'sheets'  => $converted['sheets'],
 			'sheet'   => $converted['sheet'],
+			'sheet_label' => $converted['label'],
 		] );
+	}
+
+	/**
+	 * Add-on values the wizard sends with a fetch (controls marked
+	 * data-csv-fetch-extra in step 1), as text.
+	 *
+	 * @return array<string, string>
+	 */
+	private static function postedExtra(): array {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- the caller checked the nonce; every value is sanitized below.
+		$raw   = isset( $_POST['extra'] ) && is_array( $_POST['extra'] ) ? wp_unslash( $_POST['extra'] ) : [];
+		$extra = [];
+		foreach ( $raw as $key => $value ) {
+			if ( is_scalar( $value ) ) {
+				$extra[ sanitize_key( (string) $key ) ] = sanitize_text_field( (string) $value );
+			}
+		}
+
+		return $extra;
 	}
 
 	/**
@@ -770,6 +816,7 @@ final class GroupCsvSection {
 			'format'  => $converted['format'],
 			'sheets'  => $converted['sheets'],
 			'sheet'   => $converted['sheet'],
+			'sheet_label' => $converted['label'],
 		] );
 	}
 

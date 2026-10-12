@@ -1144,7 +1144,13 @@
 
 	// An Excel workbook with several worksheets (GroupCsvSource on the
 	// server): a list to choose one.
-	function showSheets(sheets, sheet) {
+	// label: what the converter calls the parts (e.g. "List" in a JSON
+	// feed); a workbook's worksheets keep the field's own words.
+	var sheetLabel = String($('#dp-csv-sheet-label').text() || '');
+	var sheetHelp = String($('#dp-csv-sheet-help').text() || '');
+	function showSheets(sheets, sheet, label) {
+		$('#dp-csv-sheet-label').text(label || sheetLabel);
+		$('#dp-csv-sheet-help').text(label ? fmt(i18n.chooseSheet, label) : sheetHelp);
 		var $select = $('#dp-csv-sheet').empty();
 		(sheets || []).forEach(function(name) {
 			$select.append($('<option/>').val(String(name)).text(String(name)));
@@ -1185,7 +1191,7 @@
 				showError(result.errors || [i18n.requestFailed]);
 				return;
 			}
-			showSheets(result.sheets || [], String(result.sheet || ''));
+			showSheets(result.sheets || [], String(result.sheet || ''), String(result.sheet_label || ''));
 			loadBuffer(base64Bytes(result.content));
 		}).fail(function(xhr) {
 			clearBuffer();
@@ -1279,6 +1285,19 @@
 		reader.readAsArrayBuffer(file);
 	});
 
+	// Add-on values for the fetch (data-csv-fetch-extra, e.g. Pro's request
+	// header), by their data-csv-extra key.
+	function fetchExtra() {
+		var extra = {};
+		$modal.find('[data-csv-fetch-extra]').each(function() {
+			var key = String($(this).data('csvExtra') || this.id || '');
+			if (key) {
+				extra[key] = String($(this).val() || '');
+			}
+		});
+		return extra;
+	}
+
 	// The server fetches the URL (a browser may not read most other sites)
 	// and returns the file's bytes.
 	// onFetched: what to do once the file is in (Next fetching for you).
@@ -1299,7 +1318,7 @@
 			method: 'POST',
 			dataType: 'json',
 			// The worksheet chosen for this URL, if it is a workbook.
-			data: { action: cfg.fetchAction, nonce: cfg.nonce, template_id: cfg.templateId, url: url, sheet: url === state.sheetFor ? state.sheet : '' }
+			data: { action: cfg.fetchAction, nonce: cfg.nonce, template_id: cfg.templateId, url: url, sheet: url === state.sheetFor ? state.sheet : '', extra: fetchExtra() }
 		}).done(function(response) {
 			var data = response && response.data ? response.data : {};
 			if (!response || !response.success || typeof data.content !== 'string') {
@@ -1309,7 +1328,7 @@
 			}
 			cfg.lastUrl = url;
 			$('#dp-csv-fetched').text(fmt(i18n.fetched, data.name, data.size)).prop('hidden', false);
-			showSheets(data.sheets || [], String(data.sheet || ''));
+			showSheets(data.sheets || [], String(data.sheet || ''), String(data.sheet_label || ''));
 			loadBuffer(base64Bytes(data.content));
 			showTabs(data.tabs || [], String(data.gid || ''));
 			state.sheetFor = url;
