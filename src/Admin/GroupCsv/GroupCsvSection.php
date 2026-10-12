@@ -116,15 +116,24 @@ final class GroupCsvSection {
 			</div>
 			<?php
 			if ( $saved ) {
-				self::renderWizard();
+				self::renderWizard( $post );
 				self::enqueueScript( $post );
 			}
+
+			/**
+			 * Prints more in the "Import and export groups" section, below its
+			 * buttons (RowSprout Pro: the status of a scheduled sync).
+			 *
+			 * @param \WP_Post $post  The template.
+			 * @param bool     $saved False for an auto-draft, which cannot import yet.
+			 */
+			do_action( 'rowsprout_group_csv_section', $post, $saved );
 			?>
 		</div>
 		<?php
 	}
 
-	private static function renderWizard(): void {
+	private static function renderWizard( \WP_Post $post ): void {
 		$encodings = [
 			'utf-8'        => __( 'Unicode (UTF-8)', 'rowsprout' ),
 			'windows-1252' => __( 'Western European (Windows-1252)', 'rowsprout' ),
@@ -239,6 +248,20 @@ final class GroupCsvSection {
 
 					<section data-csv-step="4" hidden>
 						<div id="dp-csv-summary" aria-live="polite"></div>
+						<?php
+						/**
+						 * Prints more in the wizard's last step, below the summary
+						 * (RowSprout Pro: "Keep in sync"). Controls have no name (the
+						 * template form must not post them); give them
+						 * data-csv-extra="<key>" and the import request carries their
+						 * value (a checkbox: whether it is checked) as extra.<key>.
+						 * An element with data-csv-url-only only shows when the file
+						 * comes from a URL.
+						 *
+						 * @param \WP_Post $post The template.
+						 */
+						do_action( 'rowsprout_group_csv_wizard_step4', $post );
+						?>
 					</section>
 
 					<section data-csv-step="done" hidden>
@@ -347,108 +370,114 @@ final class GroupCsvSection {
 		$generates = in_array( $post->post_status, [ 'publish', 'future', 'private' ], true );
 
 		wp_enqueue_script( self::SCRIPT_HANDLE, plugins_url( $relativePath, ROWSPROUT_FILE ), [ 'jquery' ], $version, true );
-		wp_add_inline_script(
-			self::SCRIPT_HANDLE,
-			'window.rowsproutGroupCsvConfig = ' . wp_json_encode( [
-				'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
-				'action'     => self::IMPORT_ACTION,
-				'fetchAction' => self::FETCH_ACTION,
-				'lastUrl'    => (string) get_post_meta( (int) $post->ID, self::URL_META, true ),
-				'lastMapping' => (object) self::rememberedMapping( (int) $post->ID ),
-				'nonce'      => wp_create_nonce( self::NONCE_ACTION ),
-				'templateId' => (int) $post->ID,
-				'editUrl'    => (string) get_edit_post_link( (int) $post->ID, 'raw' ),
-				'idHeader'   => GroupCsvExporter::ID_HEADER,
-				'isChild'    => $template->isChild,
-				'parentId'   => (int) $post->post_parent,
-				'columns'    => $columns,
-				// Labels a new property cannot have; a child's include its
-				// parent's properties it cannot fill.
-				'reservedLabels' => array_values( array_map( 'strval', array_column( $template->reservedColumns, 'label' ) ) ),
-				'types'      => $types,
-				'i18n'       => [
-					'steps'           => [
-						__( 'Step 1 of 4: Choose a file or URL', 'rowsprout' ),
-						__( 'Step 2 of 4: Delimiters', 'rowsprout' ),
-						__( 'Step 3 of 4: Columns', 'rowsprout' ),
-						__( 'Step 4 of 4: Summary', 'rowsprout' ),
-					],
-					'noFile'          => __( 'Choose a file first.', 'rowsprout' ),
-					'readError'       => __( 'The file could not be read.', 'rowsprout' ),
-					'noUrl'           => __( 'Enter a URL and click Fetch first.', 'rowsprout' ),
-					'fetching'        => __( 'Fetching…', 'rowsprout' ),
-					/* translators: 1: file name, 2: file size such as "12 KB". */
-					'fetched'         => __( 'Fetched %1$s (%2$s).', 'rowsprout' ),
-					'emptyFile'       => __( 'The file is empty.', 'rowsprout' ),
-					'notUtf8'         => __( 'This file is not UTF-8, so it is read as Western European (Windows-1252), the way Excel saves "CSV (comma delimited)". Choose another character encoding if letters look wrong.', 'rowsprout' ),
-					'noDelimiter'     => __( 'Choose at least one delimiter.', 'rowsprout' ),
-					'showPreview'     => __( 'Show preview', 'rowsprout' ),
-					'hidePreview'     => __( 'Hide preview', 'rowsprout' ),
-					/* translators: 1: number of columns, 2: number of rows, 3: delimiter names such as "semicolons". */
-					'recognised'      => __( 'Columns: %1$d · Rows to import: %2$d · Separated by: %3$s. Not right? Choose other delimiters in the next step.', 'rowsprout' ),
-					'delimiterNames'  => [
-						'tab'       => __( 'tabs', 'rowsprout' ),
-						'semicolon' => __( 'semicolons', 'rowsprout' ),
-						'comma'     => __( 'commas', 'rowsprout' ),
-						'space'     => __( 'spaces', 'rowsprout' ),
-						/* translators: %s: the delimiter character. */
-						'other'     => __( '"%s"', 'rowsprout' ),
-					],
-					'noRows'          => __( 'There are no rows to import from the chosen start row on.', 'rowsprout' ),
-					/* translators: 1: number of rows shown, 2: total number of rows. */
-					'previewCount'    => __( 'The first %1$d of %2$d rows.', 'rowsprout' ),
-					/* translators: %d: column number. */
-					'column'          => __( 'Column %d', 'rowsprout' ),
-					'doNotImport'     => __( '— Do not import —', 'rowsprout' ),
-					'idTarget'        => __( 'ID (finds the existing group)', 'rowsprout' ),
-					/* translators: %s: property label, such as "Title". */
-					'findOnly'        => __( '%s (finds the group)', 'rowsprout' ),
-					'properties'      => __( 'Properties', 'rowsprout' ),
-					'newProperty'     => __( 'New property…', 'rowsprout' ),
-					'newPropertiesGroup' => __( 'New properties', 'rowsprout' ),
-					/* translators: %s: comma-separated column names from the file. */
-					'alsoChosen'      => __( 'Also chosen for: %s', 'rowsprout' ),
-					'duplicateTargets' => __( 'Two or more columns are imported into the same property. Choose one column per property.', 'rowsprout' ),
-					'labelRequired'   => __( 'Give the property a label.', 'rowsprout' ),
-					'duplicateLabel'  => __( 'This property title already exists in this template.', 'rowsprout' ),
-					'checking'        => __( 'Checking the file…', 'rowsprout' ),
-					'importing'       => __( 'Importing…', 'rowsprout' ),
-					'summaryHeading'  => __( 'What the import will do', 'rowsprout' ),
-					/* translators: %d: number of groups. */
-					'added'           => __( 'New groups: %d', 'rowsprout' ),
-					/* translators: %d: number of groups. */
-					'updated'         => __( 'Groups updated: %d', 'rowsprout' ),
-					/* translators: %d: number of groups. */
-					'unchanged'       => __( 'Groups already up to date: %d', 'rowsprout' ),
-					/* translators: %s: comma-separated property names. */
-					'newProperties'   => __( 'New properties: %s', 'rowsprout' ),
-					/* translators: %d: number of rows. */
-					'skipped'         => __( 'Rows skipped: %d', 'rowsprout' ),
-					'warnings'        => __( 'Check before you import', 'rowsprout' ),
-					'nothing'         => __( 'Nothing changes: every row matches a group that already has these values.', 'rowsprout' ),
-					/* translators: %d: number of groups. */
-					'missing'         => __( 'Groups of this template that are not in the file: %d', 'rowsprout' ),
-					/* translators: %d: number of further groups. */
-					'andMore'         => __( 'and %d more', 'rowsprout' ),
-					'deleteMissing'   => __( 'Delete these groups and their pages', 'rowsprout' ),
-					'deleteWarning'   => __( 'When you import, these groups and their pages are deleted permanently. This cannot be undone.', 'rowsprout' ),
-					/* translators: %d: number of groups of child templates. */
-					'deleteWarningChildren' => __( 'Child templates lose their groups for them too, with their pages: %d.', 'rowsprout' ),
-					/* translators: %d: number of groups to delete. */
-					'importAndDelete' => __( 'Import and delete (%d)', 'rowsprout' ),
-					'deleteBlocked'   => __( 'No row of the file matches a group of this template, so this file cannot delete groups: it may be the wrong file.', 'rowsprout' ),
-					'saveNote'        => __( 'When you click Import, the groups are saved right away and the page reloads automatically to show them.', 'rowsprout' ),
-					'reloading'       => __( 'Imported. Reloading the page…', 'rowsprout' ),
-					'unsaved'         => __( 'This template has changes that are not saved yet. They are lost when the page reloads after the import. Cancel and save the template first to keep them.', 'rowsprout' ),
-					'generate'        => $generates
-						? __( 'No pages are generated yet: after the import, update the template with "Create & update pages" to generate them.', 'rowsprout' )
-						: __( 'Pages are generated when you publish the template.', 'rowsprout' ),
-					'nothingSaved'    => __( 'Nothing was changed.', 'rowsprout' ),
-					'requestFailed'   => __( 'The server did not answer as expected. Try again.', 'rowsprout' ),
+		$config = [
+			'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
+			'action'     => self::IMPORT_ACTION,
+			'fetchAction' => self::FETCH_ACTION,
+			'lastUrl'    => (string) get_post_meta( (int) $post->ID, self::URL_META, true ),
+			'lastMapping' => (object) self::rememberedMapping( (int) $post->ID ),
+			'nonce'      => wp_create_nonce( self::NONCE_ACTION ),
+			'templateId' => (int) $post->ID,
+			'editUrl'    => (string) get_edit_post_link( (int) $post->ID, 'raw' ),
+			'idHeader'   => GroupCsvExporter::ID_HEADER,
+			'isChild'    => $template->isChild,
+			'parentId'   => (int) $post->post_parent,
+			'columns'    => $columns,
+			// Labels a new property cannot have; a child's include its
+			// parent's properties it cannot fill.
+			'reservedLabels' => array_values( array_map( 'strval', array_column( $template->reservedColumns, 'label' ) ) ),
+			'types'      => $types,
+			'i18n'       => [
+				'steps'           => [
+					__( 'Step 1 of 4: Choose a file or URL', 'rowsprout' ),
+					__( 'Step 2 of 4: Delimiters', 'rowsprout' ),
+					__( 'Step 3 of 4: Columns', 'rowsprout' ),
+					__( 'Step 4 of 4: Summary', 'rowsprout' ),
 				],
-			] ) . ';',
-			'before'
-		);
+				'noFile'          => __( 'Choose a file first.', 'rowsprout' ),
+				'readError'       => __( 'The file could not be read.', 'rowsprout' ),
+				'noUrl'           => __( 'Enter a URL and click Fetch first.', 'rowsprout' ),
+				'fetching'        => __( 'Fetching…', 'rowsprout' ),
+				/* translators: 1: file name, 2: file size such as "12 KB". */
+				'fetched'         => __( 'Fetched %1$s (%2$s).', 'rowsprout' ),
+				'emptyFile'       => __( 'The file is empty.', 'rowsprout' ),
+				'notUtf8'         => __( 'This file is not UTF-8, so it is read as Western European (Windows-1252), the way Excel saves "CSV (comma delimited)". Choose another character encoding if letters look wrong.', 'rowsprout' ),
+				'noDelimiter'     => __( 'Choose at least one delimiter.', 'rowsprout' ),
+				'showPreview'     => __( 'Show preview', 'rowsprout' ),
+				'hidePreview'     => __( 'Hide preview', 'rowsprout' ),
+				/* translators: 1: number of columns, 2: number of rows, 3: delimiter names such as "semicolons". */
+				'recognised'      => __( 'Columns: %1$d · Rows to import: %2$d · Separated by: %3$s. Not right? Choose other delimiters in the next step.', 'rowsprout' ),
+				'delimiterNames'  => [
+					'tab'       => __( 'tabs', 'rowsprout' ),
+					'semicolon' => __( 'semicolons', 'rowsprout' ),
+					'comma'     => __( 'commas', 'rowsprout' ),
+					'space'     => __( 'spaces', 'rowsprout' ),
+					/* translators: %s: the delimiter character. */
+					'other'     => __( '"%s"', 'rowsprout' ),
+				],
+				'noRows'          => __( 'There are no rows to import from the chosen start row on.', 'rowsprout' ),
+				/* translators: 1: number of rows shown, 2: total number of rows. */
+				'previewCount'    => __( 'The first %1$d of %2$d rows.', 'rowsprout' ),
+				/* translators: %d: column number. */
+				'column'          => __( 'Column %d', 'rowsprout' ),
+				'doNotImport'     => __( '— Do not import —', 'rowsprout' ),
+				'idTarget'        => __( 'ID (finds the existing group)', 'rowsprout' ),
+				/* translators: %s: property label, such as "Title". */
+				'findOnly'        => __( '%s (finds the group)', 'rowsprout' ),
+				'properties'      => __( 'Properties', 'rowsprout' ),
+				'newProperty'     => __( 'New property…', 'rowsprout' ),
+				'newPropertiesGroup' => __( 'New properties', 'rowsprout' ),
+				/* translators: %s: comma-separated column names from the file. */
+				'alsoChosen'      => __( 'Also chosen for: %s', 'rowsprout' ),
+				'duplicateTargets' => __( 'Two or more columns are imported into the same property. Choose one column per property.', 'rowsprout' ),
+				'labelRequired'   => __( 'Give the property a label.', 'rowsprout' ),
+				'duplicateLabel'  => __( 'This property title already exists in this template.', 'rowsprout' ),
+				'checking'        => __( 'Checking the file…', 'rowsprout' ),
+				'importing'       => __( 'Importing…', 'rowsprout' ),
+				'summaryHeading'  => __( 'What the import will do', 'rowsprout' ),
+				/* translators: %d: number of groups. */
+				'added'           => __( 'New groups: %d', 'rowsprout' ),
+				/* translators: %d: number of groups. */
+				'updated'         => __( 'Groups updated: %d', 'rowsprout' ),
+				/* translators: %d: number of groups. */
+				'unchanged'       => __( 'Groups already up to date: %d', 'rowsprout' ),
+				/* translators: %s: comma-separated property names. */
+				'newProperties'   => __( 'New properties: %s', 'rowsprout' ),
+				/* translators: %d: number of rows. */
+				'skipped'         => __( 'Rows skipped: %d', 'rowsprout' ),
+				'warnings'        => __( 'Check before you import', 'rowsprout' ),
+				'nothing'         => __( 'Nothing changes: every row matches a group that already has these values.', 'rowsprout' ),
+				/* translators: %d: number of groups. */
+				'missing'         => __( 'Groups of this template that are not in the file: %d', 'rowsprout' ),
+				/* translators: %d: number of further groups. */
+				'andMore'         => __( 'and %d more', 'rowsprout' ),
+				'deleteMissing'   => __( 'Delete these groups and their pages', 'rowsprout' ),
+				'deleteWarning'   => __( 'When you import, these groups and their pages are deleted permanently. This cannot be undone.', 'rowsprout' ),
+				/* translators: %d: number of groups of child templates. */
+				'deleteWarningChildren' => __( 'Child templates lose their groups for them too, with their pages: %d.', 'rowsprout' ),
+				/* translators: %d: number of groups to delete. */
+				'importAndDelete' => __( 'Import and delete (%d)', 'rowsprout' ),
+				'deleteBlocked'   => __( 'No row of the file matches a group of this template, so this file cannot delete groups: it may be the wrong file.', 'rowsprout' ),
+				'saveNote'        => __( 'When you click Import, the groups are saved right away and the page reloads automatically to show them.', 'rowsprout' ),
+				'reloading'       => __( 'Imported. Reloading the page…', 'rowsprout' ),
+				'unsaved'         => __( 'This template has changes that are not saved yet. They are lost when the page reloads after the import. Cancel and save the template first to keep them.', 'rowsprout' ),
+				'generate'        => $generates
+					? __( 'No pages are generated yet: after the import, update the template with "Create & update pages" to generate them.', 'rowsprout' )
+					: __( 'Pages are generated when you publish the template.', 'rowsprout' ),
+				'nothingSaved'    => __( 'Nothing was changed.', 'rowsprout' ),
+				'requestFailed'   => __( 'The server did not answer as expected. Try again.', 'rowsprout' ),
+			],
+		];
+
+		/**
+		 * The wizard's script config (window.rowsproutGroupCsvConfig).
+		 *
+		 * @param array<string, mixed> $config
+		 * @param \WP_Post             $post The template.
+		 */
+		$config = (array) apply_filters( 'rowsprout_group_csv_config', $config, $post );
+
+		wp_add_inline_script( self::SCRIPT_HANDLE, 'window.rowsproutGroupCsvConfig = ' . wp_json_encode( $config ) . ';', 'before' );
 	}
 
 	public static function handleExport(): void {
@@ -606,6 +635,19 @@ final class GroupCsvSection {
 		$result = GroupCsvImporter::run( $templateId, is_array( $payload ) ? $payload : [], $apply, $version );
 		if ( $apply && $result->saved && is_array( $payload ) ) {
 			self::rememberMapping( $templateId, $payload['headers'] ?? [], $result->mapping );
+
+			/**
+			 * A group import was saved from the wizard. $payload is the request
+			 * as the wizard sent it (not sanitized): mapping, headers, rows,
+			 * settings (how the file was read, see GroupCsvParser::settings()),
+			 * source (type 'file' or 'url', and the url) and extra (the values
+			 * of data-csv-extra controls).
+			 *
+			 * @param int                  $templateId
+			 * @param array<string, mixed> $payload
+			 * @param GroupCsvImportResult $result
+			 */
+			do_action( 'rowsprout_groups_csv_imported', $templateId, $payload, $result );
 		}
 
 		wp_send_json_success( $result->toArray() );

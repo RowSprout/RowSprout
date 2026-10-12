@@ -743,7 +743,24 @@
 		});
 		// The column names, so the server remembers the choices for them.
 		var headers = data.header ? data.header.map(function(header) { return String(header || '').trim(); }) : [];
-		return { mapping: mapping, new_properties: newProperties, rows: data.rows, row_numbers: data.numbers, headers: headers };
+		// How the file was read and where it came from, so it can be read
+		// again without the wizard (GroupCsvParser on the server).
+		var settings = {
+			encoding: String($('#dp-csv-encoding').val() || 'utf-8'),
+			delimiters: chosenDelimiters(),
+			qualifier: String($('#dp-csv-qualifier').val() || ''),
+			consecutive: $('#dp-csv-consecutive').is(':checked'),
+			start_row: startRow(),
+			headers: hasHeaders()
+		};
+		var source = { type: currentSource(), url: currentSource() === 'url' ? String(cfg.lastUrl || '') : '' };
+		// Add-on controls in the wizard (data-csv-extra="key").
+		var extra = {};
+		$modal.find('[data-csv-extra]').each(function() {
+			var $control = $(this);
+			extra[String($control.data('csvExtra'))] = $control.is(':checkbox') ? $control.is(':checked') : String($control.val() || '');
+		});
+		return { mapping: mapping, new_properties: newProperties, rows: data.rows, row_numbers: data.numbers, headers: headers, settings: settings, source: source, extra: extra };
 	}
 
 	function request(apply) {
@@ -909,6 +926,7 @@
 		$('#dp-csv-back').prop('hidden', done || step === 1);
 		$('#dp-csv-next').prop('hidden', done || step === LAST_STEP);
 		$('#dp-csv-import').prop('hidden', step !== LAST_STEP);
+		$modal.find('[data-csv-url-only]').prop('hidden', currentSource() !== 'url');
 		$modal.find('[data-csv-cancel]').prop('hidden', done && state.saved);
 		$('#dp-csv-step-label').text(stepLabel());
 	}
