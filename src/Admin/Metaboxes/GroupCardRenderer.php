@@ -46,6 +46,7 @@ final class GroupCardRenderer {
 		echo '<div class="dp-group-index">' . esc_html__( 'Group', 'rowsprout' ) . ' ' . (int) ( $rowIdx + 1 ) . '</div>';
 		echo '<div><span class="label">' . esc_html__( 'Title', 'rowsprout' ) . '</span>';
 		GroupFieldInputRenderer::render( $rowIdx, $titleCol ?: [ 'key' => 'title', 'type' => 'title', 'field_type' => 'text' ], $titleValue, $inherited );
+		echo '<small class="dp-title-error-msg"></small>';
 		echo '</div>';
 		echo '<div><span class="label">' . esc_html__( 'Href', 'rowsprout' ) . '</span>';
 		GroupFieldInputRenderer::render( $rowIdx, $hrefCol ?: [ 'key' => 'href', 'type' => 'href', 'field_type' => 'text' ], $hrefValue, $inherited );

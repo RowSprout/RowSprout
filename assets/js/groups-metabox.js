@@ -391,7 +391,7 @@
 		return '<div class="dp-group-card" data-row-idx="'+rowIdx+'" data-inherited="0">'
 			+ '<div class="dp-group-head">'
 			+ '<div class="dp-group-index">'+tGroup+' '+(rowIdx+1)+'</div>'
-			+ '<div><span class="label">Titel</span>'+titleInput+'</div>'
+			+ '<div><span class="label">Titel</span>'+titleInput+'<small class="dp-title-error-msg"></small></div>'
 			+ '<div><span class="label">Href</span>'+hrefInput+'<small class="dp-href-error-msg"></small></div>'
 			+ '<button type="button" class="button button-small dp-group-toggle">'+tExpand+'</button>'
 			+ '<button type="button" class="button-link dp-group-delete" title="'+escHtml(tDeleteGroup)+'">&times;</button>'
@@ -855,6 +855,54 @@
 		var $href=$(this).closest('.dp-group-card').find('input[data-col-type="href"], input[data-col-type="slug"]').first();
 		if($href.length && !$href.val().trim()){ $href.val(normalizeSlug(titleVal)); }
 	});
+	// An emptied URL/slug follows from the title again, as the server does
+	// (GroupTitles::withSlugsFromTitles()).
+	$(document).on('blur', '.dp-group-card input[data-col-type="href"], .dp-group-card input[data-col-type="slug"]', function(){
+		var $href=$(this);
+		if($href.prop('disabled') || String($href.val()||'').trim()){ return; }
+		var titleVal=String($href.closest('.dp-group-card').find('input[data-col-type="title"]').first().val()||'').trim();
+		if(titleVal){ $href.val(normalizeSlug(titleVal)); checkHrefUniqueness(); }
+	});
+
+	// A group without a title is not generated (GroupTitles on the server):
+	// mark its title and say so before saving, in a box above the tabs and as
+	// an editor notice in the block editor. Inherited groups take their title
+	// from the parent template, so only the group's own title counts.
+	var tUntitledGroup=String(i18n.untitledGroup||'');
+	var dpUntitledText='';
+	function checkUntitledGroups(){
+		var positions=[];
+		$('#dp-groups-sortable .dp-group-card').each(function(position){
+			var $card=$(this);
+			var $title=$card.find('input[data-col-type="title"]').first();
+			var missing=$title.length>0 && $card.attr('data-inherited')!=='1' && !String($title.val()||'').trim();
+			$title.toggleClass('dp-input-invalid', missing);
+			$title.siblings('.dp-title-error-msg').toggleClass('is-visible', missing).text(missing ? tUntitledGroup : '');
+			if(missing){ positions.push(position+1); }
+		});
+		var text=positions.length===1
+			? String(i18n.untitledWarningOne||'').replace('%d', positions[0])
+			: String(i18n.untitledWarningMany||'').replace('%1$d', positions.length).replace('%2$s', positions.join(', '));
+		if(!positions.length){ text=''; }
+		$('.dp-untitled-warning').toggle(text!=='').find('p').text(text);
+		var notices=window.wp && window.wp.data && window.wp.data.select && window.wp.data.select('core/editor') ? window.wp.data.dispatch('core/notices') : null;
+		if(notices && text!==dpUntitledText){
+			if(text){ notices.createWarningNotice(text, { id:'rowsprout-untitled-groups', isDismissible:true }); } else { notices.removeNotice('rowsprout-untitled-groups'); }
+		}
+		dpUntitledText=text;
+	}
+	var dpUntitledTimer=null;
+	function scheduleUntitledCheck(){
+		window.clearTimeout(dpUntitledTimer);
+		dpUntitledTimer=window.setTimeout(checkUntitledGroups, 300);
+	}
+	$(document).on('input change blur', '#dp-groups-sortable input[data-col-type="title"]', scheduleUntitledCheck);
+	if(window.MutationObserver){
+		$('#dp-groups-sortable').each(function(){
+			new window.MutationObserver(scheduleUntitledCheck).observe(this, { childList:true });
+		});
+	}
+	scheduleUntitledCheck();
 
 	// PHP drops the fields past max_input_vars without an error, and the
 	// server then refuses to store this form's properties and groups

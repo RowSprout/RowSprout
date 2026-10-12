@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-11T18:10:10+00:00\n"
+"POT-Creation-Date: 2026-10-12T07:08:14+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: rowsprout\n"
@@ -310,7 +310,7 @@ msgstr ""
 #: src/Admin/GroupCsv/GroupCsvSection.php:141
 #: src/Admin/GroupCsv/GroupCsvSection.php:265
 #: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:100
-#: src/ThirdParty/Elementor/TemplateEditorTab.php:241
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:248
 msgid "Close"
 msgstr ""
 
@@ -454,7 +454,7 @@ msgid "Label"
 msgstr ""
 
 #: src/Admin/GroupCsv/GroupCsvSection.php:290
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:79
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:84
 #: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:126
 #: src/Admin/Metaboxes/PropertyTableRenderer.php:35
 msgid "Overridable"
@@ -584,7 +584,7 @@ msgid "%s (finds the group)"
 msgstr ""
 
 #: src/Admin/GroupCsv/GroupCsvSection.php:394
-#: src/Admin/Metaboxes/TemplateTabsRenderer.php:132
+#: src/Admin/Metaboxes/TemplateTabsRenderer.php:133
 msgid "Properties"
 msgstr ""
 
@@ -611,7 +611,7 @@ msgid "Give the property a label."
 msgstr ""
 
 #: src/Admin/GroupCsv/GroupCsvSection.php:401
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:87
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:92
 msgid "This property title already exists in this template."
 msgstr ""
 
@@ -924,7 +924,7 @@ msgstr ""
 
 #: src/Admin/Metaboxes.php:34
 #: src/ThirdParty/Elementor/TemplateEditorTab.php:151
-#: src/ThirdParty/Elementor/TemplateEditorTab.php:240
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:247
 #: src/ThirdParty/Elementor/Widgets/GridWidget.php:67
 #: src/ThirdParty/WPBakery/WPBakeryIntegration.php:144
 #: assets/js/blocks.js:39
@@ -933,7 +933,7 @@ msgstr ""
 
 #: src/Admin/Metaboxes/ColumnSchema.php:48
 #: src/Admin/Metaboxes/ColumnSchema.php:85
-#: src/Admin/Metaboxes/GroupCardRenderer.php:50
+#: src/Admin/Metaboxes/GroupCardRenderer.php:51
 #: src/Admin/Metaboxes/TitleHrefMetaBoxRenderer.php:41
 msgid "Href"
 msgstr ""
@@ -951,12 +951,12 @@ msgstr ""
 msgid "Group"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupCardRenderer.php:54
+#: src/Admin/Metaboxes/GroupCardRenderer.php:55
 #: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:65
 msgid "Expand"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupCardRenderer.php:56
+#: src/Admin/Metaboxes/GroupCardRenderer.php:57
 #: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:69
 #: src/Admin/Metaboxes/RowRenderer.php:90
 msgid "Delete group"
@@ -967,19 +967,19 @@ msgid "Inherited from parent template"
 msgstr ""
 
 #: src/Admin/Metaboxes/GroupFieldInputRenderer.php:97
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:76
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:81
 #: src/Admin/Metaboxes/RowRenderer.php:119
 msgid "Select"
 msgstr ""
 
 #: src/Admin/Metaboxes/GroupFieldInputRenderer.php:98
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:77
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:82
 #: src/Admin/Metaboxes/RowRenderer.php:120
 msgid "Remove"
 msgstr ""
 
 #: src/Admin/Metaboxes/GroupFieldInputRenderer.php:110
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:78
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:83
 #: src/Admin/Metaboxes/RowRenderer.php:124
 #: src/ThirdParty/Elementor/Widgets/GridWidget.php:142
 #: src/ThirdParty/WPBakery/WPBakeryIntegration.php:147
@@ -1010,64 +1010,80 @@ msgid "Save anyway? Title, content and status are saved; the properties and grou
 msgstr ""
 
 #: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:73
+msgid "Without a title this group is not generated."
+msgstr ""
+
+#. translators: %d: position of the group.
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:75
+#, php-format
+msgid "Group %d has no title, so its page is not generated. Give it a title; its URL/slug then follows from it."
+msgstr ""
+
+#. translators: 1: number of groups, 2: their positions, e.g. "2, 5, 9".
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:77
+#, php-format
+msgid "%1$d groups have no title, so their pages are not generated: %2$s. Give them a title; their URL/slug then follows from it."
+msgstr ""
+
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:78
 msgid "When you save the template, this group's page is deleted, together with the page a child template made for this group. Delete the group?"
 msgstr ""
 
 #. translators: %d: number of pages of child templates (2 or more).
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:75
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:80
 #, php-format
 msgid "When you save the template, this group's page is deleted, together with the %d pages that child templates made for this group. Delete the group?"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:80
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:85
 #: src/Admin/Metaboxes/PropertyTableRenderer.php:35
 msgid "Fixed"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:81
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:86
 #: src/Admin/Metaboxes/PropertyTableRenderer.php:56
 msgid "Delete"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:82
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:87
 #: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:82
 #: src/Admin/Metaboxes/ParentSyncPayloadRenderer.php:34
 msgid "No properties added yet."
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:83
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:88
 msgid "Could not load parent template data."
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:84
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:89
 msgid "Enter a valid URL (http(s)://...)"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:85
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:90
 msgid "Enter a valid email address."
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:86
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:91
 msgid "This type can only be added once."
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:88
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:93
 msgid "This URL/slug is already used by another group in this template."
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:89
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:94
 msgid "Select or upload an image"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:90
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:95
 msgid "Use this image"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:91
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:96
 msgid "Changing the parent replaces the current groups with groups inherited from the new parent. Your own group data (titles, hrefs, fields) will be lost. Continue?"
 msgstr ""
 
-#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:92
+#: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:97
 msgid "Removing the parent resets the groups to a single empty group. Your current group data (titles, hrefs, fields) will be lost. Continue?"
 msgstr ""
 
@@ -1146,11 +1162,11 @@ msgstr ""
 msgid "Remove property"
 msgstr ""
 
-#: src/Admin/Metaboxes/TemplateTabsRenderer.php:131
+#: src/Admin/Metaboxes/TemplateTabsRenderer.php:132
 msgid "General"
 msgstr ""
 
-#: src/Admin/Metaboxes/TemplateTabsRenderer.php:133
+#: src/Admin/Metaboxes/TemplateTabsRenderer.php:134
 #: src/Admin/TemplateTransferPage.php:246
 msgid "Groups"
 msgstr ""
@@ -1438,6 +1454,10 @@ msgstr ""
 msgid "Select a page."
 msgstr ""
 
+#: src/Core/Page/PageBuilder.php:42
+msgid "This group has no title, so its page is not generated."
+msgstr ""
+
 #: src/Core/PageEditing.php:80
 msgid "Generated page editing"
 msgstr ""
@@ -1584,11 +1604,11 @@ msgstr ""
 msgid "Properties and groups were not saved: this template was changed elsewhere (e.g. via the API) after this page was loaded. Reload the page and reapply your property/group changes. (Title, content, and status were saved normally.)"
 msgstr ""
 
-#: src/Core/SavePost.php:662
+#: src/Core/SavePost.php:694
 msgid "The parent was not saved: the chosen parent is itself a child template. Templates can only be nested one level deep, so choose a template without a parent."
 msgstr ""
 
-#: src/Core/SavePost.php:664
+#: src/Core/SavePost.php:696
 msgid "The parent was not saved: this template has child templates, so it cannot have a parent itself. Templates can only be nested one level deep."
 msgstr ""
 
@@ -1690,29 +1710,47 @@ msgid "Unknown"
 msgstr ""
 
 #. translators: %s: list of URLs with what already uses them.
-#: src/Core/Template/UrlConflicts.php:364
+#: src/Core/Template/UrlConflicts.php:412
 #, php-format
 msgid "The template is saved, but these pages are not generated because their URL is already in use: %s. Every URL must be unique on the site; change these groups (or the URL pattern) and save again to generate them."
 msgstr ""
 
-#: src/Core/Template/UrlConflicts.php:380
+#. translators: %s: list of groups, e.g. 'group 3 of template "Hotels"'.
+#: src/Core/Template/UrlConflicts.php:420
+#, php-format
+msgid "The template is saved, but these groups are not generated because they have no title: %s. Give them a title (the URL/slug then follows from it) and save again to generate them."
+msgstr ""
+
+#. translators: %s: list of groups, e.g. 'group 3 of template "Hotels"'.
+#: src/Core/Template/UrlConflicts.php:422
+#, php-format
+msgid "These groups are not generated either, because they have no title: %s."
+msgstr ""
+
+#. translators: 1: position of the group in the template, 2: template title.
+#: src/Core/Template/UrlConflicts.php:442
+#, php-format
+msgid "group %1$d of template \"%2$s\""
+msgstr ""
+
+#: src/Core/Template/UrlConflicts.php:446
 msgid "another group of this template"
 msgstr ""
 
 #. translators: %s: template title.
-#: src/Core/Template/UrlConflicts.php:383
+#: src/Core/Template/UrlConflicts.php:449
 #, php-format
 msgid "template \"%s\""
 msgstr ""
 
 #. translators: 1: post type name, e.g. "Page", 2: post title.
-#: src/Core/Template/UrlConflicts.php:386
+#: src/Core/Template/UrlConflicts.php:452
 #, php-format
 msgid "%1$s \"%2$s\""
 msgstr ""
 
 #. translators: 1: list of URLs, 2: number of further URLs.
-#: src/Core/Template/UrlConflicts.php:394
+#: src/Core/Template/UrlConflicts.php:460
 #, php-format
 msgid "%1$s and %2$d more"
 msgstr ""
@@ -1816,19 +1854,19 @@ msgstr ""
 msgid "Invalid template."
 msgstr ""
 
-#: src/ThirdParty/Elementor/TemplateEditorTab.php:247
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:254
 msgid "Save"
 msgstr ""
 
-#: src/ThirdParty/Elementor/TemplateEditorTab.php:283
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:290
 msgid "Preview group"
 msgstr ""
 
-#: src/ThirdParty/Elementor/TemplateEditorTab.php:291
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:298
 msgid "Determines which group the widgets and tags show in this editor. After choosing, click \"Refresh preview\" to update the preview. Has no effect on the actual pages."
 msgstr ""
 
-#: src/ThirdParty/Elementor/TemplateEditorTab.php:319
+#: src/ThirdParty/Elementor/TemplateEditorTab.php:326
 msgid "Refresh preview"
 msgstr ""
 

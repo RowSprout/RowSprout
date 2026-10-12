@@ -20,7 +20,8 @@ final class ConfigNormalizer {
 			'version'            => 1,
 			'rowsprout_page_href'  => isset( $config['rowsprout_page_href'] ) ? self::sanitizeHref( (string) $config['rowsprout_page_href'] ) : '',
 			'field_types'        => self::normalizeFieldTypes( $config['field_types'] ?? [] ),
-			'groups'             => array_values( $groups ),
+			// A group without a slug gets one from its title (GroupTitles).
+			'groups'             => array_values( GroupTitles::withSlugsFromTitles( $groups ) ),
 			'child_extra'        => array_values( $childExtra ),
 			// Bumped on every TemplateMeta::save() (see its own docblock) —
 			// lets a save compare "what this form was rendered from" against
