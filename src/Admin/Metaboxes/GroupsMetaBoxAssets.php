@@ -3,6 +3,7 @@
 namespace RowSprout\Admin\Metaboxes;
 
 use RowSprout\Core\PostTypes;
+use RowSprout\Core\TemplateMeta;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -54,6 +55,11 @@ final class GroupsMetaBoxAssets {
 			'uiTypeKindMap'      => FieldUiResolver::getClientTypeKindMap(),
 			'uiValidationMap'    => FieldUiResolver::getClientValidationMap(),
 			'overridableAllowed' => true,
+			// PHP drops the fields past this; the editor warns before saving.
+			'maxInputVars'       => (int) ini_get( 'max_input_vars' ),
+			// Parent group id => how many groups its child templates have for
+			// it: deleting the group deletes those too (QueueManager).
+			'childGroupCounts'   => self::childGroupCounts( $postId ),
 			'i18n'               => [
 				'group'                    => __( 'Group', 'rowsprout' ),
 				'expand'                   => __( 'Expand', 'rowsprout' ),
@@ -61,6 +67,17 @@ final class GroupsMetaBoxAssets {
 				'expandAll'                => __( 'Expand all', 'rowsprout' ),
 				'collapseAll'              => __( 'Collapse all', 'rowsprout' ),
 				'deleteGroup'              => __( 'Delete group', 'rowsprout' ),
+				/* translators: 1: number of form fields, 2: the server's max_input_vars, 3: a suggested higher value. */
+				'inputLimitWarning'        => __( 'This template has %1$d form fields, but the server accepts %2$d (the PHP setting max_input_vars). If you save now, the changes on its General, Properties and Groups tabs are not stored. Ask your host to raise max_input_vars to at least %3$d, or change the groups with "Import groups" on the General tab.', 'rowsprout' ),
+				'inputLimitConfirm'        => __( 'Save anyway? Title, content and status are saved; the properties and groups are not.', 'rowsprout' ),
+				'untitledGroup'            => __( 'Without a title this group is not generated.', 'rowsprout' ),
+				/* translators: %d: position of the group. */
+				'untitledWarningOne'       => __( 'Group %d has no title, so its page is not generated. Give it a title; its URL/slug then follows from it.', 'rowsprout' ),
+				/* translators: 1: number of groups, 2: their positions, e.g. "2, 5, 9". */
+				'untitledWarningMany'      => __( '%1$d groups have no title, so their pages are not generated: %2$s. Give them a title; their URL/slug then follows from it.', 'rowsprout' ),
+				'deleteGroupChild'         => __( 'When you save the template, this group\'s page is deleted, together with the page a child template made for this group. Delete the group?', 'rowsprout' ),
+				/* translators: %d: number of pages of child templates (2 or more). */
+				'deleteGroupChildren'      => __( 'When you save the template, this group\'s page is deleted, together with the %d pages that child templates made for this group. Delete the group?', 'rowsprout' ),
 				'select'                   => __( 'Select', 'rowsprout' ),
 				'remove'                   => __( 'Remove', 'rowsprout' ),
 				'yes'                      => __( 'Yes', 'rowsprout' ),
@@ -72,7 +89,6 @@ final class GroupsMetaBoxAssets {
 				'invalidUrl'               => __( 'Enter a valid URL (http(s)://...)', 'rowsprout' ),
 				'invalidEmail'             => __( 'Enter a valid email address.', 'rowsprout' ),
 				'typeSingleInstance'       => __( 'This type can only be added once.', 'rowsprout' ),
-				'childGroupAddDisabled'    => __( 'Adding groups is not allowed in child templates.', 'rowsprout' ),
 				'duplicatePropertyTitle'   => __( 'This property title already exists in this template.', 'rowsprout' ),
 				'duplicateHref'            => __( 'This URL/slug is already used by another group in this template.', 'rowsprout' ),
 				'mediaTitle'               => __( 'Select or upload an image', 'rowsprout' ),
@@ -131,6 +147,36 @@ final class GroupsMetaBoxAssets {
 			}
 		}
 		return $map;
+	}
+
+	/**
+	 * @return array<string, int> Parent group id => number of groups of the
+	 *         template's child templates that belong to it.
+	 */
+	public static function childGroupCounts( int $postId ): array {
+		if ( $postId <= 0 ) {
+			return [];
+		}
+		$childIds = get_posts( [
+			'post_type'        => PostTypes::TEMPLATE,
+			'post_parent'      => $postId,
+			'post_status'      => 'any',
+			'posts_per_page'   => -1,
+			'fields'           => 'ids',
+			'suppress_filters' => true,
+		] );
+
+		$counts = [];
+		foreach ( array_map( 'intval', $childIds ) as $childId ) {
+			foreach ( (array) ( TemplateMeta::get( $childId )['groups'] ?? [] ) as $group ) {
+				$parentGroupId = is_array( $group ) ? absint( $group['parent_id'] ?? 0 ) : 0;
+				if ( $parentGroupId > 0 ) {
+					$counts[ (string) $parentGroupId ] = ( $counts[ (string) $parentGroupId ] ?? 0 ) + 1;
+				}
+			}
+		}
+
+		return $counts;
 	}
 
 	private static function useUnminifiedAssets(): bool {

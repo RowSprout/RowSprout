@@ -68,26 +68,9 @@ final class TemplateImporter {
 	 * @param array<string, mixed> $options See importJson().
 	 */
 	public static function import( array $data, array $options = [] ): ImportResult {
-		$result = new ImportResult();
-
-		if ( ( $data['format'] ?? '' ) !== TemplateExporter::FORMAT || ! isset( $data['templates'] ) || ! is_array( $data['templates'] ) ) {
-			$result->addError( __( 'This file is not a RowSprout export file.', 'rowsprout' ) );
-			return $result;
-		}
-
-		$formatVersion = is_numeric( $data['format_version'] ?? null ) ? (int) $data['format_version'] : 0;
-		if ( $formatVersion > TemplateExporter::FORMAT_VERSION ) {
-			$result->addError( __( 'This export file was made by a newer version of RowSprout. Update RowSprout on this site and try again.', 'rowsprout' ) );
-			return $result;
-		}
-		if ( $formatVersion < 1 ) {
-			$result->addError( __( 'This export file is damaged: it has no valid format version.', 'rowsprout' ) );
-			return $result;
-		}
-
-		$entries = self::readEntries( $data['templates'], $result );
+		$result  = new ImportResult();
+		$entries = self::readFile( $data, $result );
 		if ( $entries === [] ) {
-			$result->addError( __( 'The export file contains no templates.', 'rowsprout' ) );
 			return $result;
 		}
 
@@ -169,6 +152,62 @@ final class TemplateImporter {
 	}
 
 	/**
+	 * The template entries of a decoded export file by source id, or [] with
+	 * an error on $result when the file cannot be imported. Shared with
+	 * TemplateImportPreview, so the preview refuses what the import refuses.
+	 *
+	 * @param array<string, mixed> $data
+	 * @return array<int, array<string, mixed>>
+	 */
+	public static function readFile( array $data, ImportResult $result ): array {
+		if ( ( $data['format'] ?? '' ) !== TemplateExporter::FORMAT || ! isset( $data['templates'] ) || ! is_array( $data['templates'] ) ) {
+			$result->addError( __( 'This file is not a RowSprout export file.', 'rowsprout' ) );
+			return [];
+		}
+
+		$formatVersion = is_numeric( $data['format_version'] ?? null ) ? (int) $data['format_version'] : 0;
+		if ( $formatVersion > TemplateExporter::FORMAT_VERSION ) {
+			$result->addError( __( 'This export file was made by a newer version of RowSprout. Update RowSprout on this site and try again.', 'rowsprout' ) );
+			return [];
+		}
+		if ( $formatVersion < 1 ) {
+			$result->addError( __( 'This export file is damaged: it has no valid format version.', 'rowsprout' ) );
+			return [];
+		}
+
+		$entries = self::readEntries( $data['templates'], $result );
+		if ( $entries === [] ) {
+			$result->addError( __( 'The export file contains no templates.', 'rowsprout' ) );
+		}
+
+		return $entries;
+	}
+
+	/**
+	 * The entries' source ids, parents first, each with its parent's source
+	 * id when that parent is in the file too (0 otherwise): a child of a
+	 * child, or of a template that is not in the file, comes in without a
+	 * parent.
+	 *
+	 * @param array<int, array<string, mixed>> $entries
+	 * @return array<int, int>
+	 */
+	public static function inParentOrder( array $entries ): array {
+		$roots    = [];
+		$children = [];
+		foreach ( $entries as $sourceId => $entry ) {
+			$parent = absint( $entry['parent'] ?? 0 );
+			if ( $parent > 0 && isset( $entries[ $parent ] ) && absint( $entries[ $parent ]['parent'] ?? 0 ) === 0 ) {
+				$children[ $sourceId ] = $parent;
+			} else {
+				$roots[ $sourceId ] = 0;
+			}
+		}
+
+		return $roots + $children;
+	}
+
+	/**
 	 * The file's template entries by source id; malformed ones are skipped.
 	 *
 	 * @param array<int|string, mixed> $templates
@@ -209,21 +248,11 @@ final class TemplateImporter {
 	 * @return array<int, int> Source id => this site's id.
 	 */
 	private static function createPosts( array $entries, ImportResult $result, array $options, array &$oldConfigs ): array {
-		$roots    = [];
-		$children = [];
-		foreach ( $entries as $sourceId => $entry ) {
-			$parent = absint( $entry['parent'] ?? 0 );
-			if ( $parent > 0 && isset( $entries[ $parent ] ) && absint( $entries[ $parent ]['parent'] ?? 0 ) === 0 ) {
-				$children[ $sourceId ] = $parent;
-			} else {
-				$roots[ $sourceId ] = $parent;
-			}
-		}
-
 		$idMap = [];
-		foreach ( $roots + $children as $sourceId => $parent ) {
-			$entry = $entries[ $sourceId ];
-			$title = self::title( $entry );
+		foreach ( self::inParentOrder( $entries ) as $sourceId => $fileParent ) {
+			$entry  = $entries[ $sourceId ];
+			$title  = self::title( $entry );
+			$parent = absint( $entry['parent'] ?? 0 );
 
 			$targetId = self::existingTarget( $entry, $options );
 			if ( $targetId > 0 ) {
@@ -232,7 +261,7 @@ final class TemplateImporter {
 				continue;
 			}
 
-			$newParent = isset( $children[ $sourceId ] ) ? ( $idMap[ $parent ] ?? 0 ) : 0;
+			$newParent = $fileParent > 0 ? ( $idMap[ $fileParent ] ?? 0 ) : 0;
 			if ( $parent > 0 && $newParent === 0 ) {
 				$result->addWarning( sprintf(
 					/* translators: %s: template title. */
@@ -269,7 +298,7 @@ final class TemplateImporter {
 	 * @param array<string, mixed> $entry
 	 * @param array<string, mixed> $options
 	 */
-	private static function existingTarget( array $entry, array $options ): int {
+	public static function existingTarget( array $entry, array $options ): int {
 		/**
 		 * An existing template to update with this entry instead of creating
 		 * a new one (0 = create). It must be a template the user can edit;
@@ -353,25 +382,7 @@ final class TemplateImporter {
 			$postUpdate['post_parent'] = $idMap[ $sourceParent ];
 		}
 
-		$config = self::sanitizeConfig( PlaceholderTokenIds::remapRecursive( $entry['config'] ?? [], $map ), $unknownTypes );
-
-		/**
-		 * The config about to be stored for an imported template (already
-		 * sanitized and with token ids rewritten). For an updated template the
-		 * stored config is still the one from before the import here, so an
-		 * add-on can, for example, merge a partial export into it.
-		 *
-		 * @param array<string, mixed> $config
-		 * @param array<string, mixed> $entry    The template's entry in the file.
-		 * @param int                  $newId    The template on this site.
-		 * @param bool                 $isUpdate Whether an existing template is updated.
-		 * @param array<string, mixed> $options  The import options.
-		 */
-		$filtered = apply_filters( 'rowsprout_template_import_config', $config, $entry, $newId, $isUpdate, $options );
-		$config   = is_array( $filtered ) ? $filtered : $config;
-		if ( $isUpdate ) {
-			$config = self::keepEquivalentValues( $config, TemplateMeta::get( $newId ) );
-		}
+		$config = self::plannedConfig( $entry, $map, $newId, $isUpdate, $options, $unknownTypes );
 
 		// A save that landed since createPosts() read the config (another
 		// tab, an agent) is not overwritten, and the marking below would
@@ -422,6 +433,43 @@ final class TemplateImporter {
 		}
 
 		return true;
+	}
+
+	/**
+	 * The config an entry would store: sanitized, with token ids rewritten
+	 * ($map), through the rowsprout_template_import_config filter and, for an
+	 * update, with the values that only differ in form kept as they are.
+	 * Writes nothing, so TemplateImportPreview uses it too.
+	 *
+	 * @param array<string, mixed> $entry
+	 * @param array<int, int>      $map
+	 * @param array<string, mixed> $options
+	 * @param array<string, bool>  $unknownTypes
+	 * @return array<string, mixed>
+	 */
+	public static function plannedConfig( array $entry, array $map, int $templateId, bool $isUpdate, array $options, array &$unknownTypes ): array {
+		$config = self::sanitizeConfig( PlaceholderTokenIds::remapRecursive( $entry['config'] ?? [], $map ), $unknownTypes );
+
+		/**
+		 * The config about to be stored for an imported template (already
+		 * sanitized and with token ids rewritten). For an updated template the
+		 * stored config is still the one from before the import here, so an
+		 * add-on can, for example, merge a partial export into it.
+		 *
+		 * @param array<string, mixed> $config
+		 * @param array<string, mixed> $entry      The template's entry in the file.
+		 * @param int                  $templateId The template on this site (0 when a
+		 *                                         preview shows a new one).
+		 * @param bool                 $isUpdate   Whether an existing template is updated.
+		 * @param array<string, mixed> $options    The import options.
+		 */
+		$filtered = apply_filters( 'rowsprout_template_import_config', $config, $entry, $templateId, $isUpdate, $options );
+		$config   = is_array( $filtered ) ? $filtered : $config;
+		if ( $isUpdate ) {
+			$config = self::keepEquivalentValues( $config, TemplateMeta::get( $templateId ) );
+		}
+
+		return $config;
 	}
 
 	/**
@@ -710,7 +758,7 @@ final class TemplateImporter {
 	/**
 	 * @param array<string, mixed> $entry
 	 */
-	private static function title( array $entry ): string {
+	public static function title( array $entry ): string {
 		$title = sanitize_text_field( self::text( $entry['title'] ?? '' ) );
 
 		return $title !== '' ? $title : __( 'Imported template', 'rowsprout' );

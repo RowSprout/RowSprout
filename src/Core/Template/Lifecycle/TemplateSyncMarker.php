@@ -69,7 +69,16 @@ final class TemplateSyncMarker {
 	 */
 	public static function markStaleFromSmallAdjustments( int $postId, array $oldConfig, bool $pruneOrphans = true ): void {
 		$post = get_post( $postId );
-		if ( ! $post || in_array( $post->post_status, [ 'draft', 'pending' ], true ) ) {
+		if ( ! $post ) {
+			return;
+		}
+		if ( in_array( $post->post_status, [ 'draft', 'pending' ], true ) ) {
+			// Nothing is queued for a draft, but a removed group goes as it
+			// would on a published template (a draft can still have pages
+			// from when it was published).
+			if ( $pruneOrphans ) {
+				QueueManager::pruneRemovedGroups( $postId );
+			}
 			return;
 		}
 
@@ -99,7 +108,14 @@ final class TemplateSyncMarker {
 	 */
 	public static function queueChangedGroups( int $postId, array $oldConfig, bool $pruneOrphans = true ): void {
 		$post = get_post( $postId );
-		if ( ! $post || in_array( $post->post_status, [ 'draft', 'pending' ], true ) ) {
+		if ( ! $post ) {
+			return;
+		}
+		if ( in_array( $post->post_status, [ 'draft', 'pending' ], true ) ) {
+			// See markStaleFromSmallAdjustments().
+			if ( $pruneOrphans ) {
+				QueueManager::pruneRemovedGroups( $postId );
+			}
 			return;
 		}
 

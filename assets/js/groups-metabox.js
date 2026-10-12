@@ -38,7 +38,6 @@
 	var tInvalidUrl = String(i18n.invalidUrl || 'Voer een geldige URL in (http(s)://...)');
 	var tInvalidEmail = String(i18n.invalidEmail || 'Voer een geldig e-mailadres in.');
 	var tTypeSingleInstance = String(i18n.typeSingleInstance || 'Dit type kan maar één keer worden toegevoegd.');
-	var tChildGroupAddDisabled = String(i18n.childGroupAddDisabled || 'Groepen toevoegen is niet toegestaan bij child templates.');
 	var tDuplicatePropertyTitle = String(i18n.duplicatePropertyTitle || 'Deze eigenschapstitel bestaat al binnen deze template.');
 	var tDuplicateHref = String(i18n.duplicateHref || 'Deze URL/slug wordt al gebruikt door een andere groep in deze template.');
 	var tMediaTitle = String(i18n.mediaTitle || 'Selecteer of upload een afbeelding');
@@ -391,9 +390,8 @@
 		var hrefInput = makeInput(rowIdx,hrefCol.key,hrefCol.type,'',resolveUiKind(hrefCol.type,hrefCol.fieldType),hrefCol.options);
 		return '<div class="dp-group-card" data-row-idx="'+rowIdx+'" data-inherited="0">'
 			+ '<div class="dp-group-head">'
-			+ '<div class="dp-group-handle">&#9776;</div>'
 			+ '<div class="dp-group-index">'+tGroup+' '+(rowIdx+1)+'</div>'
-			+ '<div><span class="label">Titel</span>'+titleInput+'</div>'
+			+ '<div><span class="label">Titel</span>'+titleInput+'<small class="dp-title-error-msg"></small></div>'
 			+ '<div><span class="label">Href</span>'+hrefInput+'<small class="dp-href-error-msg"></small></div>'
 			+ '<button type="button" class="button button-small dp-group-toggle">'+tExpand+'</button>'
 			+ '<button type="button" class="button-link dp-group-delete" title="'+escHtml(tDeleteGroup)+'">&times;</button>'
@@ -453,11 +451,17 @@
 		window.setTimeout(function(){ $card.removeClass('is-new'); }, 900);
 	}
 
+	// A child template's groups come from its parent, so it cannot add any.
+	// The classic editor's Parent dropdown can change that live; the block
+	// editor and Elementor have no #parent_id, so the stored parent decides.
+	function isChildTemplate(){
+		var $parent=$('#parent_id');
+		return (parseInt($parent.length ? $parent.val() : cfg.parentId, 10)||0)>0;
+	}
 	function refreshAddGroupButtonState(){
-		var parentId=parseInt($('#parent_id').val()||'0',10)||0;
-		var isChild=parentId>0;
-		$('#dp-add-group-btn').prop('disabled', isChild);
-		$('#dp-add-group-btn').attr('title', isChild ? tChildGroupAddDisabled : '');
+		var isChild=isChildTemplate();
+		$('#dp-add-group-btn').prop('disabled', isChild).toggle(!isChild);
+		$('#dp-child-groups-note').toggle(isChild);
 	}
 
 	function applyParentSyncPayload(payload, savedChildColumns, savedGroupValues){
@@ -664,8 +668,15 @@
 		}
 	}
 
+	// Deleting a parent group deletes the groups its child templates have for
+	// it on save (QueueManager::pruneChildGroupsOf()): say so first.
 	$(document).on('click', '.dp-group-delete', function(){
-		$(this).closest('.dp-group-card').remove();
+		var $card=$(this).closest('.dp-group-card');
+		var childCount=parseInt((cfg.childGroupCounts||{})[String($card.attr('data-group-id')||'')]||0,10)||0;
+		if(childCount>0 && !window.confirm(childCount===1 ? String(i18n.deleteGroupChild||'') : String(i18n.deleteGroupChildren||'').replace('%d', childCount))){
+			return;
+		}
+		$card.remove();
 		updateRowIndexes();
 		refreshToggleAllButtonState();
 	});
@@ -844,6 +855,187 @@
 		var $href=$(this).closest('.dp-group-card').find('input[data-col-type="href"], input[data-col-type="slug"]').first();
 		if($href.length && !$href.val().trim()){ $href.val(normalizeSlug(titleVal)); }
 	});
+	// An emptied URL/slug follows from the title again, as the server does
+	// (GroupTitles::withSlugsFromTitles()).
+	$(document).on('blur', '.dp-group-card input[data-col-type="href"], .dp-group-card input[data-col-type="slug"]', function(){
+		var $href=$(this);
+		if($href.prop('disabled') || String($href.val()||'').trim()){ return; }
+		var titleVal=String($href.closest('.dp-group-card').find('input[data-col-type="title"]').first().val()||'').trim();
+		if(titleVal){ $href.val(normalizeSlug(titleVal)); checkHrefUniqueness(); }
+	});
+
+	// A group without a title is not generated (GroupTitles on the server):
+	// mark its title and say so before saving, in a box above the tabs and as
+	// an editor notice in the block editor. Inherited groups take their title
+	// from the parent template, so only the group's own title counts. A card
+	// with nothing filled in is not stored at all (PayloadConfigBuilder), so
+	// it is not marked either: a new template's empty card, a group just added.
+	var tUntitledGroup=String(i18n.untitledGroup||'');
+	var dpUntitledText='';
+	// Whether the save would keep this card: one of its posted values is not
+	// empty (unchecked boxes and disabled inputs are not posted).
+	function cardHasValue($card){
+		var has=false;
+		$card.find(':input').each(function(){
+			var name=String(this.name||$(this).attr('data-dp-name')||'');
+			var type=String(this.type||'').toLowerCase();
+			if(has || !/\]\[fields\]\[/.test(name) || this.disabled || ((type==='checkbox' || type==='radio') && !this.checked)){ return; }
+			has=String($(this).val()||'').trim()!=='';
+		});
+		return has;
+	}
+	function checkUntitledGroups(){
+		var positions=[];
+		$('#dp-groups-sortable .dp-group-card').each(function(position){
+			var $card=$(this);
+			var $title=$card.find('input[data-col-type="title"]').first();
+			var missing=$title.length>0 && $card.attr('data-inherited')!=='1' && !String($title.val()||'').trim() && cardHasValue($card);
+			$title.toggleClass('dp-input-invalid', missing);
+			$title.siblings('.dp-title-error-msg').toggleClass('is-visible', missing).text(missing ? tUntitledGroup : '');
+			if(missing){ positions.push(position+1); }
+		});
+		var text=positions.length===1
+			? String(i18n.untitledWarningOne||'').replace('%d', positions[0])
+			: String(i18n.untitledWarningMany||'').replace('%1$d', positions.length).replace('%2$s', positions.join(', '));
+		if(!positions.length){ text=''; }
+		$('.dp-untitled-warning').toggle(text!=='').find('p').text(text);
+		var notices=window.wp && window.wp.data && window.wp.data.select && window.wp.data.select('core/editor') ? window.wp.data.dispatch('core/notices') : null;
+		if(notices && text!==dpUntitledText){
+			if(text){ notices.createWarningNotice(text, { id:'rowsprout-untitled-groups', isDismissible:true }); } else { notices.removeNotice('rowsprout-untitled-groups'); }
+		}
+		dpUntitledText=text;
+	}
+	var dpUntitledTimer=null;
+	function scheduleUntitledCheck(){
+		window.clearTimeout(dpUntitledTimer);
+		dpUntitledTimer=window.setTimeout(checkUntitledGroups, 300);
+	}
+	$(document).on('input change blur', '#dp-groups-sortable :input', scheduleUntitledCheck);
+	if(window.MutationObserver){
+		$('#dp-groups-sortable').each(function(){
+			new window.MutationObserver(scheduleUntitledCheck).observe(this, { childList:true });
+		});
+	}
+	scheduleUntitledCheck();
+
+	// PHP drops the fields past max_input_vars without an error, and the
+	// server then refuses to store this form's properties and groups
+	// (SavePost::requestWasTruncated()). Count what a save would post and
+	// warn before saving.
+	var dpMaxInputVars=parseInt(cfg.maxInputVars||0,10)||0;
+	var dpInputLimitOver=false;
+	var dpInputLimitText='';
+	function postedScope(){
+		var $tabs=$('[data-dp-template-tabs]').first();
+		var $modal=$tabs.closest('.dp-elementor-tab-body');
+		if($modal.length){ return $modal; }
+		// The block editor posts its base form and every meta box location form.
+		if($('.metabox-base-form').length){ return $('.metabox-base-form').add('form.metabox-location-normal, form.metabox-location-advanced, form.metabox-location-side'); }
+		var $form=$tabs.closest('form');
+		return $form.length ? $form : $tabs;
+	}
+	function postedFieldCount(){
+		var count=0;
+		postedScope().find(':input[name]').each(function(){
+			var type=String(this.type||'').toLowerCase();
+			if(this.disabled || ((type==='checkbox' || type==='radio') && !this.checked) || /^(file|submit|button|reset|image)$/.test(type)){ return; }
+			count+=(this.tagName==='SELECT' && this.multiple) ? $(this).find('option:selected').length : 1;
+		});
+		return count;
+	}
+	// The properties and groups go to the server as one JSON field
+	// (SavePost::unpackFormPayload()): one value instead of thousands, so
+	// max_input_vars no longer cuts them off. Their inputs keep their names
+	// for everything else (add-on inputs post under them, the parent sync
+	// reads them) and only lose them while a save collects the form.
+	var DP_PACKED=/^dp_(groups|columns|all_columns)\[/;
+	function packedInputs(){
+		return $('[data-dp-template-tabs]').find(':input[name]').filter(function(){ return DP_PACKED.test(this.name); });
+	}
+	// The value PHP would read for each name: unchecked boxes and disabled
+	// inputs are not posted, and a later input with the same name wins (a
+	// checkbox after its hidden "0").
+	function packTemplateFields(){
+		var data={};
+		var $inputs=packedInputs();
+		$inputs.each(function(){
+			var type=String(this.type||'').toLowerCase();
+			if(this.disabled || ((type==='checkbox' || type==='radio') && !this.checked)){ return; }
+			var path=this.name.replace(/\]/g,'').split('[');
+			var node=data;
+			for(var i=0;i<path.length-1;i++){
+				if(!node[path[i]] || typeof node[path[i]]!=='object'){ node[path[i]]={}; }
+				node=node[path[i]];
+			}
+			node[path[path.length-1]]=String($(this).val()===null ? '' : $(this).val());
+		});
+		var $tabs=$('[data-dp-template-tabs]').first();
+		var $payload=$('<input type="hidden" name="dp_payload" />').val(JSON.stringify(data)).insertBefore($tabs);
+		$inputs.each(function(){ $(this).attr('data-dp-name', this.name).removeAttr('name'); });
+		return {
+			restore:function(){
+				$inputs.each(function(){ $(this).attr('name', $(this).attr('data-dp-name')).removeAttr('data-dp-name'); });
+				$payload.remove();
+			}
+		};
+	}
+	window.rowsproutTemplateForm={ pack:packTemplateFields };
+
+	function checkInputLimit(){
+		if(dpMaxInputVars<=0){ return; }
+		// Packed, the properties and groups are one field.
+		var packedCount=packedInputs().length;
+		var count=postedFieldCount()-packedCount+(packedCount ? 1 : 0);
+		// A margin for the few fields WordPress, the browser or Elementor add.
+		var over=count+20>=dpMaxInputVars;
+		dpInputLimitText=String(i18n.inputLimitWarning||'').replace('%1$d', count).replace('%2$d', dpMaxInputVars).replace('%3$d', Math.ceil((count+200)/500)*500);
+		$('.dp-input-limit-warning').toggle(over).find('p').text(dpInputLimitText);
+		var notices=window.wp && window.wp.data && window.wp.data.select && window.wp.data.select('core/editor') ? window.wp.data.dispatch('core/notices') : null;
+		if(notices && over!==dpInputLimitOver){
+			if(over){ notices.createWarningNotice(dpInputLimitText, { id:'rowsprout-input-limit', isDismissible:true }); } else { notices.removeNotice('rowsprout-input-limit'); }
+		}
+		dpInputLimitOver=over;
+	}
+	var dpInputLimitTimer=null;
+	function scheduleInputLimitCheck(){
+		window.clearTimeout(dpInputLimitTimer);
+		dpInputLimitTimer=window.setTimeout(checkInputLimit, 300);
+	}
+	if(dpMaxInputVars>0 && window.MutationObserver){
+		$('[data-dp-template-tabs]').each(function(){
+			new window.MutationObserver(scheduleInputLimitCheck).observe(this, { childList:true, subtree:true });
+		});
+	}
+	scheduleInputLimitCheck();
+	// The classic screen: ask before a save that would lose the groups, then
+	// pack them. The browser has collected the form once the submit handlers
+	// ran, so the names come back right after.
+	$(document).on('submit', 'form#post', function(e){
+		checkInputLimit();
+		if(dpInputLimitOver && !window.confirm(dpInputLimitText+'\n\n'+String(i18n.inputLimitConfirm||''))){
+			e.preventDefault();
+		}
+	});
+	$(document).on('submit', 'form#post', function(e){
+		if(e.isDefaultPrevented() || !$('[data-dp-template-tabs]').length){ return; }
+		var packed=packTemplateFields();
+		window.setTimeout(packed.restore, 0);
+	});
+	// The block editor posts the meta box itself after saving the post: its
+	// request starts by flagging isSavingMetaBoxes, which runs this listener
+	// before the form is collected; the names come back once it is done.
+	if(window.wp && window.wp.data && typeof window.wp.data.subscribe==='function'){
+		var dpWasSavingMetaBoxes=false;
+		var dpPackedForMetaBoxes=null;
+		window.wp.data.subscribe(function(){
+			var editPost=window.wp.data.select('core/edit-post');
+			if(!editPost || typeof editPost.isSavingMetaBoxes!=='function'){ return; }
+			var saving=editPost.isSavingMetaBoxes();
+			if(saving && !dpWasSavingMetaBoxes && $('[data-dp-template-tabs]').length){ dpPackedForMetaBoxes=packTemplateFields(); }
+			if(!saving && dpWasSavingMetaBoxes && dpPackedForMetaBoxes){ dpPackedForMetaBoxes.restore(); dpPackedForMetaBoxes=null; }
+			dpWasSavingMetaBoxes=saving;
+		});
+	}
 
 	var dpMediaFrame;
 	$(document).on('click', '.dp-thumb-upload', function(e){
