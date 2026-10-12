@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-12T07:41:20+00:00\n"
+"POT-Creation-Date: 2026-10-12T08:41:47+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: rowsprout\n"
@@ -135,7 +135,7 @@ msgstr ""
 #. translators: %d: number of further names.
 #: src/Admin/GroupCsv/GroupCsvImporter.php:318
 #: src/Admin/GroupCsv/GroupCsvImporter.php:331
-#: src/Admin/GroupCsv/GroupCsvSection.php:432
+#: src/Admin/GroupCsv/GroupCsvSection.php:437
 #: src/Admin/TemplateTransferPage.php:472
 #, php-format
 msgid "and %d more"
@@ -247,7 +247,7 @@ msgid "Opening it in Google Sheets or Excel? Turn off converting text to numbers
 msgstr ""
 
 #: src/Admin/GroupCsv/GroupCsvSection.php:108
-#: src/Admin/GroupCsv/GroupCsvSection.php:255
+#: src/Admin/GroupCsv/GroupCsvSection.php:260
 #: src/Admin/TemplateTransferPage.php:363
 #: src/Admin/TemplateTransferPage.php:384
 #: src/Admin/TemplateTransferPage.php:406
@@ -291,6 +291,7 @@ msgid "Unicode (UTF-16 BE)"
 msgstr ""
 
 #: src/Admin/GroupCsv/GroupCsvSection.php:137
+#: src/Admin/GroupCsv/GroupCsvSection.php:176
 msgid "Tab"
 msgstr ""
 
@@ -311,7 +312,7 @@ msgid "Import groups"
 msgstr ""
 
 #: src/Admin/GroupCsv/GroupCsvSection.php:151
-#: src/Admin/GroupCsv/GroupCsvSection.php:276
+#: src/Admin/GroupCsv/GroupCsvSection.php:281
 #: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:100
 #: src/Admin/TemplateTransferPage.php:401
 #: src/ThirdParty/Elementor/TemplateEditorTab.php:248
@@ -348,434 +349,438 @@ msgid "A CSV or text file on the web, or a Google Sheets link of a sheet shared 
 msgstr ""
 
 #: src/Admin/GroupCsv/GroupCsvSection.php:178
+msgid "This sheet has several tabs. Choose the one to import; it is fetched right away."
+msgstr ""
+
+#: src/Admin/GroupCsv/GroupCsvSection.php:183
 msgid "Character encoding"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:186
+#: src/Admin/GroupCsv/GroupCsvSection.php:191
 msgid "Start import at row"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:190
+#: src/Admin/GroupCsv/GroupCsvSection.php:195
 msgid "My data has headers"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:192
+#: src/Admin/GroupCsv/GroupCsvSection.php:197
 msgid "The character encoding is detected automatically. Change it only if letters such as é or ü look wrong in the preview."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:194
-#: src/Admin/GroupCsv/GroupCsvSection.php:385
+#: src/Admin/GroupCsv/GroupCsvSection.php:199
+#: src/Admin/GroupCsv/GroupCsvSection.php:390
 msgid "Show preview"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:199
+#: src/Admin/GroupCsv/GroupCsvSection.php:204
 msgid "Choose the characters that separate the columns. The preview shows how the file is split."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:201
+#: src/Admin/GroupCsv/GroupCsvSection.php:206
 msgid "Delimiters"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:205
+#: src/Admin/GroupCsv/GroupCsvSection.php:210
 msgid "Other:"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:206
+#: src/Admin/GroupCsv/GroupCsvSection.php:211
 msgid "Other delimiter"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:209
+#: src/Admin/GroupCsv/GroupCsvSection.php:214
 msgid "Treat consecutive delimiters as one"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:211
+#: src/Admin/GroupCsv/GroupCsvSection.php:216
 msgid "Text qualifier"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:215
+#: src/Admin/GroupCsv/GroupCsvSection.php:220
 msgid "{none}"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:219
+#: src/Admin/GroupCsv/GroupCsvSection.php:224
 msgid "Data preview"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:224
+#: src/Admin/GroupCsv/GroupCsvSection.php:229
 msgid "Choose what each column fills. A column can also become a new property of this template. Rows are matched to existing groups by ID, else by Href."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:225
+#: src/Admin/GroupCsv/GroupCsvSection.php:230
 msgid "Columns with the same name as in the last import are set to what they were imported into then."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:230
+#: src/Admin/GroupCsv/GroupCsvSection.php:235
 msgid "Column in the file"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:231
+#: src/Admin/GroupCsv/GroupCsvSection.php:236
 msgid "Example values"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:232
+#: src/Admin/GroupCsv/GroupCsvSection.php:237
 msgid "Import as"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:251
-#: src/Admin/GroupCsv/GroupCsvSection.php:308
+#: src/Admin/GroupCsv/GroupCsvSection.php:256
+#: src/Admin/GroupCsv/GroupCsvSection.php:313
 #: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:133
 #: src/Admin/TemplateTransferPage.php:405
 msgid "Cancel"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:253
+#: src/Admin/GroupCsv/GroupCsvSection.php:258
 msgid "Back"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:254
+#: src/Admin/GroupCsv/GroupCsvSection.php:259
 msgid "Next"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:275
+#: src/Admin/GroupCsv/GroupCsvSection.php:280
 #: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:99
 msgid "Add new property"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:281
+#: src/Admin/GroupCsv/GroupCsvSection.php:286
 #: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:74
 #: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:105
 msgid "Type"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:288
+#: src/Admin/GroupCsv/GroupCsvSection.php:293
 #: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:116
 msgid "Options"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:290
+#: src/Admin/GroupCsv/GroupCsvSection.php:295
 #: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:118
 msgid "One option per line"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:294
+#: src/Admin/GroupCsv/GroupCsvSection.php:299
 #: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:73
 #: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:122
 msgid "Label"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:301
+#: src/Admin/GroupCsv/GroupCsvSection.php:306
 #: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:84
 #: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:126
 #: src/Admin/Metaboxes/PropertyTableRenderer.php:35
 msgid "Overridable"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:303
+#: src/Admin/GroupCsv/GroupCsvSection.php:308
 #: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:128
 msgid "A child template can override this property with its own value."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:309
+#: src/Admin/GroupCsv/GroupCsvSection.php:314
 #: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:92
 #: src/Admin/Metaboxes/GroupsMetaBoxRenderer.php:134
 msgid "Add property"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:371
+#: src/Admin/GroupCsv/GroupCsvSection.php:376
 msgid "Step 1 of 4: Choose a file or URL"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:372
+#: src/Admin/GroupCsv/GroupCsvSection.php:377
 msgid "Step 2 of 4: Delimiters"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:373
+#: src/Admin/GroupCsv/GroupCsvSection.php:378
 msgid "Step 3 of 4: Columns"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:374
+#: src/Admin/GroupCsv/GroupCsvSection.php:379
 msgid "Step 4 of 4: Summary"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:376
+#: src/Admin/GroupCsv/GroupCsvSection.php:381
 msgid "Choose a file first."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:377
+#: src/Admin/GroupCsv/GroupCsvSection.php:382
 msgid "The file could not be read."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:378
+#: src/Admin/GroupCsv/GroupCsvSection.php:383
 msgid "Enter a URL and click Fetch first."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:379
+#: src/Admin/GroupCsv/GroupCsvSection.php:384
 msgid "Fetching…"
 msgstr ""
 
 #. translators: 1: file name, 2: file size such as "12 KB".
-#: src/Admin/GroupCsv/GroupCsvSection.php:381
+#: src/Admin/GroupCsv/GroupCsvSection.php:386
 #, php-format
 msgid "Fetched %1$s (%2$s)."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:382
+#: src/Admin/GroupCsv/GroupCsvSection.php:387
 msgid "The file is empty."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:383
+#: src/Admin/GroupCsv/GroupCsvSection.php:388
 msgid "This file is not UTF-8, so it is read as Western European (Windows-1252), the way Excel saves \"CSV (comma delimited)\". Choose another character encoding if letters look wrong."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:384
+#: src/Admin/GroupCsv/GroupCsvSection.php:389
 msgid "Choose at least one delimiter."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:386
+#: src/Admin/GroupCsv/GroupCsvSection.php:391
 msgid "Hide preview"
 msgstr ""
 
 #. translators: 1: number of columns, 2: number of rows, 3: delimiter names such as "semicolons".
-#: src/Admin/GroupCsv/GroupCsvSection.php:388
+#: src/Admin/GroupCsv/GroupCsvSection.php:393
 #, php-format
 msgid "Columns: %1$d · Rows to import: %2$d · Separated by: %3$s. Not right? Choose other delimiters in the next step."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:390
+#: src/Admin/GroupCsv/GroupCsvSection.php:395
 msgid "tabs"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:391
+#: src/Admin/GroupCsv/GroupCsvSection.php:396
 msgid "semicolons"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:392
+#: src/Admin/GroupCsv/GroupCsvSection.php:397
 msgid "commas"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:393
+#: src/Admin/GroupCsv/GroupCsvSection.php:398
 msgid "spaces"
 msgstr ""
 
 #. translators: %s: the delimiter character.
-#: src/Admin/GroupCsv/GroupCsvSection.php:395
+#: src/Admin/GroupCsv/GroupCsvSection.php:400
 #, php-format
 msgid "\"%s\""
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:397
+#: src/Admin/GroupCsv/GroupCsvSection.php:402
 msgid "There are no rows to import from the chosen start row on."
 msgstr ""
 
 #. translators: 1: number of rows shown, 2: total number of rows.
-#: src/Admin/GroupCsv/GroupCsvSection.php:399
+#: src/Admin/GroupCsv/GroupCsvSection.php:404
 #, php-format
 msgid "The first %1$d of %2$d rows."
 msgstr ""
 
 #. translators: %d: column number.
-#: src/Admin/GroupCsv/GroupCsvSection.php:401
+#: src/Admin/GroupCsv/GroupCsvSection.php:406
 #, php-format
 msgid "Column %d"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:402
+#: src/Admin/GroupCsv/GroupCsvSection.php:407
 msgid "— Do not import —"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:403
+#: src/Admin/GroupCsv/GroupCsvSection.php:408
 msgid "ID (finds the existing group)"
 msgstr ""
 
 #. translators: %s: property label, such as "Title".
-#: src/Admin/GroupCsv/GroupCsvSection.php:405
+#: src/Admin/GroupCsv/GroupCsvSection.php:410
 #, php-format
 msgid "%s (finds the group)"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:406
+#: src/Admin/GroupCsv/GroupCsvSection.php:411
 #: src/Admin/Metaboxes/TemplateTabsRenderer.php:133
 #: src/Admin/TemplateTransferPage.php:462
 msgid "Properties"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:407
+#: src/Admin/GroupCsv/GroupCsvSection.php:412
 msgid "New property…"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:408
+#: src/Admin/GroupCsv/GroupCsvSection.php:413
 msgid "New properties"
 msgstr ""
 
 #. translators: %s: comma-separated column names from the file.
-#: src/Admin/GroupCsv/GroupCsvSection.php:410
+#: src/Admin/GroupCsv/GroupCsvSection.php:415
 #, php-format
 msgid "Also chosen for: %s"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:411
+#: src/Admin/GroupCsv/GroupCsvSection.php:416
 msgid "Two or more columns are imported into the same property. Choose one column per property."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:412
+#: src/Admin/GroupCsv/GroupCsvSection.php:417
 msgid "Give the property a label."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:413
+#: src/Admin/GroupCsv/GroupCsvSection.php:418
 #: src/Admin/Metaboxes/GroupsMetaBoxAssets.php:92
 msgid "This property title already exists in this template."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:414
+#: src/Admin/GroupCsv/GroupCsvSection.php:419
 #: src/Admin/TemplateTransferPage.php:445
 msgid "Checking the file…"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:415
+#: src/Admin/GroupCsv/GroupCsvSection.php:420
 msgid "Importing…"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:416
+#: src/Admin/GroupCsv/GroupCsvSection.php:421
 msgid "What the import will do"
 msgstr ""
 
 #. translators: %d: number of groups.
-#: src/Admin/GroupCsv/GroupCsvSection.php:418
+#: src/Admin/GroupCsv/GroupCsvSection.php:423
 #, php-format
 msgid "New groups: %d"
 msgstr ""
 
 #. translators: %d: number of groups.
-#: src/Admin/GroupCsv/GroupCsvSection.php:420
+#: src/Admin/GroupCsv/GroupCsvSection.php:425
 #, php-format
 msgid "Groups updated: %d"
 msgstr ""
 
 #. translators: %d: number of groups.
-#: src/Admin/GroupCsv/GroupCsvSection.php:422
+#: src/Admin/GroupCsv/GroupCsvSection.php:427
 #, php-format
 msgid "Groups already up to date: %d"
 msgstr ""
 
 #. translators: %s: comma-separated property names.
-#: src/Admin/GroupCsv/GroupCsvSection.php:424
+#: src/Admin/GroupCsv/GroupCsvSection.php:429
 #, php-format
 msgid "New properties: %s"
 msgstr ""
 
 #. translators: %d: number of rows.
-#: src/Admin/GroupCsv/GroupCsvSection.php:426
+#: src/Admin/GroupCsv/GroupCsvSection.php:431
 #, php-format
 msgid "Rows skipped: %d"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:427
+#: src/Admin/GroupCsv/GroupCsvSection.php:432
 msgid "Check before you import"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:428
+#: src/Admin/GroupCsv/GroupCsvSection.php:433
 msgid "Nothing changes: every row matches a group that already has these values."
 msgstr ""
 
 #. translators: %d: number of groups.
-#: src/Admin/GroupCsv/GroupCsvSection.php:430
+#: src/Admin/GroupCsv/GroupCsvSection.php:435
 #, php-format
 msgid "Groups of this template that are not in the file: %d"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:433
+#: src/Admin/GroupCsv/GroupCsvSection.php:438
 msgid "Delete these groups and their pages"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:434
+#: src/Admin/GroupCsv/GroupCsvSection.php:439
 msgid "When you import, these groups and their pages are deleted permanently. This cannot be undone."
 msgstr ""
 
 #. translators: %d: number of groups of child templates.
-#: src/Admin/GroupCsv/GroupCsvSection.php:436
+#: src/Admin/GroupCsv/GroupCsvSection.php:441
 #, php-format
 msgid "Child templates lose their groups for them too, with their pages: %d."
 msgstr ""
 
 #. translators: %d: number of groups to delete.
-#: src/Admin/GroupCsv/GroupCsvSection.php:438
+#: src/Admin/GroupCsv/GroupCsvSection.php:443
 #, php-format
 msgid "Import and delete (%d)"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:439
+#: src/Admin/GroupCsv/GroupCsvSection.php:444
 msgid "No row of the file matches a group of this template, so this file cannot delete groups: it may be the wrong file."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:440
+#: src/Admin/GroupCsv/GroupCsvSection.php:445
 msgid "When you click Import, the groups are saved right away and the page reloads automatically to show them."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:441
+#: src/Admin/GroupCsv/GroupCsvSection.php:446
 msgid "Imported. Reloading the page…"
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:442
+#: src/Admin/GroupCsv/GroupCsvSection.php:447
 msgid "This template has changes that are not saved yet. They are lost when the page reloads after the import. Cancel and save the template first to keep them."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:444
+#: src/Admin/GroupCsv/GroupCsvSection.php:449
 msgid "No pages are generated yet: after the import, update the template with \"Create & update pages\" to generate them."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:445
+#: src/Admin/GroupCsv/GroupCsvSection.php:450
 msgid "Pages are generated when you publish the template."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:446
+#: src/Admin/GroupCsv/GroupCsvSection.php:451
 msgid "Nothing was changed."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:447
+#: src/Admin/GroupCsv/GroupCsvSection.php:452
 msgid "The server did not answer as expected. Try again."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:460
+#: src/Admin/GroupCsv/GroupCsvSection.php:465
 msgid "You are not allowed to export the groups of this template."
 msgstr ""
 
 #. translators: %s: error message.
-#: src/Admin/GroupCsv/GroupCsvSection.php:510
+#: src/Admin/GroupCsv/GroupCsvSection.php:589
 #, php-format
 msgid "The URL could not be fetched: %s"
 msgstr ""
 
 #. translators: %d: HTTP status code, 401 or 403.
-#: src/Admin/GroupCsv/GroupCsvSection.php:522
+#: src/Admin/GroupCsv/GroupCsvSection.php:601
 #, php-format
 msgid "The URL asks for a sign-in (HTTP status %d). For a Google sheet, share it with \"Anyone with the link\"."
 msgstr ""
 
 #. translators: %d: HTTP status code such as 404.
-#: src/Admin/GroupCsv/GroupCsvSection.php:529
+#: src/Admin/GroupCsv/GroupCsvSection.php:608
 #, php-format
 msgid "The URL answered with HTTP status %d instead of a file."
 msgstr ""
 
 #. translators: %s: maximum size such as "10 MB".
-#: src/Admin/GroupCsv/GroupCsvSection.php:536
+#: src/Admin/GroupCsv/GroupCsvSection.php:615
 #, php-format
 msgid "The file is larger than %s."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:541
+#: src/Admin/GroupCsv/GroupCsvSection.php:620
 msgid "The URL gave an empty file."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:546
+#: src/Admin/GroupCsv/GroupCsvSection.php:625
 msgid "This URL gives a web page, not a CSV file. For a Google sheet, share it with \"Anyone with the link\"."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:569
-#: src/Admin/GroupCsv/GroupCsvSection.php:598
+#: src/Admin/GroupCsv/GroupCsvSection.php:648
+#: src/Admin/GroupCsv/GroupCsvSection.php:690
 msgid "You are not allowed to import groups into this template."
 msgstr ""
 
-#: src/Admin/GroupCsv/GroupCsvSection.php:574
+#: src/Admin/GroupCsv/GroupCsvSection.php:653
 msgid "Enter a URL that starts with http:// or https://."
 msgstr ""
 
