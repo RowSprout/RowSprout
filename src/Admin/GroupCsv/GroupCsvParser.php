@@ -253,7 +253,7 @@ final class GroupCsvParser {
 	 * when there are none.
 	 *
 	 * @param mixed $raw
-	 * @return array{encoding: string, delimiters: string, qualifier: string, consecutive: bool, start_row: int, headers: bool}|null
+	 * @return array{encoding: string, delimiters: string, qualifier: string, consecutive: bool, start_row: int, headers: bool, sheet: string}|null
 	 */
 	public static function settings( $raw ): ?array {
 		if ( ! is_array( $raw ) ) {
@@ -273,6 +273,8 @@ final class GroupCsvParser {
 			'consecutive' => ! empty( $raw['consecutive'] ),
 			'start_row'   => max( 1, (int) ( $raw['start_row'] ?? 1 ) ),
 			'headers'     => ! empty( $raw['headers'] ),
+			// The worksheet of an Excel workbook (GroupCsvSource), '' for the first or none.
+			'sheet'       => is_string( $raw['sheet'] ?? null ) ? (string) mb_substr( sanitize_text_field( $raw['sheet'] ), 0, 191 ) : '',
 		];
 	}
 

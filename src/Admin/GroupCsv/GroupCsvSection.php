@@ -31,6 +31,7 @@ final class GroupCsvSection {
 	private const EXPORT_ACTION = 'rowsprout_export_groups';
 	private const IMPORT_ACTION = 'rowsprout_import_groups';
 	private const FETCH_ACTION  = 'rowsprout_fetch_groups_csv';
+	private const CONVERT_ACTION = 'rowsprout_convert_groups_file';
 	private const NONCE_ACTION  = 'rowsprout_group_csv';
 
 	private const SCRIPT_HANDLE = 'rowsprout-group-csv';
@@ -61,6 +62,7 @@ final class GroupCsvSection {
 		add_action( 'admin_post_' . self::EXPORT_ACTION, [ self::class, 'handleExport' ] );
 		add_action( 'wp_ajax_' . self::IMPORT_ACTION, [ self::class, 'handleImport' ] );
 		add_action( 'wp_ajax_' . self::FETCH_ACTION, [ self::class, 'handleFetch' ] );
+		add_action( 'wp_ajax_' . self::CONVERT_ACTION, [ self::class, 'handleConvert' ] );
 	}
 
 	public static function render( \WP_Post $post ): void {
@@ -171,7 +173,8 @@ final class GroupCsvSection {
 						</p>
 						<p data-csv-source-row="file">
 							<label for="dp-csv-file"><?php esc_html_e( 'File', 'rowsprout' ); ?></label><br />
-							<input type="file" id="dp-csv-file" accept=".csv,.txt,.tsv,text/csv,text/plain,text/tab-separated-values" />
+							<input type="file" id="dp-csv-file" accept=".csv,.txt,.tsv,.xlsx,text/csv,text/plain,text/tab-separated-values,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
+							<span class="description"><?php esc_html_e( 'CSV, text or an Excel workbook (.xlsx).', 'rowsprout' ); ?></span>
 						</p>
 						<div data-csv-source-row="url" hidden>
 							<label for="dp-csv-url"><?php esc_html_e( 'URL', 'rowsprout' ); ?></label>
@@ -179,7 +182,7 @@ final class GroupCsvSection {
 								<input type="url" id="dp-csv-url" class="dp-csv-url" placeholder="https://" />
 								<button type="button" class="button" id="dp-csv-fetch"><?php esc_html_e( 'Fetch', 'rowsprout' ); ?></button>
 							</div>
-							<p class="description"><?php esc_html_e( 'A CSV or text file on the web, or a Google Sheets link of a sheet shared with "Anyone with the link".', 'rowsprout' ); ?></p>
+							<p class="description"><?php esc_html_e( 'A CSV, text or Excel (.xlsx) file on the web, or a Google Sheets link of a sheet shared with "Anyone with the link".', 'rowsprout' ); ?></p>
 							<p class="dp-csv-fetched" id="dp-csv-fetched" hidden></p>
 							<p class="dp-csv-tab-row" id="dp-csv-tab-row" hidden>
 								<label for="dp-csv-tab"><?php esc_html_e( 'Tab', 'rowsprout' ); ?></label><br />
@@ -187,6 +190,11 @@ final class GroupCsvSection {
 								<span class="description"><?php esc_html_e( 'This sheet has several tabs. Choose the one to import; it is fetched right away.', 'rowsprout' ); ?></span>
 							</p>
 						</div>
+						<p class="dp-csv-sheet-row" id="dp-csv-sheet-row" hidden>
+							<label for="dp-csv-sheet"><?php esc_html_e( 'Worksheet', 'rowsprout' ); ?></label><br />
+							<select id="dp-csv-sheet"></select>
+							<span class="description"><?php esc_html_e( 'This workbook has several worksheets. Choose the one to import.', 'rowsprout' ); ?></span>
+						</p>
 						<div class="dp-csv-fields">
 							<p>
 								<label for="dp-csv-encoding"><?php esc_html_e( 'Character encoding', 'rowsprout' ); ?></label><br />
@@ -381,6 +389,7 @@ final class GroupCsvSection {
 			'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
 			'action'     => self::IMPORT_ACTION,
 			'fetchAction' => self::FETCH_ACTION,
+			'convertAction' => self::CONVERT_ACTION,
 			'lastUrl'    => (string) get_post_meta( (int) $post->ID, self::URL_META, true ),
 			'lastMapping' => (object) self::rememberedMapping( (int) $post->ID ),
 			'nonce'      => wp_create_nonce( self::NONCE_ACTION ),
@@ -405,6 +414,7 @@ final class GroupCsvSection {
 				'readError'       => __( 'The file could not be read.', 'rowsprout' ),
 				'noUrl'           => __( 'Enter a URL first.', 'rowsprout' ),
 				'fetching'        => __( 'Fetching…', 'rowsprout' ),
+				'readingWorkbook' => __( 'Reading the workbook…', 'rowsprout' ),
 				/* translators: 1: file name, 2: file size such as "12 KB". */
 				'fetched'         => __( 'Fetched %1$s (%2$s).', 'rowsprout' ),
 				'emptyFile'       => __( 'The file is empty.', 'rowsprout' ),
@@ -414,6 +424,8 @@ final class GroupCsvSection {
 				'hidePreview'     => __( 'Hide preview', 'rowsprout' ),
 				/* translators: 1: number of columns, 2: number of rows, 3: delimiter names such as "semicolons". */
 				'recognised'      => __( 'Columns: %1$d · Rows to import: %2$d · Separated by: %3$s. Not right? Choose other delimiters in the next step.', 'rowsprout' ),
+				/* translators: 1: number of columns, 2: number of rows, 3: worksheet name. */
+				'recognisedSheet' => __( 'Columns: %1$d · Rows to import: %2$d · From the worksheet "%3$s".', 'rowsprout' ),
 				'delimiterNames'  => [
 					'tab'       => __( 'tabs', 'rowsprout' ),
 					'semicolon' => __( 'semicolons', 'rowsprout' ),
@@ -692,6 +704,11 @@ final class GroupCsvSection {
 		if ( isset( $file['error'] ) ) {
 			wp_send_json_error( [ 'errors' => [ $file['error'] ] ] );
 		}
+		// An Excel workbook (or what an add-on converts) as CSV.
+		$converted = GroupCsvSource::convert( (string) $file['content'], $url, [ 'sheet' => self::postedSheet() ] );
+		if ( isset( $converted['error'] ) ) {
+			wp_send_json_error( [ 'errors' => [ $converted['error'] ] ] );
+		}
 
 		update_post_meta( $templateId, self::URL_META, wp_slash( $url ) );
 
@@ -708,12 +725,60 @@ final class GroupCsvSection {
 
 		wp_send_json_success( [
 			// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- the file's bytes for the browser, which detects the encoding itself.
-			'content' => base64_encode( (string) $file['content'] ),
+			'content' => base64_encode( $converted['bytes'] ),
 			'name'    => $file['name'],
 			'size'    => $file['size'],
 			'tabs'    => count( $tabList ) > 1 ? $tabList : [],
 			'gid'     => count( $tabList ) > 1 ? $gid : '',
+			'format'  => $converted['format'],
+			'sheets'  => $converted['sheets'],
+			'sheet'   => $converted['sheet'],
 		] );
+	}
+
+	/**
+	 * Converts an uploaded file the wizard cannot read itself (an Excel
+	 * workbook) to CSV, for one worksheet (GroupCsvSource).
+	 */
+	public static function handleConvert(): void {
+		check_ajax_referer( self::NONCE_ACTION, 'nonce' );
+
+		$templateId = isset( $_POST['template_id'] ) ? absint( $_POST['template_id'] ) : 0;
+		$post       = get_post( $templateId );
+		if ( ! $post instanceof \WP_Post || $post->post_type !== PostTypes::TEMPLATE || ! current_user_can( 'edit_post', $templateId ) ) {
+			wp_send_json_error( [ 'errors' => [ __( 'You are not allowed to import groups into this template.', 'rowsprout' ) ] ], 403 );
+		}
+
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- an upload: only its error code, name and temporary path are read, and the path is checked with is_uploaded_file().
+		$upload  = isset( $_FILES['file'] ) && is_array( $_FILES['file'] ) ? $_FILES['file'] : null;
+		$tmpName = is_array( $upload ) ? (string) ( $upload['tmp_name'] ?? '' ) : '';
+		if ( ! is_array( $upload ) || (int) ( $upload['error'] ?? UPLOAD_ERR_NO_FILE ) !== UPLOAD_ERR_OK || $tmpName === '' || ! is_uploaded_file( $tmpName ) ) {
+			wp_send_json_error( [ 'errors' => [ in_array( (int) ( $upload['error'] ?? 0 ), [ UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE ], true )
+				/* translators: %s: maximum upload size, e.g. "8 MB". */
+				? sprintf( __( 'The file is larger than this server accepts (%s).', 'rowsprout' ), size_format( wp_max_upload_size() ) )
+				: __( 'The file could not be read.', 'rowsprout' ) ] ] );
+		}
+		$bytes     = (string) file_get_contents( $tmpName ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- reading PHP's own temporary upload file.
+		$converted = GroupCsvSource::convert( $bytes, sanitize_file_name( (string) ( $upload['name'] ?? '' ) ), [ 'sheet' => self::postedSheet() ] );
+		if ( isset( $converted['error'] ) ) {
+			wp_send_json_error( [ 'errors' => [ $converted['error'] ] ] );
+		}
+
+		wp_send_json_success( [
+			// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- the file as CSV for the browser.
+			'content' => base64_encode( $converted['bytes'] ),
+			'format'  => $converted['format'],
+			'sheets'  => $converted['sheets'],
+			'sheet'   => $converted['sheet'],
+		] );
+	}
+
+	/**
+	 * The worksheet the wizard asks for ('' = the first).
+	 */
+	private static function postedSheet(): string {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- the callers checked the nonce.
+		return isset( $_POST['sheet'] ) ? sanitize_text_field( wp_unslash( $_POST['sheet'] ) ) : '';
 	}
 
 	public static function handleImport(): void {

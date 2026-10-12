@@ -45,6 +45,10 @@
 		newProperties: [],
 		busy: false,
 		fetchedUrl: '',
+		// An Excel workbook: the worksheet read, the URL it is for, the uploaded file.
+		sheet: '',
+		sheetFor: '',
+		file: null,
 		saved: false
 	};
 
@@ -391,7 +395,10 @@
 		$preview.append($('<table/>').append($('<thead/>').append($headRow)).append($body));
 
 		var data = table();
-		$recognised.text(fmt(i18n.recognised, data.width, data.rows.length, delimiterSummary())).prop('hidden', false);
+		// A workbook was turned into CSV on the server: name the worksheet, not a delimiter.
+		$recognised.text(state.sheet
+			? fmt(i18n.recognisedSheet, data.width, data.rows.length, state.sheet)
+			: fmt(i18n.recognised, data.width, data.rows.length, delimiterSummary())).prop('hidden', false);
 	}
 
 	function renderPreview() {
@@ -752,7 +759,8 @@
 			qualifier: String($('#dp-csv-qualifier').val() || ''),
 			consecutive: $('#dp-csv-consecutive').is(':checked'),
 			start_row: startRow(),
-			headers: hasHeaders()
+			headers: hasHeaders(),
+			sheet: state.sheet
 		};
 		var source = { type: currentSource(), url: currentSource() === 'url' ? String(cfg.lastUrl || '') : '' };
 		// Add-on controls in the wizard (data-csv-extra="key").
@@ -1130,8 +1138,73 @@
 		state.buffer = null;
 		state.mapping = [];
 		showTabs([], '');
+		showSheets([], '');
 		loadText();
 	}
+
+	// An Excel workbook with several worksheets (GroupCsvSource on the
+	// server): a list to choose one.
+	function showSheets(sheets, sheet) {
+		var $select = $('#dp-csv-sheet').empty();
+		(sheets || []).forEach(function(name) {
+			$select.append($('<option/>').val(String(name)).text(String(name)));
+		});
+		$select.val(sheet);
+		state.sheet = String(sheet || '');
+		$('#dp-csv-sheet-row').prop('hidden', !sheets || sheets.length < 2);
+	}
+
+	function base64Bytes(content) {
+		var binary = window.atob(content);
+		var bytes = new Uint8Array(binary.length);
+		for (var i = 0; i < binary.length; i++) {
+			bytes[i] = binary.charCodeAt(i);
+		}
+		return bytes.buffer;
+	}
+
+	// A zip (.xlsx) or an old Office file: the browser cannot read it as text.
+	function isSpreadsheet(buffer) {
+		var b = new Uint8Array(buffer.slice(0, 4));
+		return (b[0] === 0x50 && b[1] === 0x4B && b[2] === 0x03 && b[3] === 0x04) || (b[0] === 0xD0 && b[1] === 0xCF && b[2] === 0x11 && b[3] === 0xE0);
+	}
+
+	// The server turns an uploaded workbook into CSV, for one worksheet.
+	function convertFile(file, sheet) {
+		var data = new window.FormData();
+		data.append('action', cfg.convertAction);
+		data.append('nonce', cfg.nonce);
+		data.append('template_id', cfg.templateId);
+		data.append('sheet', sheet || '');
+		data.append('file', file);
+		setBusy(true, i18n.readingWorkbook);
+		$.ajax({ url: cfg.ajaxUrl, method: 'POST', dataType: 'json', data: data, processData: false, contentType: false }).done(function(response) {
+			var result = response && response.data ? response.data : {};
+			if (!response || !response.success || typeof result.content !== 'string') {
+				clearBuffer();
+				showError(result.errors || [i18n.requestFailed]);
+				return;
+			}
+			showSheets(result.sheets || [], String(result.sheet || ''));
+			loadBuffer(base64Bytes(result.content));
+		}).fail(function(xhr) {
+			clearBuffer();
+			showError(responseData(xhr && xhr.responseJSON).errors);
+		}).always(function() {
+			setBusy(false);
+		});
+	}
+
+	$('#dp-csv-sheet').on('change', function() {
+		var sheet = String($(this).val() || '');
+		if (currentSource() === 'url') {
+			state.sheet = sheet;
+			state.sheetFor = String($('#dp-csv-url').val() || '').trim();
+			fetchUrl();
+		} else if (state.file) {
+			convertFile(state.file, sheet);
+		}
+	});
 
 	// A Google sheet with several tabs (GroupCsvSection::googleSheetTabs()):
 	// a list to choose the tab from.
@@ -1190,6 +1263,13 @@
 		}
 		var reader = new FileReader();
 		reader.onload = function() {
+			if (isSpreadsheet(reader.result)) {
+				state.file = file;
+				convertFile(file, '');
+				return;
+			}
+			state.file = null;
+			showSheets([], '');
 			loadBuffer(reader.result);
 		};
 		reader.onerror = function() {
@@ -1218,7 +1298,8 @@
 			url: cfg.ajaxUrl,
 			method: 'POST',
 			dataType: 'json',
-			data: { action: cfg.fetchAction, nonce: cfg.nonce, template_id: cfg.templateId, url: url }
+			// The worksheet chosen for this URL, if it is a workbook.
+			data: { action: cfg.fetchAction, nonce: cfg.nonce, template_id: cfg.templateId, url: url, sheet: url === state.sheetFor ? state.sheet : '' }
 		}).done(function(response) {
 			var data = response && response.data ? response.data : {};
 			if (!response || !response.success || typeof data.content !== 'string') {
@@ -1226,15 +1307,12 @@
 				showError(data.errors || [i18n.requestFailed]);
 				return;
 			}
-			var binary = window.atob(data.content);
-			var bytes = new Uint8Array(binary.length);
-			for (var i = 0; i < binary.length; i++) {
-				bytes[i] = binary.charCodeAt(i);
-			}
 			cfg.lastUrl = url;
 			$('#dp-csv-fetched').text(fmt(i18n.fetched, data.name, data.size)).prop('hidden', false);
-			loadBuffer(bytes.buffer);
+			showSheets(data.sheets || [], String(data.sheet || ''));
+			loadBuffer(base64Bytes(data.content));
 			showTabs(data.tabs || [], String(data.gid || ''));
+			state.sheetFor = url;
 			state.fetchedUrl = url;
 			if (typeof onFetched === 'function') {
 				setBusy(false);
