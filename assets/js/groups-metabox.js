@@ -867,15 +867,29 @@
 	// A group without a title is not generated (GroupTitles on the server):
 	// mark its title and say so before saving, in a box above the tabs and as
 	// an editor notice in the block editor. Inherited groups take their title
-	// from the parent template, so only the group's own title counts.
+	// from the parent template, so only the group's own title counts. A card
+	// with nothing filled in is not stored at all (PayloadConfigBuilder), so
+	// it is not marked either: a new template's empty card, a group just added.
 	var tUntitledGroup=String(i18n.untitledGroup||'');
 	var dpUntitledText='';
+	// Whether the save would keep this card: one of its posted values is not
+	// empty (unchecked boxes and disabled inputs are not posted).
+	function cardHasValue($card){
+		var has=false;
+		$card.find(':input').each(function(){
+			var name=String(this.name||$(this).attr('data-dp-name')||'');
+			var type=String(this.type||'').toLowerCase();
+			if(has || !/\]\[fields\]\[/.test(name) || this.disabled || ((type==='checkbox' || type==='radio') && !this.checked)){ return; }
+			has=String($(this).val()||'').trim()!=='';
+		});
+		return has;
+	}
 	function checkUntitledGroups(){
 		var positions=[];
 		$('#dp-groups-sortable .dp-group-card').each(function(position){
 			var $card=$(this);
 			var $title=$card.find('input[data-col-type="title"]').first();
-			var missing=$title.length>0 && $card.attr('data-inherited')!=='1' && !String($title.val()||'').trim();
+			var missing=$title.length>0 && $card.attr('data-inherited')!=='1' && !String($title.val()||'').trim() && cardHasValue($card);
 			$title.toggleClass('dp-input-invalid', missing);
 			$title.siblings('.dp-title-error-msg').toggleClass('is-visible', missing).text(missing ? tUntitledGroup : '');
 			if(missing){ positions.push(position+1); }
@@ -896,7 +910,7 @@
 		window.clearTimeout(dpUntitledTimer);
 		dpUntitledTimer=window.setTimeout(checkUntitledGroups, 300);
 	}
-	$(document).on('input change blur', '#dp-groups-sortable input[data-col-type="title"]', scheduleUntitledCheck);
+	$(document).on('input change blur', '#dp-groups-sortable :input', scheduleUntitledCheck);
 	if(window.MutationObserver){
 		$('#dp-groups-sortable').each(function(){
 			new window.MutationObserver(scheduleUntitledCheck).observe(this, { childList:true });
