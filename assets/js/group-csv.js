@@ -799,9 +799,19 @@
 	function updateImportButton() {
 		var deleting = !!state.deleteMissing;
 		$('#dp-csv-import')
-			.prop('disabled', !(state.changes || deleting))
+			.prop('disabled', !(state.changes || deleting || addOnWantsImport()))
 			.text(deleting ? fmt(i18n.importAndDelete, state.missingCount) : importLabel);
 	}
+
+	// An add-on control in step 4 that needs the import to run even when the
+	// file changes nothing (RowSprout Pro's "Keep in sync"): a ticked,
+	// visible data-csv-enables-import control.
+	function addOnWantsImport() {
+		return $modal.find('[data-csv-enables-import]').filter(function() {
+			return this.checked && !$(this).closest('[hidden]').length;
+		}).length > 0;
+	}
+	$modal.on('change', '[data-csv-enables-import]', updateImportButton);
 
 	// The groups no row of the file is for, with the choice to delete them
 	// (and their pages, and their child templates' groups) as the editor
@@ -994,7 +1004,9 @@
 				showError(result.errors);
 				return;
 			}
-			if (result.saved) {
+			// Saved, or an add-on did something with the import (see
+			// addOnWantsImport()): reload to show it.
+			if (result.saved || addOnWantsImport()) {
 				// Stays busy: the dialog cannot be closed while the page reloads.
 				state.saved = true;
 				setBusy(true, i18n.reloading);

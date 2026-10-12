@@ -256,7 +256,9 @@ final class GroupCsvSection {
 						 * data-csv-extra="<key>" and the import request carries their
 						 * value (a checkbox: whether it is checked) as extra.<key>.
 						 * An element with data-csv-url-only only shows when the file
-						 * comes from a URL.
+						 * comes from a URL; a ticked data-csv-enables-import checkbox
+						 * lets Import run (and the page reload) even when the file
+						 * changes nothing.
 						 *
 						 * @param \WP_Post $post The template.
 						 */
@@ -633,12 +635,16 @@ final class GroupCsvSection {
 		$apply   = isset( $_POST['apply'] ) && $_POST['apply'] === '1';
 
 		$result = GroupCsvImporter::run( $templateId, is_array( $payload ) ? $payload : [], $apply, $version );
-		if ( $apply && $result->saved && is_array( $payload ) ) {
+		if ( $apply && ! $result->hasErrors() && is_array( $payload ) ) {
 			self::rememberMapping( $templateId, $payload['headers'] ?? [], $result->mapping );
 
 			/**
-			 * A group import was saved from the wizard. $payload is the request
-			 * as the wizard sent it (not sanitized): mapping, headers, rows,
+			 * A group import was run from the wizard: saved, or found nothing
+			 * to change ($result->saved false), which an add-on control in
+			 * step 4 marked data-csv-enables-import makes possible (RowSprout
+			 * Pro's "Keep in sync" on a file that matches the template
+			 * already). $payload is the request as the wizard sent it (not
+			 * sanitized): mapping, headers, rows,
 			 * settings (how the file was read, see GroupCsvParser::settings()),
 			 * source (type 'file' or 'url', and the url) and extra (the values
 			 * of data-csv-extra controls).
