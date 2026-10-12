@@ -94,11 +94,17 @@ jQuery(function ($) {
 		// action/nonce/post_id first: PHP drops the fields past max_input_vars,
 		// and without them the request would not even reach the handler that
 		// recognises a cut-off form (SavePost::requestWasTruncated()).
+		// The properties and groups as one field (groups-metabox.js), so a
+		// large template stays below max_input_vars.
+		var packed = window.rowsproutTemplateForm ? window.rowsproutTemplateForm.pack() : null;
 		var fields = [
 			{ name: 'action', value: config.ajaxAction },
 			{ name: 'nonce', value: config.saveNonce },
 			{ name: 'post_id', value: String(config.postId) }
 		].concat($body.find(':input').serializeArray());
+		if (packed) {
+			packed.restore();
+		}
 
 		setSaveError('');
 		$btn.prop('disabled', true);

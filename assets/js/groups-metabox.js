@@ -881,9 +881,49 @@
 		});
 		return count;
 	}
+	// The properties and groups go to the server as one JSON field
+	// (SavePost::unpackFormPayload()): one value instead of thousands, so
+	// max_input_vars no longer cuts them off. Their inputs keep their names
+	// for everything else (add-on inputs post under them, the parent sync
+	// reads them) and only lose them while a save collects the form.
+	var DP_PACKED=/^dp_(groups|columns|all_columns)\[/;
+	function packedInputs(){
+		return $('[data-dp-template-tabs]').find(':input[name]').filter(function(){ return DP_PACKED.test(this.name); });
+	}
+	// The value PHP would read for each name: unchecked boxes and disabled
+	// inputs are not posted, and a later input with the same name wins (a
+	// checkbox after its hidden "0").
+	function packTemplateFields(){
+		var data={};
+		var $inputs=packedInputs();
+		$inputs.each(function(){
+			var type=String(this.type||'').toLowerCase();
+			if(this.disabled || ((type==='checkbox' || type==='radio') && !this.checked)){ return; }
+			var path=this.name.replace(/\]/g,'').split('[');
+			var node=data;
+			for(var i=0;i<path.length-1;i++){
+				if(!node[path[i]] || typeof node[path[i]]!=='object'){ node[path[i]]={}; }
+				node=node[path[i]];
+			}
+			node[path[path.length-1]]=String($(this).val()===null ? '' : $(this).val());
+		});
+		var $tabs=$('[data-dp-template-tabs]').first();
+		var $payload=$('<input type="hidden" name="dp_payload" />').val(JSON.stringify(data)).insertBefore($tabs);
+		$inputs.each(function(){ $(this).attr('data-dp-name', this.name).removeAttr('name'); });
+		return {
+			restore:function(){
+				$inputs.each(function(){ $(this).attr('name', $(this).attr('data-dp-name')).removeAttr('data-dp-name'); });
+				$payload.remove();
+			}
+		};
+	}
+	window.rowsproutTemplateForm={ pack:packTemplateFields };
+
 	function checkInputLimit(){
 		if(dpMaxInputVars<=0){ return; }
-		var count=postedFieldCount();
+		// Packed, the properties and groups are one field.
+		var packedCount=packedInputs().length;
+		var count=postedFieldCount()-packedCount+(packedCount ? 1 : 0);
 		// A margin for the few fields WordPress, the browser or Elementor add.
 		var over=count+20>=dpMaxInputVars;
 		dpInputLimitText=String(i18n.inputLimitWarning||'').replace('%1$d', count).replace('%2$d', dpMaxInputVars).replace('%3$d', Math.ceil((count+200)/500)*500);
@@ -905,13 +945,35 @@
 		});
 	}
 	scheduleInputLimitCheck();
-	// The classic screen: ask before a save that would lose the groups.
+	// The classic screen: ask before a save that would lose the groups, then
+	// pack them. The browser has collected the form once the submit handlers
+	// ran, so the names come back right after.
 	$(document).on('submit', 'form#post', function(e){
 		checkInputLimit();
 		if(dpInputLimitOver && !window.confirm(dpInputLimitText+'\n\n'+String(i18n.inputLimitConfirm||''))){
 			e.preventDefault();
 		}
 	});
+	$(document).on('submit', 'form#post', function(e){
+		if(e.isDefaultPrevented() || !$('[data-dp-template-tabs]').length){ return; }
+		var packed=packTemplateFields();
+		window.setTimeout(packed.restore, 0);
+	});
+	// The block editor posts the meta box itself after saving the post: its
+	// request starts by flagging isSavingMetaBoxes, which runs this listener
+	// before the form is collected; the names come back once it is done.
+	if(window.wp && window.wp.data && typeof window.wp.data.subscribe==='function'){
+		var dpWasSavingMetaBoxes=false;
+		var dpPackedForMetaBoxes=null;
+		window.wp.data.subscribe(function(){
+			var editPost=window.wp.data.select('core/edit-post');
+			if(!editPost || typeof editPost.isSavingMetaBoxes!=='function'){ return; }
+			var saving=editPost.isSavingMetaBoxes();
+			if(saving && !dpWasSavingMetaBoxes && $('[data-dp-template-tabs]').length){ dpPackedForMetaBoxes=packTemplateFields(); }
+			if(!saving && dpWasSavingMetaBoxes && dpPackedForMetaBoxes){ dpPackedForMetaBoxes.restore(); dpPackedForMetaBoxes=null; }
+			dpWasSavingMetaBoxes=saving;
+		});
+	}
 
 	var dpMediaFrame;
 	$(document).on('click', '.dp-thumb-upload', function(e){
