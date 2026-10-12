@@ -5,6 +5,7 @@ namespace RowSprout\Core\Page;
 use RowSprout\Core\Helpers;
 use RowSprout\Core\PostMetaKeys;
 use RowSprout\Core\PostTypes;
+use RowSprout\Core\Template\GroupTitles;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -34,6 +35,12 @@ final class PageBuilder {
 		$parentCodeId = $context['parent_code_id'];
 		$parentId     = $context['parent_id'];
 		$aliasCodeIds = $context['alias_code_ids'] ?? [];
+
+		// A page without the group's title is not built (GroupTitles); the
+		// save that queued it held it back already (UrlConflicts::blocking()).
+		if ( GroupTitles::isMissing( $group ) ) {
+			return new \WP_Error( 'rowsprout_group_untitled', __( 'This group has no title, so its page is not generated.', 'rowsprout' ) );
+		}
 
 		$newHref    = self::replacePlaceholders( $pageHref, $group, $codeId, $parentCodeId, $aliasCodeIds );
 		$newTitle   = self::replacePlaceholders( $templatePost->post_title, $group, $codeId, $parentCodeId, $aliasCodeIds );

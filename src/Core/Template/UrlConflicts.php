@@ -90,22 +90,30 @@ final class UrlConflicts {
 	}
 
 	/**
-	 * Everything that keeps a group's page from being generated: its URL is
-	 * in use elsewhere (find()), or another group of the same template has
-	 * the same URL (kind 'duplicate').
+	 * Everything that keeps a group's page from being generated, one entry
+	 * per group: it has no title (kind 'untitled', see GroupTitles; with its
+	 * position in the template), its URL is in use elsewhere (find()), or
+	 * another group of the same template has the same URL (kind 'duplicate').
 	 *
 	 * @param array<string, mixed> $config
 	 * @return array<int, array<string, mixed>>
 	 */
 	public static function blocking( int $templateId, array $config ): array {
-		$conflicts = self::find( $templateId, $config );
-		$post      = get_post( $templateId );
+		$post = get_post( $templateId );
 		if ( ! $post instanceof \WP_Post || ! in_array( $post->post_status, self::GENERATING_STATUSES, true ) ) {
-			return $conflicts;
+			return self::find( $templateId, $config );
 		}
 
-		$listed = array_fill_keys( array_map( 'strval', array_column( $conflicts, 'guid' ) ), true );
-		$paths  = null;
+		$conflicts = self::untitled( $post, $config );
+		$listed    = array_fill_keys( array_column( $conflicts, 'guid' ), true );
+		foreach ( self::find( $templateId, $config ) as $conflict ) {
+			if ( ! isset( $listed[ (string) $conflict['guid'] ] ) ) {
+				$listed[ (string) $conflict['guid'] ] = true;
+				$conflicts[]                          = $conflict;
+			}
+		}
+
+		$paths = null;
 		foreach ( HrefUniquenessValidator::findDuplicateGroups( $config ) as $guids ) {
 			$paths = $paths ?? self::paths( $post, $config );
 			foreach ( $guids as $guid ) {
@@ -124,6 +132,37 @@ final class UrlConflicts {
 		}
 
 		return $conflicts;
+	}
+
+	/**
+	 * The groups whose page would have no title (GroupTitles), a child
+	 * template's resolved against the parent group they inherit it from.
+	 *
+	 * @param array<string, mixed> $config
+	 * @return array<int, array<string, mixed>>
+	 */
+	private static function untitled( \WP_Post $post, array $config ): array {
+		$untitled = [];
+		$position = 0;
+		foreach ( (array) ( $config['groups'] ?? [] ) as $group ) {
+			if ( ! is_array( $group ) || ! isset( $group['id'] ) ) {
+				continue;
+			}
+			$position++;
+			[ $resolved ] = self::resolveGroup( $post, $group );
+			if ( GroupTitles::isMissing( $resolved ) ) {
+				$untitled[] = [
+					'guid'     => (string) $group['id'],
+					'path'     => '',
+					'post_id'  => $post->ID,
+					'kind'     => 'untitled',
+					'title'    => get_the_title( $post ),
+					'position' => $position,
+				];
+			}
+		}
+
+		return $untitled;
 	}
 
 	/**
@@ -359,11 +398,33 @@ final class UrlConflicts {
 	 * @param array<int, array<string, mixed>> $conflicts
 	 */
 	public static function message( array $conflicts ): string {
-		return sprintf(
-			/* translators: %s: list of URLs with what already uses them. */
-			__( 'The template is saved, but these pages are not generated because their URL is already in use: %s. Every URL must be unique on the site; change these groups (or the URL pattern) and save again to generate them.', 'rowsprout' ),
-			self::describe( $conflicts )
-		);
+		$untitled = array_values( array_filter( $conflicts, static function ( $conflict ): bool {
+			return ( $conflict['kind'] ?? '' ) === 'untitled';
+		} ) );
+		$taken    = array_values( array_filter( $conflicts, static function ( $conflict ): bool {
+			return ( $conflict['kind'] ?? '' ) !== 'untitled';
+		} ) );
+
+		$parts = [];
+		if ( $taken !== [] ) {
+			$parts[] = sprintf(
+				/* translators: %s: list of URLs with what already uses them. */
+				__( 'The template is saved, but these pages are not generated because their URL is already in use: %s. Every URL must be unique on the site; change these groups (or the URL pattern) and save again to generate them.', 'rowsprout' ),
+				self::describe( $taken )
+			);
+		}
+		if ( $untitled !== [] ) {
+			$parts[] = sprintf(
+				$taken === []
+					/* translators: %s: list of groups, e.g. 'group 3 of template "Hotels"'. */
+					? __( 'The template is saved, but these groups are not generated because they have no title: %s. Give them a title (the URL/slug then follows from it) and save again to generate them.', 'rowsprout' )
+					/* translators: %s: list of groups, e.g. 'group 3 of template "Hotels"'. */
+					: __( 'These groups are not generated either, because they have no title: %s.', 'rowsprout' ),
+				self::describe( $untitled )
+			);
+		}
+
+		return implode( ' ', $parts );
 	}
 
 	/**
@@ -376,6 +437,11 @@ final class UrlConflicts {
 		$items = [];
 		foreach ( array_slice( $conflicts, 0, 5 ) as $conflict ) {
 			$kind = (string) ( $conflict['kind'] ?? '' );
+			if ( $kind === 'untitled' ) {
+				/* translators: 1: position of the group in the template, 2: template title. */
+				$items[] = sprintf( __( 'group %1$d of template "%2$s"', 'rowsprout' ), (int) ( $conflict['position'] ?? 0 ), (string) ( $conflict['title'] ?? '' ) );
+				continue;
+			}
 			if ( $kind === 'duplicate' ) {
 				$owner = __( 'another group of this template', 'rowsprout' );
 			} elseif ( $kind === 'template' ) {

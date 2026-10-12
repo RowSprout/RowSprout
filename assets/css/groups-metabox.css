@@ -1,6 +1,8 @@
 .dp-input-invalid { border-color:#d63638 !important; box-shadow:0 0 0 1px rgba(214,54,56,.15) !important; }
 .dp-href-error-msg { display:none; color:#d63638; font-size:11px; margin-top:3px; }
 .dp-href-error-msg.is-visible { display:block; }
+.dp-title-error-msg { display:none; color:#d63638; font-size:11px; margin-top:3px; }
+.dp-title-error-msg.is-visible { display:block; }
 .dp-groups-list { display:flex; flex-direction:column; gap:10px; }
 .dp-group-card { border:1px solid #dcdcde; border-radius:8px; background:#fff; }
 .dp-group-card.is-new { animation:dpGroupFlash .9s ease-out; }
