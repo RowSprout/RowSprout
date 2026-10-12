@@ -44,6 +44,7 @@
 		mapping: [],
 		newProperties: [],
 		busy: false,
+		fetchedUrl: '',
 		saved: false
 	};
 
@@ -819,7 +820,10 @@
 	// when no row matched a group (the wrong file must not empty a template).
 	function missingBox(result) {
 		var $box = $('<div class="dp-csv-box dp-csv-missing"/>');
-		$box.append($('<p/>').append($('<strong/>').text(fmt(i18n.missing, result.missingCount))));
+		$box.append($('<p/>').append($('<strong/>').text(fmt(result.missingCount === 1 ? i18n.missingOne : i18n.missingMany, result.missingCount))));
+		if (!result.deleteBlocked) {
+			$box.append($('<p/>').text(i18n.missingExplain));
+		}
 		var titles = (result.missing || []).slice();
 		if (result.missingCount > titles.length) {
 			titles.push(fmt(i18n.andMore, result.missingCount - titles.length));
@@ -832,8 +836,12 @@
 		$box.append($('<p/>').append($('<label/>')
 			.append($('<input type="checkbox" id="dp-csv-delete-missing"/>'))
 			.append(document.createTextNode(' ' + i18n.deleteMissing))));
-		var warning = i18n.deleteWarning + (result.missingChildGroups ? ' ' + fmt(i18n.deleteWarningChildren, result.missingChildGroups) : '');
-		$box.append($('<p class="dp-csv-delete-warning" id="dp-csv-delete-warning" hidden/>').text(warning));
+		var warnings = [i18n.deleteWarning];
+		if (result.missingChildGroups) {
+			warnings.push(fmt(i18n.deleteWarningChildren, result.missingChildGroups));
+		}
+		warnings.push(i18n.deleteWarningTip);
+		$box.append($('<div class="dp-csv-delete-warning" id="dp-csv-delete-warning" hidden/>').append(list(warnings)));
 		return $box;
 	}
 
@@ -946,6 +954,12 @@
 			return;
 		}
 		if (state.step === 1) {
+			// A URL that was not fetched yet (or changed since): fetch it, then go on.
+			var url = currentSource() === 'url' ? String($('#dp-csv-url').val() || '').trim() : '';
+			if (url && (!state.buffer || url !== state.fetchedUrl)) {
+				fetchUrl(next);
+				return;
+			}
 			if (!state.buffer) {
 				showError([currentSource() === 'url' ? i18n.noUrl : i18n.noFile]);
 				return;
@@ -1187,7 +1201,8 @@
 
 	// The server fetches the URL (a browser may not read most other sites)
 	// and returns the file's bytes.
-	function fetchUrl() {
+	// onFetched: what to do once the file is in (Next fetching for you).
+	function fetchUrl(onFetched) {
 		var url = String($('#dp-csv-url').val() || '').trim();
 		showError([]);
 		if (!url || state.busy) {
@@ -1220,6 +1235,11 @@
 			$('#dp-csv-fetched').text(fmt(i18n.fetched, data.name, data.size)).prop('hidden', false);
 			loadBuffer(bytes.buffer);
 			showTabs(data.tabs || [], String(data.gid || ''));
+			state.fetchedUrl = url;
+			if (typeof onFetched === 'function') {
+				setBusy(false);
+				onFetched();
+			}
 		}).fail(function(xhr) {
 			clearBuffer();
 			showError(responseData(xhr && xhr.responseJSON).errors);
@@ -1229,7 +1249,7 @@
 		});
 	}
 
-	$('#dp-csv-fetch').on('click', fetchUrl);
+	$('#dp-csv-fetch').on('click', function() { fetchUrl(); });
 
 	$('#dp-csv-encoding').on('change', function() {
 		$('#dp-csv-encoding-notice').prop('hidden', true);
