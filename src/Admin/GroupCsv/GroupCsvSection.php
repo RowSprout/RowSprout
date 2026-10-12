@@ -506,7 +506,8 @@ final class GroupCsvSection {
 				'missingExplain'  => __( 'No row of the file has their ID or URL. Unless you choose to delete them below, they stay exactly as they are, with their pages.', 'rowsprout' ),
 				/* translators: %d: number of further groups. */
 				'andMore'         => __( 'and %d more', 'rowsprout' ),
-				'deleteMissing'   => __( 'Delete these groups when importing, with their pages', 'rowsprout' ),
+				'deleteMissing'   => __( 'Delete these groups when importing, with their pages.', 'rowsprout' ),
+				'deleteMissingChildren' => __( 'This will also delete the child templates\' groups and their pages.', 'rowsprout' ),
 				'deleteWarning'   => __( 'When you click "Import and delete", these groups are deleted permanently, together with the pages generated for them. This cannot be undone.', 'rowsprout' ),
 				/* translators: %d: number of groups of child templates. */
 				'deleteWarningChildren' => __( 'Child templates have %d groups for them: those groups and their pages are deleted too.', 'rowsprout' ),
