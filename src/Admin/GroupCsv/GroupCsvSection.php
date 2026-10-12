@@ -43,6 +43,16 @@ final class GroupCsvSection {
 	public const URL_META = '_rowsprout_page_groups_csv_url';
 
 	/**
+	 * What each column name was imported into the last time (normalized
+	 * header => '' (not imported), 'id' or 'prop:<key>'), so the wizard
+	 * suggests the same choices for a file with the same columns.
+	 */
+	public const MAPPING_META = '_rowsprout_page_groups_csv_mapping';
+
+	/** At most this many column names are remembered per template. */
+	private const MAPPING_LIMIT = 200;
+
+	/**
 	 * Largest file fetched from a URL.
 	 */
 	private const MAX_URL_BYTES = 10485760;
@@ -212,6 +222,7 @@ final class GroupCsvSection {
 
 					<section data-csv-step="3" hidden>
 						<p class="description"><?php esc_html_e( 'Choose what each column fills. A column can also become a new property of this template. Rows are matched to existing groups by ID, else by Href.', 'rowsprout' ); ?></p>
+						<p class="description dp-csv-remembered" hidden><?php esc_html_e( 'Columns with the same name as in the last import are set to what they were imported into then.', 'rowsprout' ); ?></p>
 						<div class="dp-csv-map-wrap">
 							<table class="widefat striped dp-csv-map">
 								<thead>
@@ -343,6 +354,7 @@ final class GroupCsvSection {
 				'action'     => self::IMPORT_ACTION,
 				'fetchAction' => self::FETCH_ACTION,
 				'lastUrl'    => (string) get_post_meta( (int) $post->ID, self::URL_META, true ),
+				'lastMapping' => (object) self::rememberedMapping( (int) $post->ID ),
 				'nonce'      => wp_create_nonce( self::NONCE_ACTION ),
 				'templateId' => (int) $post->ID,
 				'editUrl'    => (string) get_edit_post_link( (int) $post->ID, 'raw' ),
@@ -592,7 +604,69 @@ final class GroupCsvSection {
 		$apply   = isset( $_POST['apply'] ) && $_POST['apply'] === '1';
 
 		$result = GroupCsvImporter::run( $templateId, is_array( $payload ) ? $payload : [], $apply, $version );
+		if ( $apply && $result->saved && is_array( $payload ) ) {
+			self::rememberMapping( $templateId, $payload['headers'] ?? [], $result->mapping );
+		}
 
 		wp_send_json_success( $result->toArray() );
+	}
+
+	/**
+	 * Remembers what each named column of an import went into (MAPPING_META),
+	 * on top of what earlier imports remembered; a file without a header row
+	 * leaves it as it is.
+	 *
+	 * @param mixed              $headers The file's column names, per column.
+	 * @param array<int, string> $mapping From GroupCsvImportResult::$mapping.
+	 */
+	public static function rememberMapping( int $templateId, $headers, array $mapping ): void {
+		if ( ! is_array( $headers ) ) {
+			return;
+		}
+		$memory  = self::rememberedMapping( $templateId );
+		$changed = false;
+		foreach ( array_values( $headers ) as $index => $header ) {
+			$name = is_scalar( $header ) ? self::normalizeHeader( sanitize_text_field( (string) $header ) ) : '';
+			if ( $name === '' ) {
+				continue;
+			}
+			$target = $mapping[ $index ] ?? '';
+			if ( $target !== '' && $target !== GroupCsvImporter::TARGET_ID ) {
+				$target = GroupCsvImporter::TARGET_PROPERTY . $target;
+			}
+			// Most recent last, so the oldest go first when the list is full.
+			unset( $memory[ $name ] );
+			$memory[ $name ] = $target;
+			$changed         = true;
+		}
+		if ( $changed ) {
+			update_post_meta( $templateId, self::MAPPING_META, wp_slash( array_slice( $memory, -self::MAPPING_LIMIT, null, true ) ) );
+		}
+	}
+
+	/**
+	 * @return array<string, string> See MAPPING_META.
+	 */
+	public static function rememberedMapping( int $templateId ): array {
+		$memory = get_post_meta( $templateId, self::MAPPING_META, true );
+		if ( ! is_array( $memory ) ) {
+			return [];
+		}
+		$clean = [];
+		foreach ( $memory as $name => $target ) {
+			if ( is_string( $name ) && $name !== '' && is_string( $target ) ) {
+				$clean[ $name ] = $target;
+			}
+		}
+
+		return $clean;
+	}
+
+	/**
+	 * A column name as the wizard compares it (normalizeHeader() in
+	 * group-csv.js): whitespace collapsed, lowercase.
+	 */
+	private static function normalizeHeader( string $header ): string {
+		return mb_strtolower( trim( (string) preg_replace( '/\s+/u', ' ', $header ) ) );
 	}
 }

@@ -482,6 +482,32 @@
 	// as long as the columns stay the same. New properties made in this run
 	// (state.newProperties) are offered to every column; only the ones a
 	// column imports into are created.
+	// What the last import put this column name into (cfg.lastMapping,
+	// GroupCsvSection::MAPPING_META): '' for "Do not import", or null when
+	// there is no such choice, or it is taken or gone.
+	var remembered = {};
+	$.each(cfg.lastMapping || {}, function(name, target) {
+		remembered[normalizeHeader(name)] = String(target);
+	});
+	function rememberedTarget(header, used) {
+		var name = normalizeHeader(header);
+		if (name === '' || !Object.prototype.hasOwnProperty.call(remembered, name)) {
+			return null;
+		}
+		var target = remembered[name];
+		if (target === '') {
+			return '';
+		}
+		if (used[target]) {
+			return null;
+		}
+		if (target === 'id') {
+			return target;
+		}
+		var exists = (cfg.columns || []).some(function(column) { return 'prop:' + column.key === target; });
+		return exists ? target : null;
+	}
+
 	function buildMapping() {
 		var data = table();
 		var signature = data.width + '|' + (data.header ? data.header.join('\u0001') : '');
@@ -490,15 +516,25 @@
 		}
 		var used = {};
 		var mapping = [];
+		var fromMemory = 0;
 		for (var c = 0; c < data.width; c++) {
 			var header = data.header ? String(data.header[c] || '').trim() : '';
-			var target = data.header ? suggestTarget(header, used) : '';
+			var target = '';
+			if (data.header) {
+				target = rememberedTarget(header, used);
+				if (target === null) {
+					target = suggestTarget(header, used);
+				} else {
+					fromMemory++;
+				}
+			}
 			if (target) {
 				used[target] = true;
 			}
 			mapping.push({ target: target, header: header });
 		}
 		mapping.signature = signature;
+		mapping.fromMemory = fromMemory;
 		state.mapping = mapping;
 		state.newProperties = [];
 	}
@@ -590,6 +626,7 @@
 				.append($examples)
 				.append($('<td/>').append(targetSelect(index, entry.target))));
 		});
+		$modal.find('.dp-csv-remembered').prop('hidden', !state.mapping.fromMemory);
 		showConflicts();
 	}
 
@@ -704,7 +741,9 @@
 			}
 			return 'new:' + numbers[match[1]];
 		});
-		return { mapping: mapping, new_properties: newProperties, rows: data.rows, row_numbers: data.numbers };
+		// The column names, so the server remembers the choices for them.
+		var headers = data.header ? data.header.map(function(header) { return String(header || '').trim(); }) : [];
+		return { mapping: mapping, new_properties: newProperties, rows: data.rows, row_numbers: data.numbers, headers: headers };
 	}
 
 	function request(apply) {

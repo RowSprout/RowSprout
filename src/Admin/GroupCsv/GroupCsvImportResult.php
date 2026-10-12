@@ -43,6 +43,14 @@ final class GroupCsvImportResult {
 	/** @var bool */
 	public $saved = false;
 
+	/**
+	 * File column => what it was imported into: 'id' or a property key (a
+	 * new property by its new key). Not sent to the browser.
+	 *
+	 * @var array<int, string>
+	 */
+	public $mapping = [];
+
 	/** @var int */
 	public $deleted = 0;
 

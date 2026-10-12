@@ -94,8 +94,9 @@ final class GroupCsvImporter {
 				$mapping[ $index ] = (string) $newColumns[ (int) substr( $target, strlen( self::TARGET_NEW ) ) ]['key'];
 			}
 		}
-		$allColumns = array_merge( $columns, array_values( $newColumns ) );
-		$byKey      = array_column( $allColumns, null, 'key' );
+		$result->mapping = $mapping;
+		$allColumns      = array_merge( $columns, array_values( $newColumns ) );
+		$byKey           = array_column( $allColumns, null, 'key' );
 		$titleKey   = $template->keyOfType( 'title' );
 		$hrefKey    = $template->keyOfType( 'href' );
 
