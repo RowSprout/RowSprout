@@ -203,6 +203,11 @@
 .dp-csv-error { margin-top:12px; padding:8px 12px; border-left:4px solid #d63638; background:#fcf0f1; }
 .dp-csv-error p { margin:4px 0; }
 .dp-csv-notice { padding:8px 12px; border-left:4px solid #dba617; background:#fcf9e8; }
+.dp-csv-advanced { margin:12px 0 0; border:1px solid #dcdcde; border-radius:4px; }
+.dp-csv-advanced > summary { padding:8px 12px; cursor:pointer; font-weight:600; color:#1d2327; }
+.dp-csv-advanced[open] > summary { border-bottom:1px solid #dcdcde; }
+.dp-csv-advanced > :not(summary) { margin-left:12px; margin-right:12px; }
+.dp-csv-advanced > :last-child { margin-bottom:12px; }
 .dp-csv-notice[hidden] { display:none; }
 .dp-csv-summary-list { margin:8px 0 12px 18px; list-style:disc; }
 .dp-csv-summary-list li { margin:2px 0; }

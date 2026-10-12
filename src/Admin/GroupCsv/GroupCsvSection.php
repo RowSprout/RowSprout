@@ -208,23 +208,40 @@ final class GroupCsvSection {
 							<select id="dp-csv-sheet"></select>
 							<span class="description" id="dp-csv-sheet-help"><?php esc_html_e( 'This workbook has several worksheets. Choose the one to import.', 'rowsprout' ); ?></span>
 						</p>
-						<div class="dp-csv-fields">
-							<p>
-								<label for="dp-csv-encoding"><?php esc_html_e( 'Character encoding', 'rowsprout' ); ?></label><br />
-								<select id="dp-csv-encoding">
-									<?php foreach ( $encodings as $encoding => $label ) : ?>
-										<option value="<?php echo esc_attr( $encoding ); ?>"><?php echo esc_html( $label ); ?></option>
-									<?php endforeach; ?>
-								</select>
-							</p>
-							<p>
-								<label for="dp-csv-start"><?php esc_html_e( 'Start import at row', 'rowsprout' ); ?></label><br />
-								<input type="number" id="dp-csv-start" min="1" step="1" value="1" />
-							</p>
-						</div>
-						<p><label><input type="checkbox" id="dp-csv-headers" checked="checked" /> <?php esc_html_e( 'My data has headers', 'rowsprout' ); ?></label></p>
 						<p class="dp-csv-notice" id="dp-csv-encoding-notice" hidden></p>
-						<p class="description dp-csv-help"><?php esc_html_e( 'The character encoding is detected automatically. Change it only if letters such as é or ü look wrong in the preview.', 'rowsprout' ); ?></p>
+						<?php // Closed by default; group-csv.js opens it when something in it needs attention. ?>
+						<details class="dp-csv-advanced" id="dp-csv-advanced">
+							<summary><?php esc_html_e( 'Advanced options', 'rowsprout' ); ?></summary>
+							<div class="dp-csv-fields">
+								<p>
+									<label for="dp-csv-encoding"><?php esc_html_e( 'Character encoding', 'rowsprout' ); ?></label><br />
+									<select id="dp-csv-encoding">
+										<?php foreach ( $encodings as $encoding => $label ) : ?>
+											<option value="<?php echo esc_attr( $encoding ); ?>"><?php echo esc_html( $label ); ?></option>
+										<?php endforeach; ?>
+									</select>
+								</p>
+								<p>
+									<label for="dp-csv-start"><?php esc_html_e( 'Start import at row', 'rowsprout' ); ?></label><br />
+									<input type="number" id="dp-csv-start" min="1" step="1" value="1" />
+								</p>
+							</div>
+							<p><label><input type="checkbox" id="dp-csv-headers" checked="checked" /> <?php esc_html_e( 'My data has headers', 'rowsprout' ); ?></label></p>
+							<p class="description dp-csv-help"><?php esc_html_e( 'The character encoding is detected automatically. Change it only if letters such as é or ü look wrong in the preview.', 'rowsprout' ); ?></p>
+							<?php
+							/**
+							 * Prints more in step 1's "Advanced options" (RowSprout Pro: a
+							 * request header for APIs). Mark an element data-csv-url-only
+							 * to show it only for a URL, and data-csv-advanced-open to open
+							 * the options when it is shown (e.g. a saved value to look at).
+							 * A data-csv-fetch-extra control here also opens them when a
+							 * URL asks for a sign-in.
+							 *
+							 * @param \WP_Post $post The template.
+							 */
+							do_action( 'rowsprout_group_csv_wizard_advanced', $post );
+							?>
+						</details>
 						<p class="dp-csv-recognised" id="dp-csv-recognised" hidden></p>
 						<p><button type="button" class="button-link" id="dp-csv-preview-toggle" aria-expanded="false" aria-controls="dp-csv-file-preview" hidden><?php esc_html_e( 'Show preview', 'rowsprout' ); ?></button></p>
 						<div class="dp-csv-preview" id="dp-csv-file-preview" tabindex="0" hidden></div>
@@ -670,11 +687,14 @@ final class GroupCsvSection {
 		// A sign-in, such as a Google sheet that is not shared with "Anyone
 		// with the link" (Google answers 401 and points to its sign-in page).
 		if ( $code === 401 || $code === 403 ) {
-			return [ 'error' => sprintf(
-				/* translators: %d: HTTP status code, 401 or 403. */
-				__( 'The URL asks for a sign-in (HTTP status %d). For a Google sheet, share it with "Anyone with the link".', 'rowsprout' ),
-				$code
-			) ];
+			return [
+				'error'  => sprintf(
+					/* translators: %d: HTTP status code, 401 or 403. */
+					__( 'The URL asks for a sign-in (HTTP status %d). For a Google sheet, share it with "Anyone with the link".', 'rowsprout' ),
+					$code
+				),
+				'signin' => true,
+			];
 		}
 		if ( $code !== 200 ) {
 			return [ 'error' => sprintf(
@@ -730,7 +750,8 @@ final class GroupCsvSection {
 		// The template goes along, so an add-on can use what it keeps for it (Pro: a saved request header).
 		$file = self::fetch( $url, [ 'template_id' => $templateId ] + self::postedExtra() );
 		if ( isset( $file['error'] ) ) {
-			wp_send_json_error( [ 'errors' => [ $file['error'] ] ] );
+			// signin: the wizard opens "Advanced options" when an add-on put a request field there.
+			wp_send_json_error( [ 'errors' => [ $file['error'] ], 'signin' => ! empty( $file['signin'] ) ] );
 		}
 		// An Excel workbook (or what an add-on converts) as CSV.
 		$converted = GroupCsvSource::convert( (string) $file['content'], $url, [ 'sheet' => self::postedSheet() ] );

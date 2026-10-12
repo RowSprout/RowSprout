@@ -957,6 +957,7 @@
 		$('#dp-csv-next').prop('hidden', done || step === LAST_STEP);
 		$('#dp-csv-import').prop('hidden', step !== LAST_STEP);
 		$modal.find('[data-csv-url-only]').prop('hidden', currentSource() !== 'url');
+		openAdvancedFor($('#dp-csv-advanced [data-csv-advanced-open]'));
 		$modal.find('[data-csv-cancel]').prop('hidden', done && state.saved);
 		$('#dp-csv-step-label').text(stepLabel());
 	}
@@ -1060,6 +1061,7 @@
 
 	function reset() {
 		setPreviewOpen(false);
+		$('#dp-csv-advanced').prop('open', false);
 		state.step = 1;
 		state.buffer = null;
 		state.text = '';
@@ -1131,6 +1133,10 @@
 		var detected = detectEncoding(buffer);
 		$('#dp-csv-encoding').val(detected.encoding);
 		$('#dp-csv-encoding-notice').text(i18n.notUtf8).prop('hidden', !detected.guessed);
+		if (detected.guessed) {
+			// The encoding to check is in there.
+			$('#dp-csv-advanced').prop('open', true);
+		}
 		loadText();
 		var delimiter = detectDelimiter(state.text);
 		setDelimiter(delimiter.delimiter);
@@ -1264,6 +1270,8 @@
 		$modal.find('[data-csv-source-row]').each(function() {
 			$(this).prop('hidden', String($(this).data('csvSourceRow')) !== source);
 		});
+		$modal.find('[data-csv-url-only]').prop('hidden', source !== 'url');
+		openAdvancedFor($('#dp-csv-advanced [data-csv-advanced-open]'));
 	}
 
 	$('#dp-csv-source').on('change', function() {
@@ -1316,6 +1324,17 @@
 	// The server fetches the URL (a browser may not read most other sites)
 	// and returns the file's bytes.
 	// onFetched: what to do once the file is in (Next fetching for you).
+	// Opens step 1's "Advanced options" when one of these elements is shown
+	// (not inside a hidden one); it never closes them.
+	function openAdvancedFor($elements) {
+		var shown = $elements.filter(function() {
+			return $(this).closest('[hidden]').length === 0;
+		});
+		if (shown.length) {
+			$('#dp-csv-advanced').prop('open', true);
+		}
+	}
+
 	function fetchUrl(onFetched) {
 		var url = String($('#dp-csv-url').val() || '').trim();
 		showError([]);
@@ -1339,6 +1358,10 @@
 			if (!response || !response.success || typeof data.content !== 'string') {
 				clearBuffer();
 				showError(data.errors || [i18n.requestFailed]);
+				if (data.signin) {
+					// A key or token may be what is missing (an add-on's request field).
+					openAdvancedFor($('#dp-csv-advanced [data-csv-fetch-extra]'));
+				}
 				return;
 			}
 			cfg.lastUrl = url;
