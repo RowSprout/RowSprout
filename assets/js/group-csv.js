@@ -847,7 +847,8 @@
 		}
 		$box.append($('<p/>').append($('<label/>')
 			.append($('<input type="checkbox" id="dp-csv-delete-missing"/>'))
-			.append(document.createTextNode(' ' + i18n.deleteMissing))));
+			// Child templates' groups go too: said right at the choice.
+			.append(document.createTextNode(' ' + i18n.deleteMissing + (result.missingChildGroups ? ' ' + i18n.deleteMissingChildren : '')))));
 		var warnings = [i18n.deleteWarning];
 		if (result.missingChildGroups) {
 			warnings.push(fmt(i18n.deleteWarningChildren, result.missingChildGroups));
