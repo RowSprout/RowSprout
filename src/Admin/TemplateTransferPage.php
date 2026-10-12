@@ -7,6 +7,7 @@ use RowSprout\Core\TemplateMeta;
 use RowSprout\Core\Transfer\ImportResult;
 use RowSprout\Core\Transfer\TemplateExporter;
 use RowSprout\Core\Transfer\TemplateImporter;
+use RowSprout\Core\Transfer\TemplateImportPreview;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -29,7 +30,9 @@ final class TemplateTransferPage {
 	private const IMPORT_ACTION = 'rowsprout_import_templates';
 	private const BULK_ACTION   = 'rowsprout_export';
 	private const FILE_FIELD    = 'rowsprout_import_file';
-	private const SAMPLE_ACTION = 'rowsprout_import_sample_data';
+	private const SAMPLE_ACTION  = 'rowsprout_import_sample_data';
+	private const PREVIEW_ACTION = 'rowsprout_preview_template_import';
+	private const SCRIPT_HANDLE  = 'rowsprout-template-import';
 
 	/**
 	 * Two example templates (city breaks and food tours in European cities,
@@ -42,6 +45,7 @@ final class TemplateTransferPage {
 		add_action( 'admin_post_' . self::EXPORT_ACTION, [ self::class, 'handleExport' ] );
 		add_action( 'admin_post_' . self::IMPORT_ACTION, [ self::class, 'handleImport' ] );
 		add_action( 'admin_post_' . self::SAMPLE_ACTION, [ self::class, 'handleImportSample' ] );
+		add_action( 'wp_ajax_' . self::PREVIEW_ACTION, [ self::class, 'ajaxPreview' ] );
 		add_filter( 'bulk_actions-edit-' . PostTypes::TEMPLATE, [ self::class, 'addBulkAction' ] );
 		add_filter( 'handle_bulk_actions-edit-' . PostTypes::TEMPLATE, [ self::class, 'handleBulkAction' ], 10, 3 );
 		// Templates are hierarchical, so their list uses page_row_actions.
@@ -155,26 +159,12 @@ final class TemplateTransferPage {
 		}
 		check_admin_referer( self::IMPORT_ACTION );
 
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- an upload: only its error code and temporary path are read, and the path is checked with is_uploaded_file().
-		$file = isset( $_FILES[ self::FILE_FIELD ] ) && is_array( $_FILES[ self::FILE_FIELD ] ) ? $_FILES[ self::FILE_FIELD ] : null;
-
-		$error   = is_array( $file ) ? (int) ( $file['error'] ?? UPLOAD_ERR_NO_FILE ) : UPLOAD_ERR_NO_FILE;
-		$tmpName = is_array( $file ) ? (string) ( $file['tmp_name'] ?? '' ) : '';
-
-		if ( $error !== UPLOAD_ERR_OK || $tmpName === '' || ! is_uploaded_file( $tmpName ) ) {
+		[ $json, $uploadError ] = self::readUpload();
+		if ( $json === null ) {
 			$result = new ImportResult();
-			$result->addError( in_array( $error, [ UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE ], true )
-				? sprintf(
-					/* translators: %s: maximum upload size, e.g. "8 MB". */
-					__( 'The file is larger than this server accepts (%s).', 'rowsprout' ),
-					size_format( wp_max_upload_size() )
-				)
-				: __( 'Choose an export file to import.', 'rowsprout' )
-			);
+			$result->addError( $uploadError );
 			self::redirectWithResult( $result );
 		}
-
-		$json = file_get_contents( $tmpName ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- reading PHP's own temporary upload file.
 
 		/**
 		 * Options for this import, from fields an add-on printed with the
@@ -186,7 +176,67 @@ final class TemplateTransferPage {
 		 */
 		$options = (array) apply_filters( 'rowsprout_template_import_options', [] );
 
-		self::redirectWithResult( TemplateImporter::importJson( is_string( $json ) ? $json : '', $options ) );
+		self::redirectWithResult( TemplateImporter::importJson( (string) $json, $options ) );
+	}
+
+	/**
+	 * What importing the chosen file would do (TemplateImportPreview), for
+	 * the dialog the import form shows before it imports. Same checks and
+	 * options as handleImport(); nothing is written.
+	 */
+	public static function ajaxPreview(): void {
+		if ( ! current_user_can( 'import' ) || ! current_user_can( 'edit_posts' ) ) {
+			wp_send_json_error( [ 'errors' => [ __( 'You are not allowed to import templates.', 'rowsprout' ) ] ], 403 );
+		}
+		check_ajax_referer( self::IMPORT_ACTION );
+
+		[ $json, $uploadError ] = self::readUpload();
+		if ( $json === null ) {
+			wp_send_json_error( [ 'errors' => [ $uploadError ] ] );
+		}
+		$data = json_decode( (string) $json, true );
+		if ( ! is_array( $data ) ) {
+			wp_send_json_error( [ 'errors' => [ __( 'This file is not a RowSprout export file: it does not contain valid JSON.', 'rowsprout' ) ] ] );
+		}
+
+		/** This filter is documented in handleImport(). */
+		$options = (array) apply_filters( 'rowsprout_template_import_options', [] );
+		$preview = TemplateImportPreview::build( $data, $options );
+		if ( $preview['errors'] !== [] ) {
+			wp_send_json_error( [ 'errors' => $preview['errors'] ] );
+		}
+
+		wp_send_json_success( $preview );
+	}
+
+	/**
+	 * The uploaded export file's contents, or null with the message to show.
+	 *
+	 * @return array{0: ?string, 1: string}
+	 */
+	private static function readUpload(): array {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- the callers verified the nonce; an upload: only its error code and temporary path are read, and the path is checked with is_uploaded_file().
+		$file = isset( $_FILES[ self::FILE_FIELD ] ) && is_array( $_FILES[ self::FILE_FIELD ] ) ? $_FILES[ self::FILE_FIELD ] : null;
+
+		$error   = is_array( $file ) ? (int) ( $file['error'] ?? UPLOAD_ERR_NO_FILE ) : UPLOAD_ERR_NO_FILE;
+		$tmpName = is_array( $file ) ? (string) ( $file['tmp_name'] ?? '' ) : '';
+
+		if ( $error !== UPLOAD_ERR_OK || $tmpName === '' || ! is_uploaded_file( $tmpName ) ) {
+			return [
+				null,
+				in_array( $error, [ UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE ], true )
+					? sprintf(
+						/* translators: %s: maximum upload size, e.g. "8 MB". */
+						__( 'The file is larger than this server accepts (%s).', 'rowsprout' ),
+						size_format( wp_max_upload_size() )
+					)
+					: __( 'Choose an export file to import.', 'rowsprout' ),
+			];
+		}
+
+		$json = file_get_contents( $tmpName ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- reading PHP's own temporary upload file.
+
+		return [ is_string( $json ) ? $json : '', '' ];
 	}
 
 	public static function renderPage(): void {
@@ -312,9 +362,9 @@ final class TemplateTransferPage {
 		echo '<div class="card" style="max-width: none; margin-top: 0;">';
 		echo '<h2>' . esc_html__( 'Import', 'rowsprout' ) . '</h2>';
 		echo '<p>' . esc_html__( 'Choose a RowSprout export file. Every template in it is added as a new draft; existing templates are never changed.', 'rowsprout' ) . '</p>';
-		echo '<p class="description">' . esc_html__( 'Check an imported template (above all its URL pattern), then publish it with "Create & update pages" to generate its pages.', 'rowsprout' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Before anything is imported, you see per template what the file adds or changes.', 'rowsprout' ) . ' ' . esc_html__( 'Check an imported template (above all its URL pattern), then publish it with "Create & update pages" to generate its pages.', 'rowsprout' ) . '</p>';
 
-		echo '<form method="post" enctype="multipart/form-data" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
+		echo '<form id="rowsprout-import-form" method="post" enctype="multipart/form-data" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
 		echo '<input type="hidden" name="action" value="' . esc_attr( self::IMPORT_ACTION ) . '">';
 		wp_nonce_field( self::IMPORT_ACTION );
 		echo '<p><label for="' . esc_attr( self::FILE_FIELD ) . '" class="screen-reader-text">' . esc_html__( 'Export file', 'rowsprout' ) . '</label>';
@@ -334,6 +384,97 @@ final class TemplateTransferPage {
 		submit_button( __( 'Import', 'rowsprout' ), 'primary', 'submit', true );
 		echo '</form>';
 		echo '</div>';
+
+		self::renderPreviewDialog();
+		self::enqueueImportScript();
+	}
+
+	/**
+	 * The dialog that shows what the chosen file would do before it is
+	 * imported (filled by template-import.js).
+	 */
+	private static function renderPreviewDialog(): void {
+		?>
+		<dialog id="rowsprout-import-preview" class="rowsprout-import-preview" aria-labelledby="rowsprout-import-preview-title">
+			<div class="rowsprout-import-preview__head">
+				<h2 id="rowsprout-import-preview-title"><?php esc_html_e( 'Check the import', 'rowsprout' ); ?></h2>
+				<button type="button" class="button-link rowsprout-import-preview__close" data-preview-cancel aria-label="<?php esc_attr_e( 'Close', 'rowsprout' ); ?>">&times;</button>
+			</div>
+			<div class="rowsprout-import-preview__body" data-preview-body></div>
+			<div class="rowsprout-import-preview__foot">
+				<button type="button" class="button" data-preview-cancel><?php esc_html_e( 'Cancel', 'rowsprout' ); ?></button>
+				<button type="button" class="button button-primary" data-preview-confirm hidden><?php esc_html_e( 'Import', 'rowsprout' ); ?></button>
+			</div>
+		</dialog>
+		<style>
+			.rowsprout-import-preview { width: min(720px, calc(100vw - 32px)); max-height: calc(100vh - 64px); padding: 0; border: 0; border-radius: 12px; box-shadow: 0 24px 60px rgba(15, 23, 42, .25); }
+			.rowsprout-import-preview[open] { display: flex; flex-direction: column; }
+			.rowsprout-import-preview::backdrop { background: rgba(15, 23, 42, .45); }
+			.rowsprout-import-preview__head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid #e2e8f0; }
+			.rowsprout-import-preview__head h2 { margin: 0; font-size: 16px; }
+			.rowsprout-import-preview__close { font-size: 22px; line-height: 1; text-decoration: none; }
+			.rowsprout-import-preview__body { padding: 4px 18px 12px; overflow: auto; }
+			.rowsprout-import-preview__foot { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 18px; border-top: 1px solid #e2e8f0; }
+			.rowsprout-import-preview__template { border: 1px solid #dcdcde; border-radius: 8px; padding: 10px 14px; margin: 12px 0 0; }
+			.rowsprout-import-preview__template h3 { margin: 0 0 4px; font-size: 14px; }
+			.rowsprout-import-preview__badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 12px; font-weight: 600; margin-right: 6px; }
+			.rowsprout-import-preview__badge.is-create { background: #edfaef; color: #00450c; }
+			.rowsprout-import-preview__badge.is-update { background: #fcf9e8; color: #614200; }
+			.rowsprout-import-preview__section { margin: 8px 0 0; }
+			.rowsprout-import-preview__section ul { margin: 2px 0 0 18px; list-style: disc; }
+			.rowsprout-import-preview__section li { margin: 0; }
+			.rowsprout-import-preview__note { color: #50575e; font-size: 12px; margin: 2px 0 0; }
+			.rowsprout-import-preview__warning { color: #8a2424; }
+		</style>
+		<?php
+	}
+
+	private static function enqueueImportScript(): void {
+		$suffix       = defined( 'WP_DEBUG' ) && WP_DEBUG ? '' : '.min';
+		$relativePath = 'assets/js/template-import' . $suffix . '.js';
+		$scriptFile   = ROWSPROUT_PATH . $relativePath;
+		$version      = file_exists( $scriptFile ) ? (string) filemtime( $scriptFile ) : ROWSPROUT_VERSION;
+
+		wp_enqueue_script( self::SCRIPT_HANDLE, plugins_url( $relativePath, ROWSPROUT_FILE ), [], $version, true );
+		wp_add_inline_script(
+			self::SCRIPT_HANDLE,
+			'window.rowsproutTemplateImportConfig = ' . wp_json_encode( [
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+				'action'  => self::PREVIEW_ACTION,
+				'i18n'    => [
+					'checking'       => __( 'Checking the file…', 'rowsprout' ),
+					'failed'         => __( 'The file could not be checked. Import it anyway?', 'rowsprout' ),
+					'importAnyway'   => __( 'Import anyway', 'rowsprout' ),
+					/* translators: %d: number of templates. */
+					'summaryCreate'  => __( 'New drafts: %d', 'rowsprout' ),
+					/* translators: %d: number of templates. */
+					'summaryUpdate'  => __( 'Existing templates updated: %d', 'rowsprout' ),
+					'summaryNote'    => __( 'Nothing is generated: new templates are drafts, and in an updated template the pages of changed groups are marked as outdated.', 'rowsprout' ),
+					'create'         => __( 'New draft', 'rowsprout' ),
+					'update'         => __( 'Update', 'rowsprout' ),
+					/* translators: 1: template title, 2: template id, 3: post status, e.g. "Published". */
+					'updates'        => __( 'Updates "%1$s" (#%2$d, %3$s).', 'rowsprout' ),
+					/* translators: %s: title of the parent template. */
+					'childOf'        => __( 'Child template of "%s".', 'rowsprout' ),
+					'parentMissing'  => __( 'Its parent template is not in the file: it is imported as a template without a parent.', 'rowsprout' ),
+					'contentChanged' => __( 'Its title, content or excerpt is replaced by the version in the file.', 'rowsprout' ),
+					'duplicateUrls'  => __( 'Two or more groups get the same URL. Make every URL unique before you generate its pages.', 'rowsprout' ),
+					'properties'     => __( 'Properties', 'rowsprout' ),
+					'groups'         => __( 'Groups', 'rowsprout' ),
+					'added'          => __( 'New', 'rowsprout' ),
+					'changed'        => __( 'Changed', 'rowsprout' ),
+					'removed'        => __( 'Removed', 'rowsprout' ),
+					/* translators: %d: number of properties or groups. */
+					'unchanged'      => __( 'Unchanged: %d', 'rowsprout' ),
+					'noChanges'      => __( 'No changes.', 'rowsprout' ),
+					'removedGroups'  => __( 'Their pages stay until the template is saved again; that save deletes them.', 'rowsprout' ),
+					/* translators: %d: number of further names. */
+					'more'           => __( 'and %d more', 'rowsprout' ),
+					'warnings'       => __( 'Notes', 'rowsprout' ),
+				],
+			] ) . ';',
+			'before'
+		);
 	}
 
 	private static function renderSampleCard(): void {

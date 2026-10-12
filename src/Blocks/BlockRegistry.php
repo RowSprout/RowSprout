@@ -59,6 +59,8 @@ final class BlockRegistry {
 			file_exists( $scriptFile ) ? (string) filemtime( $scriptFile ) : ROWSPROUT_VERSION,
 			true
 		);
+		// Without this the script's wp.i18n strings stay English, even with a complete language pack.
+		wp_set_script_translations( 'rowsprout-blocks', 'rowsprout' );
 
 		register_block_type(
 			'rowsprout/page-grid',

@@ -2,6 +2,7 @@
 
 namespace RowSprout\Admin\Metaboxes;
 
+use RowSprout\Admin\GroupCsv\GroupCsvSection;
 use RowSprout\Core\SavePost;
 use RowSprout\Core\TemplateMeta;
 
@@ -124,6 +125,8 @@ final class TemplateTabsRenderer {
 			}
 		' );
 		?>
+		<div class="notice notice-warning inline dp-input-limit-warning" style="display:none"><p></p></div>
+		<div class="notice notice-warning inline dp-untitled-warning" style="display:none"><p></p></div>
 		<div class="dp-template-tabs" data-dp-template-tabs>
 			<div class="dp-template-tabs__nav" role="tablist" aria-orientation="vertical">
 				<button type="button" class="is-active" role="tab" aria-selected="true" data-tab-target="dp-tab-general"><?php esc_html_e( 'General', 'rowsprout' ); ?></button>
@@ -136,6 +139,7 @@ final class TemplateTabsRenderer {
 			<div class="dp-template-tabs__content">
 				<div id="dp-tab-general" class="dp-template-tab-panel is-active" role="tabpanel">
 					<?php TitleHrefMetaBoxRenderer::render( $post ); ?>
+					<?php GroupCsvSection::render( $post ); ?>
 				</div>
 				<div id="dp-tab-properties" class="dp-template-tab-panel" role="tabpanel">
 					<?php GroupsMetaBoxRenderer::renderPropertiesTab( $post ); ?>
@@ -150,6 +154,8 @@ final class TemplateTabsRenderer {
 				<?php endforeach; ?>
 			</div>
 		</div>
+		<?php // The form's last field: a request without it was cut off at max_input_vars (SavePost::requestWasTruncated()). ?>
+		<input type="hidden" name="<?php echo esc_attr( SavePost::FORM_COMPLETE_FIELD ); ?>" value="1" />
 		<?php
 		GroupsMetaBoxRenderer::renderScripts( $post );
 

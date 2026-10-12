@@ -1,0 +1,1478 @@
+/**
+ * "Import and export groups" on the template's General tab
+ * (Admin\GroupCsv\GroupCsvSection): the download button and the import
+ * wizard, modelled on Excel's Text Import Wizard.
+ *
+ * The file is read and split here; GroupCsvImporter decides everything else.
+ * Step 4 asks it for a dry run (what would be added, updated, skipped), the
+ * Import button sends the same request for real. The import saves the
+ * template on the server, so the editor reloads afterwards.
+ *
+ * None of these controls has a name: the template form must never post them.
+ */
+(function($) {
+	'use strict';
+
+	var cfg = window.rowsproutGroupCsvConfig;
+	if (!cfg) {
+		return;
+	}
+	var i18n = cfg.i18n || {};
+
+	var DELIMITERS = { tab: '\t', semicolon: ';', comma: ',', space: ' ' };
+	var PREVIEW_ROWS = 20;
+	var EXAMPLES = 3;
+	var LAST_STEP = 4;
+
+	// Exposed as window.rowsproutGroupCsv for the jsdom tests in
+	// rowsprout-support, which replace navigate().
+	var api = {
+		navigate: function(url) {
+			if (url) {
+				window.location.href = url;
+			} else {
+				window.location.reload();
+			}
+		}
+	};
+
+	var state = {
+		step: 1,
+		buffer: null,
+		text: '',
+		records: [],
+		mapping: [],
+		newProperties: [],
+		busy: false,
+		fetchedUrl: '',
+		// An Excel workbook or a JSON feed: the worksheet or list read, the URL it
+		// is for, what the converter calls the parts ('' = worksheet), the uploaded file.
+		sheet: '',
+		sheetFor: '',
+		sheetLabel: '',
+		file: null,
+		saved: false
+	};
+
+	// sprintf for the translated strings: %s, %d and %1$s style.
+	function fmt(text) {
+		var args = Array.prototype.slice.call(arguments, 1);
+		var next = 0;
+		return String(text || '').replace(/%(?:(\d+)\$)?[sd]/g, function(match, position) {
+			var value = position ? args[parseInt(position, 10) - 1] : args[next++];
+			return value === undefined ? '' : String(value);
+		});
+	}
+
+	function esc(value) {
+		return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+	}
+
+	function normalizeHeader(value) {
+		return String(value || '').replace(/\s+/g, ' ').trim().toLowerCase();
+	}
+
+	/* ------------------------------------------------------------------
+	 * Unsaved changes. The import saves on the server and reloads the
+	 * editor, which throws away whatever was not saved. An edit only counts
+	 * while the config version is still the one it was made under: both
+	 * the block editor and the Elementor modal refresh dp_config_version
+	 * after they save, without reloading.
+	 * ------------------------------------------------------------------ */
+
+	var $section = $('[data-dp-group-csv]').first();
+	var $modal = $('#dp-csv-modal');
+	if (!$section.length || !$modal.length) {
+		return;
+	}
+	// Inside the block editor's metabox area a fixed-position element is
+	// positioned against that area, not the window. The styles are scoped to
+	// .dp-csv-modal as well, so they still apply in the Elementor editor.
+	$modal.appendTo(document.body);
+
+	function versionInput() {
+		var $tabs = $section.closest('[data-dp-template-tabs]');
+		var $input = $tabs.prevAll('input[name="dp_config_version"]').first();
+		return $input.length ? $input : $('input[name="dp_config_version"]').first();
+	}
+
+	function currentVersion() {
+		return String(versionInput().val() || '');
+	}
+
+	var dirtyVersion = null;
+	function markDirty() {
+		dirtyVersion = currentVersion();
+	}
+
+	$(document).on('input change', '[data-dp-template-tabs] :input', function(e) {
+		if ($(e.target).closest('#dp-csv-modal, [data-dp-group-csv]').length) {
+			return;
+		}
+		// A programmatic change (the parent sync, widget refreshes) has no originalEvent.
+		if (e.type === 'input' || e.originalEvent) {
+			markDirty();
+		}
+	});
+	$(document).on('click', '#dp-add-group-btn, .dp-group-delete, #dp-col-confirm, .dp-col-delete, .dp-thumb-upload, .dp-thumb-remove', markDirty);
+	$(document).on('drop', '#dp-props-tbody, #dp-groups-sortable', markDirty);
+
+	function hasUnsavedChanges() {
+		if (dirtyVersion !== null && dirtyVersion === currentVersion()) {
+			return true;
+		}
+		try {
+			var editor = window.wp && window.wp.data && window.wp.data.select('core/editor');
+			if (editor && editor.isEditedPostDirty()) {
+				return true;
+			}
+		} catch (e) { /* not the block editor */ }
+		try {
+			if (window.wp && window.wp.autosave && window.wp.autosave.server && window.wp.autosave.server.postChanged()) {
+				return true;
+			}
+		} catch (e) { /* not the classic editor */ }
+		try {
+			if (window.elementor && window.elementor.saver && window.elementor.saver.isEditorChanged()) {
+				return true;
+			}
+		} catch (e) { /* not Elementor */ }
+		return false;
+	}
+
+	/* ------------------------------------------------------------------
+	 * Export
+	 * ------------------------------------------------------------------ */
+
+	$('#dp-csv-export').on('click', function(e) {
+		e.preventDefault();
+		var url = String($(this).data('exportUrl') || '');
+		if (url) {
+			window.location.href = url + '&format=' + encodeURIComponent(String($('#dp-csv-format').val() || ''));
+		}
+	});
+
+	/* ------------------------------------------------------------------
+	 * Reading and splitting the file
+	 * ------------------------------------------------------------------ */
+
+	function decode(buffer, encoding) {
+		return new TextDecoder(encoding).decode(buffer);
+	}
+
+	// The encoding a byte order mark announces, else UTF-8 when the bytes
+	// are valid UTF-8, else Windows-1252: what Excel writes for "CSV (comma
+	// delimited)" on a Western European Windows.
+	function detectEncoding(buffer) {
+		var bytes = new Uint8Array(buffer.slice(0, 3));
+		if (bytes[0] === 0xEF && bytes[1] === 0xBB && bytes[2] === 0xBF) {
+			return { encoding: 'utf-8', guessed: false };
+		}
+		if (bytes[0] === 0xFF && bytes[1] === 0xFE) {
+			return { encoding: 'utf-16le', guessed: false };
+		}
+		if (bytes[0] === 0xFE && bytes[1] === 0xFF) {
+			return { encoding: 'utf-16be', guessed: false };
+		}
+		try {
+			new TextDecoder('utf-8', { fatal: true }).decode(buffer);
+			return { encoding: 'utf-8', guessed: false };
+		} catch (e) {
+			return { encoding: 'windows-1252', guessed: true };
+		}
+	}
+
+	/**
+	 * RFC 4180, as Excel reads it: a qualifier only opens a quoted value at
+	 * the start of a cell, a doubled qualifier inside one is a literal, and
+	 * line breaks inside one are part of the value. With "consecutive" a run
+	 * of delimiters counts as one.
+	 */
+	function parse(text, delimiters, qualifier, consecutive) {
+		var records = [];
+		var row = [];
+		var cell = '';
+		var inQuotes = false;
+		var atCellStart = true;
+		var afterDelimiter = false;
+		var length = text.length;
+
+		for (var i = 0; i < length; i++) {
+			var ch = text.charAt(i);
+			if (inQuotes) {
+				if (ch === qualifier) {
+					if (text.charAt(i + 1) === qualifier) {
+						cell += qualifier;
+						i++;
+					} else {
+						inQuotes = false;
+					}
+				} else {
+					cell += ch;
+				}
+				continue;
+			}
+			if (qualifier && ch === qualifier && atCellStart) {
+				inQuotes = true;
+				atCellStart = false;
+				afterDelimiter = false;
+				continue;
+			}
+			if (delimiters.indexOf(ch) !== -1) {
+				if (!(consecutive && afterDelimiter)) {
+					row.push(cell);
+					cell = '';
+				}
+				atCellStart = true;
+				afterDelimiter = true;
+				continue;
+			}
+			if (ch === '\r' || ch === '\n') {
+				if (ch === '\r' && text.charAt(i + 1) === '\n') {
+					i++;
+				}
+				row.push(cell);
+				records.push(row);
+				row = [];
+				cell = '';
+				atCellStart = true;
+				afterDelimiter = false;
+				continue;
+			}
+			cell += ch;
+			atCellStart = false;
+			afterDelimiter = false;
+		}
+		if (cell !== '' || row.length || inQuotes) {
+			row.push(cell);
+			records.push(row);
+		}
+		return records;
+	}
+
+	// The delimiter used most on the first line outside quotes; Excel's
+	// "sep=;" first line wins when present.
+	function detectDelimiter(text) {
+		var firstLine = text.split(/\r\n|\r|\n/, 1)[0] || '';
+		var sep = /^sep=(.)$/i.exec(firstLine);
+		if (sep) {
+			return { delimiter: sep[1], sepLine: true };
+		}
+		var unquoted = firstLine.replace(/"[^"]*"/g, '');
+		var best = 'comma';
+		var bestCount = 0;
+		['tab', 'semicolon', 'comma'].forEach(function(name) {
+			var count = unquoted.split(DELIMITERS[name]).length - 1;
+			if (count > bestCount) {
+				best = name;
+				bestCount = count;
+			}
+		});
+		return { delimiter: DELIMITERS[best], sepLine: false };
+	}
+
+	function chosenDelimiters() {
+		var chars = '';
+		$modal.find('[data-csv-delimiter]:checked').each(function() {
+			var name = String($(this).data('csvDelimiter'));
+			if (name === 'other') {
+				chars += String($('#dp-csv-other').val() || '').charAt(0);
+			} else if (DELIMITERS[name]) {
+				chars += DELIMITERS[name];
+			}
+		});
+		return chars;
+	}
+
+	function setDelimiter(delimiter) {
+		$modal.find('[data-csv-delimiter]').prop('checked', false);
+		var known = false;
+		$.each(DELIMITERS, function(name, value) {
+			if (value === delimiter) {
+				$modal.find('[data-csv-delimiter="' + name + '"]').prop('checked', true);
+				known = true;
+			}
+		});
+		if (!known) {
+			$modal.find('[data-csv-delimiter="other"]').prop('checked', true);
+			$('#dp-csv-other').val(delimiter);
+		}
+	}
+
+	function startRow() {
+		return Math.max(1, parseInt($('#dp-csv-start').val(), 10) || 1);
+	}
+
+	function hasHeaders() {
+		return $('#dp-csv-headers').is(':checked');
+	}
+
+	function reparse() {
+		state.records = parse(state.text, chosenDelimiters(), String($('#dp-csv-qualifier').val() || ''), $('#dp-csv-consecutive').is(':checked'));
+	}
+
+	// Records from the start row on: the header (or null) and the data rows
+	// with their numbers in the file. Rows without any value are left out.
+	function table() {
+		var rows = state.records.slice(startRow() - 1);
+		var header = null;
+		var firstNumber = startRow();
+		if (hasHeaders() && rows.length) {
+			header = rows.shift();
+			firstNumber++;
+		}
+		var data = [];
+		var numbers = [];
+		rows.forEach(function(row, index) {
+			if (row.some(function(cell) { return String(cell).trim() !== ''; })) {
+				data.push(row);
+				numbers.push(firstNumber + index);
+			}
+		});
+		var width = header ? header.length : 0;
+		data.forEach(function(row) { width = Math.max(width, row.length); });
+		return { header: header, rows: data, numbers: numbers, width: width };
+	}
+
+	/* ------------------------------------------------------------------
+	 * Rendering the steps
+	 * ------------------------------------------------------------------ */
+
+	// Spreadsheet column names: A … Z, AA, AB …
+	function columnLetter(index) {
+		var name = '';
+		for (var n = index + 1; n > 0; n = Math.floor((n - 1) / 26)) {
+			name = String.fromCharCode(65 + (n - 1) % 26) + name;
+		}
+		return name;
+	}
+
+	function delimiterSummary() {
+		var names = [];
+		$modal.find('[data-csv-delimiter]:checked').each(function() {
+			var name = String($(this).data('csvDelimiter'));
+			var label = (i18n.delimiterNames || {})[name] || name;
+			names.push(name === 'other' ? fmt(label, String($('#dp-csv-other').val() || '').charAt(0)) : label);
+		});
+		return names.join(', ');
+	}
+
+	/**
+	 * Step 1: a line that sums up what was recognised (columns, rows,
+	 * delimiter), and behind "Show preview" the file split with the detected
+	 * (or chosen) settings from its first row on: rows before the start row
+	 * dimmed, the header row marked.
+	 */
+	function renderFilePreview() {
+		var $preview = $('#dp-csv-file-preview').empty();
+		var $recognised = $('#dp-csv-recognised').prop('hidden', true).text('');
+		$('#dp-csv-preview-toggle').prop('hidden', !state.text.trim());
+		if (!state.text.trim()) {
+			setPreviewOpen(false);
+			return;
+		}
+		reparse();
+		var start = startRow();
+		var records = state.records.slice(0, Math.max(PREVIEW_ROWS, start + PREVIEW_ROWS - 1));
+		var width = 0;
+		records.forEach(function(row) { width = Math.max(width, row.length); });
+
+		var $headRow = $('<tr/>').append('<th class="dp-csv-rownum"></th>');
+		for (var c = 0; c < width; c++) {
+			$headRow.append($('<th class="dp-csv-colname"/>').text(columnLetter(c)));
+		}
+		var $body = $('<tbody/>');
+		records.forEach(function(row, index) {
+			var number = index + 1;
+			var $tr = $('<tr/>')
+				.toggleClass('is-skipped', number < start)
+				.toggleClass('is-header', hasHeaders() && number === start)
+				.append($('<td class="dp-csv-rownum"/>').text(number));
+			for (var c = 0; c < width; c++) {
+				var value = String(row[c] === undefined ? '' : row[c]);
+				$tr.append($('<td/>').text(value).attr('title', value));
+			}
+			$body.append($tr);
+		});
+		$preview.append($('<table/>').append($('<thead/>').append($headRow)).append($body));
+
+		var data = table();
+		// A workbook or feed was turned into CSV on the server: name the worksheet or list, not a delimiter.
+		$recognised.text(!state.sheet
+			? fmt(i18n.recognised, data.width, data.rows.length, delimiterSummary())
+			: state.sheetLabel
+				? fmt(i18n.recognisedPart, data.width, data.rows.length, state.sheetLabel, state.sheet)
+				: fmt(i18n.recognisedSheet, data.width, data.rows.length, state.sheet)).prop('hidden', false);
+	}
+
+	function renderPreview() {
+		var $preview = $('#dp-csv-preview').empty();
+		reparse();
+		var data = table();
+		if (!data.rows.length && !data.header) {
+			$preview.append($('<p class="dp-csv-empty"/>').text(i18n.noRows));
+			return;
+		}
+		var $table = $('<table/>');
+		var $headRow = $('<tr/>').append('<th class="dp-csv-rownum"></th>');
+		for (var c = 0; c < data.width; c++) {
+			$headRow.append($('<th/>').text(data.header ? String(data.header[c] || '') : fmt(i18n.column, c + 1)));
+		}
+		$table.append($('<thead/>').append($headRow));
+		var $body = $('<tbody/>');
+		data.rows.slice(0, PREVIEW_ROWS).forEach(function(row, index) {
+			var $tr = $('<tr/>').append($('<td class="dp-csv-rownum"/>').text(data.numbers[index]));
+			for (var c = 0; c < data.width; c++) {
+				var value = String(row[c] === undefined ? '' : row[c]);
+				$tr.append($('<td/>').text(value).attr('title', value));
+			}
+			$body.append($tr);
+		});
+		$table.append($body);
+		$preview.append($table);
+		if (data.rows.length > PREVIEW_ROWS) {
+			$preview.after($('<p class="dp-csv-count"/>').text(fmt(i18n.previewCount, PREVIEW_ROWS, data.rows.length)));
+		}
+	}
+
+	function suggestTarget(header, used) {
+		var name = normalizeHeader(header);
+		if (name === '') {
+			return '';
+		}
+		if (name === normalizeHeader(cfg.idHeader) && !used.id) {
+			return 'id';
+		}
+		var match = '';
+		(cfg.columns || []).forEach(function(column) {
+			if (match) {
+				return;
+			}
+			var codes = [normalizeHeader(column.label), String(column.code), String(column.key), '@code_' + column.code];
+			if (codes.indexOf(name) !== -1 && !used['prop:' + column.key]) {
+				match = 'prop:' + column.key;
+			}
+		});
+		// An unknown header is not imported until the user makes it a new
+		// property: a messy file must not add properties unnoticed.
+		return match;
+	}
+
+	function addableTypes() {
+		var used = {};
+		(cfg.columns || []).forEach(function(column) { used[column.type] = true; });
+		return (cfg.types || []).filter(function(type) {
+			return type.allowMultiple || !used[type.type];
+		});
+	}
+
+	function typeDefinition(type) {
+		var found = null;
+		(cfg.types || []).forEach(function(definition) {
+			if (definition.type === type) {
+				found = definition;
+			}
+		});
+		return found;
+	}
+
+	// The distinct values of a file column, as options for a new property.
+	function columnValues(index) {
+		var seen = {};
+		var values = [];
+		table().rows.forEach(function(row) {
+			var value = String(row[index] === undefined ? '' : row[index]).trim();
+			if (value !== '' && !seen[value]) {
+				seen[value] = true;
+				values.push(value);
+			}
+		});
+		return values.slice(0, 200);
+	}
+
+	// The choice per file column, kept while the wizard goes back and forth
+	// as long as the columns stay the same. New properties made in this run
+	// (state.newProperties) are offered to every column; only the ones a
+	// column imports into are created.
+	// What the last import put this column name into (cfg.lastMapping,
+	// GroupCsvSection::MAPPING_META): '' for "Do not import", or null when
+	// there is no such choice, or it is taken or gone.
+	var remembered = {};
+	$.each(cfg.lastMapping || {}, function(name, target) {
+		remembered[normalizeHeader(name)] = String(target);
+	});
+	function rememberedTarget(header, used) {
+		var name = normalizeHeader(header);
+		if (name === '' || !Object.prototype.hasOwnProperty.call(remembered, name)) {
+			return null;
+		}
+		var target = remembered[name];
+		if (target === '') {
+			return '';
+		}
+		if (used[target]) {
+			return null;
+		}
+		if (target === 'id') {
+			return target;
+		}
+		var exists = (cfg.columns || []).some(function(column) { return 'prop:' + column.key === target; });
+		return exists ? target : null;
+	}
+
+	function buildMapping() {
+		var data = table();
+		var signature = data.width + '|' + (data.header ? data.header.join('\u0001') : '');
+		if (state.mapping.signature === signature) {
+			return;
+		}
+		var used = {};
+		var mapping = [];
+		var fromMemory = 0;
+		for (var c = 0; c < data.width; c++) {
+			var header = data.header ? String(data.header[c] || '').trim() : '';
+			var target = '';
+			if (data.header) {
+				target = rememberedTarget(header, used);
+				if (target === null) {
+					target = suggestTarget(header, used);
+				} else {
+					fromMemory++;
+				}
+			}
+			if (target) {
+				used[target] = true;
+			}
+			mapping.push({ target: target, header: header });
+		}
+		mapping.signature = signature;
+		mapping.fromMemory = fromMemory;
+		state.mapping = mapping;
+		state.newProperties = [];
+	}
+
+	function columnName(index) {
+		var entry = state.mapping[index] || {};
+		return entry.header || fmt(i18n.column, index + 1);
+	}
+
+	function targetSelect(index, current) {
+		var $select = $('<select/>').attr('id', 'dp-csv-target-' + index).attr('data-csv-target', index);
+		$select.append($('<option value=""/>').text(i18n.doNotImport));
+		$select.append($('<option value="id"/>').text(i18n.idTarget));
+		var $group = $('<optgroup/>').attr('label', i18n.properties);
+		(cfg.columns || []).forEach(function(column) {
+			// A child template's Title and Href (the parent's) only find the row.
+			$group.append($('<option/>').val('prop:' + column.key).text(column.matchOnly ? fmt(i18n.findOnly, column.label) : column.label));
+		});
+		$select.append($group);
+		if (state.newProperties.length) {
+			var $new = $('<optgroup/>').attr('label', i18n.newPropertiesGroup);
+			state.newProperties.forEach(function(property) {
+				$new.append($('<option/>').val('newprop:' + property.id).text(property.label));
+			});
+			$select.append($new);
+		}
+		$select.append($('<option value="new"/>').text(i18n.newProperty));
+		$select.val(current);
+		return $select;
+	}
+
+	// Column index => the other columns that chose the same target.
+	function conflicts() {
+		var byTarget = {};
+		state.mapping.forEach(function(entry, index) {
+			if (entry.target && entry.target !== 'new') {
+				(byTarget[entry.target] = byTarget[entry.target] || []).push(index);
+			}
+		});
+		var result = {};
+		$.each(byTarget, function(target, indexes) {
+			if (indexes.length > 1) {
+				indexes.forEach(function(index) {
+					result[index] = indexes.filter(function(other) { return other !== index; });
+				});
+			}
+		});
+		return result;
+	}
+
+	function showConflicts() {
+		var found = conflicts();
+		state.mapping.forEach(function(entry, index) {
+			var $cell = $modal.find('[data-csv-target="' + index + '"]').closest('td');
+			var others = found[index];
+			$cell.toggleClass('has-conflict', !!others);
+			$cell.find('.dp-csv-conflict').remove();
+			if (others) {
+				$cell.append($('<div class="dp-csv-conflict"/>').text(fmt(i18n.alsoChosen, others.map(columnName).join(', '))));
+			}
+		});
+		return !$.isEmptyObject(found);
+	}
+
+	function refreshTargetSelects() {
+		state.mapping.forEach(function(entry, index) {
+			$modal.find('[data-csv-target="' + index + '"]').replaceWith(targetSelect(index, entry.target));
+		});
+		showConflicts();
+	}
+
+	function renderMapping() {
+		reparse();
+		buildMapping();
+		var data = table();
+		var $body = $('#dp-csv-map-body').empty();
+		state.mapping.forEach(function(entry, index) {
+			var examples = [];
+			for (var r = 0; r < data.rows.length && examples.length < EXAMPLES; r++) {
+				var value = String(data.rows[r][index] === undefined ? '' : data.rows[r][index]).trim();
+				if (value !== '') {
+					examples.push(value.length > 60 ? value.slice(0, 57) + '…' : value);
+				}
+			}
+			var $examples = $('<td class="dp-csv-map-examples"/>');
+			examples.forEach(function(example) { $examples.append($('<span/>').text(example)); });
+			$body.append($('<tr/>')
+				.append($('<td/>').append($('<label/>').attr('for', 'dp-csv-target-' + index).text(columnName(index))))
+				.append($examples)
+				.append($('<td/>').append(targetSelect(index, entry.target))));
+		});
+		$modal.find('.dp-csv-remembered').prop('hidden', !state.mapping.fromMemory);
+		showConflicts();
+	}
+
+	/* ------------------------------------------------------------------
+	 * The "Add new property" dialog, opened by choosing "New property…"
+	 * for a column: the Properties tab's dialog, on top of the wizard.
+	 * ------------------------------------------------------------------ */
+
+	var $propModal = $('#dp-csv-prop-modal');
+	var propEdit = null;
+
+	function propertyLabelTaken(label) {
+		var name = normalizeHeader(label);
+		var labels = (cfg.reservedLabels || []).concat(state.newProperties.map(function(property) { return property.label; }));
+		return labels.some(function(other) {
+			return normalizeHeader(other) === name;
+		});
+	}
+
+	function showPropertyTypeDetails() {
+		var definition = typeDefinition(String($('#dp-csv-prop-type').val() || '')) || {};
+		$('#dp-csv-prop-type-description').text(definition.description || '');
+		$('#dp-csv-prop-options-row').prop('hidden', !definition.supportsOptions);
+	}
+
+	// Types a new property can have: not Title/Href, and not a single-use
+	// type the template or an earlier new property already has.
+	function newPropertyTypes() {
+		var used = {};
+		state.newProperties.forEach(function(property) { used[property.type] = true; });
+		return addableTypes().filter(function(type) {
+			return type.allowMultiple || !used[type.type];
+		});
+	}
+
+	// revertTo: the column's previous choice, restored on Cancel.
+	function openPropertyDialog(index, revertTo) {
+		propEdit = { index: index, revertTo: revertTo };
+		var $type = $('#dp-csv-prop-type').empty();
+		newPropertyTypes().forEach(function(type) {
+			$type.append($('<option/>').val(type.type).text(type.label));
+		});
+		$type.val('textfield');
+		if (!$type.val()) {
+			$type.prop('selectedIndex', 0);
+		}
+		$('#dp-csv-prop-options').val(columnValues(index).join('\n'));
+		$('#dp-csv-prop-label').val(state.mapping[index].header);
+		$('#dp-csv-prop-overruled').prop('checked', true);
+		$('#dp-csv-prop-error').prop('hidden', true).text('');
+		showPropertyTypeDetails();
+		$propModal.prop('hidden', false);
+		$('#dp-csv-prop-label').trigger('focus');
+	}
+
+	function closePropertyDialog(confirmed) {
+		if (!propEdit) {
+			return;
+		}
+		var edit = propEdit;
+		propEdit = null;
+		$propModal.prop('hidden', true);
+		if (!confirmed) {
+			state.mapping[edit.index].target = edit.revertTo;
+		}
+		refreshTargetSelects();
+		$modal.find('[data-csv-target="' + edit.index + '"]').trigger('focus');
+	}
+
+	function confirmPropertyDialog() {
+		if (!propEdit) {
+			return;
+		}
+		var label = String($('#dp-csv-prop-label').val() || '').trim();
+		var error = !label ? i18n.labelRequired : (propertyLabelTaken(label) ? i18n.duplicateLabel : '');
+		if (error) {
+			$('#dp-csv-prop-error').text(error).prop('hidden', false);
+			$('#dp-csv-prop-label').trigger('focus');
+			return;
+		}
+		var type = String($('#dp-csv-prop-type').val() || '');
+		var definition = typeDefinition(type) || {};
+		var property = {
+			id: state.newProperties.length,
+			label: label,
+			type: type,
+			overridable: $('#dp-csv-prop-overruled').is(':checked'),
+			options: definition.supportsOptions
+				? String($('#dp-csv-prop-options').val() || '').split(/\r?\n/).map(function(option) { return option.trim(); }).filter(Boolean)
+				: []
+		};
+		state.newProperties.push(property);
+		state.mapping[propEdit.index].target = 'newprop:' + property.id;
+		closePropertyDialog(true);
+	}
+
+	// Only the new properties a column imports into, numbered in the order
+	// the columns use them.
+	function payload() {
+		var data = table();
+		var newProperties = [];
+		var numbers = {};
+		var mapping = state.mapping.map(function(entry) {
+			var match = /^newprop:(\d+)$/.exec(entry.target);
+			if (!match) {
+				return entry.target === 'new' ? '' : entry.target;
+			}
+			if (numbers[match[1]] === undefined) {
+				var property = state.newProperties[parseInt(match[1], 10)];
+				numbers[match[1]] = newProperties.length;
+				newProperties.push({ label: property.label, type: property.type, options: property.options, can_be_overruled: property.overridable });
+			}
+			return 'new:' + numbers[match[1]];
+		});
+		// The column names, so the server remembers the choices for them.
+		var headers = data.header ? data.header.map(function(header) { return String(header || '').trim(); }) : [];
+		// How the file was read and where it came from, so it can be read
+		// again without the wizard (GroupCsvParser on the server).
+		var settings = {
+			encoding: String($('#dp-csv-encoding').val() || 'utf-8'),
+			delimiters: chosenDelimiters(),
+			qualifier: String($('#dp-csv-qualifier').val() || ''),
+			consecutive: $('#dp-csv-consecutive').is(':checked'),
+			start_row: startRow(),
+			headers: hasHeaders(),
+			sheet: state.sheet
+		};
+		var source = { type: currentSource(), url: currentSource() === 'url' ? String(cfg.lastUrl || '') : '' };
+		// Add-on controls in the wizard (data-csv-extra="key").
+		var extra = {};
+		$modal.find('[data-csv-extra]').each(function() {
+			var $control = $(this);
+			extra[String($control.data('csvExtra'))] = $control.is(':checkbox') ? $control.is(':checked') : String($control.val() || '');
+		});
+		return { mapping: mapping, new_properties: newProperties, rows: data.rows, row_numbers: data.numbers, headers: headers, settings: settings, source: source, extra: extra };
+	}
+
+	function request(apply) {
+		return $.ajax({
+			url: cfg.ajaxUrl,
+			method: 'POST',
+			dataType: 'json',
+			data: {
+				action: cfg.action,
+				nonce: cfg.nonce,
+				template_id: cfg.templateId,
+				version: currentVersion(),
+				apply: apply ? '1' : '0',
+				payload: JSON.stringify($.extend(payload(), { delete_missing: !!(apply && state.deleteMissing) }))
+			}
+		});
+	}
+
+	function responseData(response) {
+		if (response && response.data && typeof response.data === 'object') {
+			return response.data;
+		}
+		return { errors: [i18n.requestFailed] };
+	}
+
+	function list(items) {
+		var $ul = $('<ul/>');
+		items.forEach(function(item) { $ul.append($('<li/>').text(item)); });
+		return $ul;
+	}
+
+	var importLabel = String($('#dp-csv-import').text() || '');
+
+	// Import is possible when the dry run found changes, or when the groups
+	// that are not in the file are to be deleted.
+	function updateImportButton() {
+		var deleting = !!state.deleteMissing;
+		$('#dp-csv-import')
+			.prop('disabled', !(state.changes || deleting || addOnWantsImport()))
+			.text(deleting ? fmt(i18n.importAndDelete, state.missingCount) : importLabel);
+	}
+
+	// An add-on control in step 4 that needs the import to run even when the
+	// file changes nothing (RowSprout Pro's "Keep in sync"): a ticked,
+	// visible data-csv-enables-import control.
+	function addOnWantsImport() {
+		return $modal.find('[data-csv-enables-import]').filter(function() {
+			return this.checked && !$(this).closest('[hidden]').length;
+		}).length > 0;
+	}
+	$modal.on('change', '[data-csv-enables-import]', updateImportButton);
+
+	// The groups no row of the file is for, with the choice to delete them
+	// (and their pages, and their child templates' groups) as the editor
+	// does when they are removed there. Not offered on a child template, nor
+	// when no row matched a group (the wrong file must not empty a template).
+	function missingBox(result) {
+		var $box = $('<div class="dp-csv-box dp-csv-missing"/>');
+		$box.append($('<p/>').append($('<strong/>').text(fmt(result.missingCount === 1 ? i18n.missingOne : i18n.missingMany, result.missingCount))));
+		if (!result.deleteBlocked) {
+			$box.append($('<p/>').text(i18n.missingExplain));
+		}
+		var titles = (result.missing || []).slice();
+		if (result.missingCount > titles.length) {
+			titles.push(fmt(i18n.andMore, result.missingCount - titles.length));
+		}
+		$box.append(list(titles));
+		if (result.deleteBlocked) {
+			$box.append($('<p/>').text(i18n.deleteBlocked));
+			return $box;
+		}
+		$box.append($('<p/>').append($('<label/>')
+			.append($('<input type="checkbox" id="dp-csv-delete-missing"/>'))
+			// Child templates' groups go too: said right at the choice.
+			.append(document.createTextNode(' ' + i18n.deleteMissing + (result.missingChildGroups ? ' ' + i18n.deleteMissingChildren : '')))));
+		var warnings = [i18n.deleteWarning];
+		if (result.missingChildGroups) {
+			warnings.push(fmt(i18n.deleteWarningChildren, result.missingChildGroups));
+		}
+		warnings.push(i18n.deleteWarningTip);
+		$box.append($('<div class="dp-csv-delete-warning" id="dp-csv-delete-warning" hidden/>').append(list(warnings)));
+		return $box;
+	}
+
+	function renderSummary(result) {
+		var $summary = $('#dp-csv-summary').empty();
+		state.deleteMissing = false;
+		state.missingCount = result.missingCount || 0;
+		var deletable = !cfg.isChild && state.missingCount > 0 && !result.deleteBlocked;
+		$summary.append($('<p class="dp-csv-label"/>').text(i18n.summaryHeading));
+		var lines = [];
+		if (result.added) { lines.push(fmt(i18n.added, result.added)); }
+		if (result.updated) { lines.push(fmt(i18n.updated, result.updated)); }
+		if (result.unchanged) { lines.push(fmt(i18n.unchanged, result.unchanged)); }
+		if (result.newProperties && result.newProperties.length) { lines.push(fmt(i18n.newProperties, result.newProperties.join(', '))); }
+		if (result.skippedCount) { lines.push(fmt(i18n.skipped, result.skippedCount)); }
+		var changes = !!(result.added || result.updated || (result.newProperties && result.newProperties.length));
+		state.changes = changes;
+		if (lines.length) {
+			$summary.append(list(lines).addClass('dp-csv-summary-list'));
+		}
+		if (!changes && !deletable) {
+			$summary.append($('<div class="dp-csv-box is-info"/>').append($('<p/>').text(i18n.nothing)));
+		}
+		if (!cfg.isChild && state.missingCount > 0) {
+			$summary.append(missingBox(result));
+		}
+		var notes = (result.warnings || []).concat(result.skipped || []);
+		if (notes.length) {
+			$summary.append($('<div class="dp-csv-box"/>')
+				.append($('<p/>').append($('<strong/>').text(i18n.warnings)))
+				.append(list(notes)));
+		}
+		if (changes || deletable) {
+			$summary.append($('<div class="dp-csv-box is-info"/>')
+				.append($('<p/>').text(i18n.saveNote))
+				.append($('<p/>').text(i18n.generate)));
+			if (hasUnsavedChanges()) {
+				$summary.append($('<div class="dp-csv-box"/>').append($('<p/>').append($('<strong/>').text(i18n.unsaved))));
+			}
+		}
+		updateImportButton();
+	}
+
+	$modal.on('change', '#dp-csv-delete-missing', function() {
+		state.deleteMissing = this.checked;
+		$('#dp-csv-delete-warning').prop('hidden', !this.checked);
+		updateImportButton();
+	});
+
+	// Only when nothing was saved: a saved import reloads the page right away.
+	function renderDone(result) {
+		var $done = $('#dp-csv-done').empty();
+		$done.append($('<div class="dp-csv-box is-info"/>').append($('<p/>').text(i18n.nothingSaved)));
+		var notes = (result.warnings || []).concat(result.skipped || []);
+		if (notes.length) {
+			$done.append($('<div class="dp-csv-box"/>').append(list(notes)));
+		}
+	}
+
+	/* ------------------------------------------------------------------
+	 * Navigation
+	 * ------------------------------------------------------------------ */
+
+	function showError(messages) {
+		var $error = $('#dp-csv-error').empty();
+		messages = (messages || []).filter(Boolean);
+		if (!messages.length) {
+			$error.prop('hidden', true);
+			return;
+		}
+		messages.forEach(function(message) { $error.append($('<p/>').text(message)); });
+		$error.prop('hidden', false);
+	}
+
+	function setBusy(busy, label) {
+		state.busy = busy;
+		$('#dp-csv-next, #dp-csv-back, #dp-csv-import').prop('disabled', busy);
+		$('#dp-csv-step-label').text(busy && label ? label : stepLabel());
+	}
+
+	function stepLabel() {
+		return typeof state.step === 'number' ? String((i18n.steps || [])[state.step - 1] || '') : '';
+	}
+
+	function goTo(step) {
+		state.step = step;
+		showError([]);
+		$modal.find('[data-csv-step]').each(function() {
+			$(this).prop('hidden', String($(this).data('csvStep')) !== String(step));
+		});
+		$('.dp-csv-count').remove();
+		if (step === 1) {
+			// Only when there is something to lose.
+			$('#dp-csv-unsaved').prop('hidden', !hasUnsavedChanges()).find('strong').text(i18n.unsaved);
+			renderFilePreview();
+		}
+		if (step === 2) { renderPreview(); }
+		if (step === 3) { renderMapping(); }
+		var done = step === 'done';
+		$('#dp-csv-back').prop('hidden', done || step === 1);
+		$('#dp-csv-next').prop('hidden', done || step === LAST_STEP);
+		$('#dp-csv-import').prop('hidden', step !== LAST_STEP);
+		$modal.find('[data-csv-url-only]').prop('hidden', currentSource() !== 'url');
+		openAdvancedFor($('#dp-csv-advanced [data-csv-advanced-open]'));
+		$modal.find('[data-csv-cancel]').prop('hidden', done && state.saved);
+		$('#dp-csv-step-label').text(stepLabel());
+	}
+
+	function next() {
+		if (state.busy) {
+			return;
+		}
+		if (state.step === 1) {
+			// A URL that was not fetched yet (or changed since): fetch it, then go on.
+			var url = currentSource() === 'url' ? String($('#dp-csv-url').val() || '').trim() : '';
+			if (url && (!state.buffer || url !== state.fetchedUrl)) {
+				fetchUrl(next);
+				return;
+			}
+			if (!state.buffer) {
+				showError([currentSource() === 'url' ? i18n.noUrl : i18n.noFile]);
+				return;
+			}
+			if (!state.text.trim()) {
+				showError([i18n.emptyFile]);
+				return;
+			}
+			goTo(2);
+			return;
+		}
+		if (state.step === 2) {
+			if (!chosenDelimiters()) {
+				showError([i18n.noDelimiter]);
+				return;
+			}
+			reparse();
+			if (!table().rows.length) {
+				showError([i18n.noRows]);
+				return;
+			}
+			goTo(3);
+			return;
+		}
+		if (state.step === 3) {
+			if (showConflicts()) {
+				showError([i18n.duplicateTargets]);
+				return;
+			}
+			setBusy(true, i18n.checking);
+			request(false).done(function(response) {
+				var result = responseData(response);
+				setBusy(false);
+				if (result.errors && result.errors.length) {
+					showError(result.errors);
+					return;
+				}
+				goTo(4);
+				renderSummary(result);
+			}).fail(function(xhr) {
+				setBusy(false);
+				showError(responseData(xhr && xhr.responseJSON).errors);
+			});
+		}
+	}
+
+	function runImport() {
+		if (state.busy) {
+			return;
+		}
+		setBusy(true, i18n.importing);
+		request(true).done(function(response) {
+			var result = responseData(response);
+			setBusy(false);
+			if (result.errors && result.errors.length) {
+				showError(result.errors);
+				return;
+			}
+			// Saved, or an add-on did something with the import (see
+			// addOnWantsImport()): reload to show it.
+			if (result.saved || addOnWantsImport()) {
+				// Stays busy: the dialog cannot be closed while the page reloads.
+				state.saved = true;
+				setBusy(true, i18n.reloading);
+				reload();
+				return;
+			}
+			renderDone(result);
+			goTo('done');
+		}).fail(function(xhr) {
+			setBusy(false);
+			showError(responseData(xhr && xhr.responseJSON).errors);
+		});
+	}
+
+	function reload() {
+		// Elementor's editor URL reloads in place; the post-edit screens go
+		// to the edit link, which also works from a fresh post-new.php.
+		api.navigate(window.elementor || !cfg.editUrl ? '' : cfg.editUrl);
+	}
+
+	function setPreviewOpen(open) {
+		$('#dp-csv-file-preview').prop('hidden', !open);
+		$('#dp-csv-preview-toggle').attr('aria-expanded', open ? 'true' : 'false').text(open ? i18n.hidePreview : i18n.showPreview);
+	}
+
+	function reset() {
+		setPreviewOpen(false);
+		$('#dp-csv-advanced').prop('open', false);
+		state.step = 1;
+		state.buffer = null;
+		state.text = '';
+		state.records = [];
+		state.mapping = [];
+		state.saved = false;
+		state.deleteMissing = false;
+		$('#dp-csv-file').val('');
+		$('#dp-csv-url').val(cfg.lastUrl || '');
+		showTabs([], '');
+		$('#dp-csv-fetched').prop('hidden', true).text('');
+		setSource(cfg.lastUrl ? 'url' : 'file');
+		$('#dp-csv-encoding').val('utf-8');
+		$('#dp-csv-start').val('1');
+		$('#dp-csv-headers').prop('checked', true);
+		$('#dp-csv-encoding-notice').prop('hidden', true).text('');
+		$('#dp-csv-consecutive').prop('checked', false);
+		$('#dp-csv-qualifier').val('"');
+		setDelimiter(',');
+	}
+
+	var lastFocus = null;
+
+	function open() {
+		reset();
+		lastFocus = document.activeElement;
+		$modal.prop('hidden', false);
+		goTo(1);
+		$(currentSource() === 'url' ? '#dp-csv-url' : '#dp-csv-file').trigger('focus');
+	}
+
+	function close() {
+		if (state.busy || propEdit) {
+			return;
+		}
+		if (state.saved) {
+			reload();
+			return;
+		}
+		$modal.prop('hidden', true);
+		if (lastFocus && lastFocus.focus) {
+			lastFocus.focus();
+		}
+	}
+
+	function loadText() {
+		state.text = state.buffer ? decode(state.buffer, String($('#dp-csv-encoding').val() || 'utf-8')) : '';
+		renderFilePreview();
+	}
+
+	$('#dp-csv-open').on('click', open);
+	$modal.on('click', '[data-csv-close], .dp-csv-backdrop', close);
+	$('#dp-csv-next').on('click', next);
+	$('#dp-csv-back').on('click', function() {
+		if (!state.busy && typeof state.step === 'number' && state.step > 1) {
+			goTo(state.step - 1);
+		}
+	});
+	$('#dp-csv-import').on('click', runImport);
+	$('#dp-csv-preview-toggle').on('click', function() {
+		setPreviewOpen(String($(this).attr('aria-expanded')) !== 'true');
+	});
+
+	// The file's bytes, from an upload or a URL: detect the encoding and the
+	// delimiter, then show what was recognised.
+	function loadBuffer(buffer) {
+		state.buffer = buffer;
+		state.mapping = [];
+		var detected = detectEncoding(buffer);
+		$('#dp-csv-encoding').val(detected.encoding);
+		$('#dp-csv-encoding-notice').text(i18n.notUtf8).prop('hidden', !detected.guessed);
+		if (detected.guessed) {
+			// The encoding to check is in there.
+			$('#dp-csv-advanced').prop('open', true);
+		}
+		loadText();
+		var delimiter = detectDelimiter(state.text);
+		setDelimiter(delimiter.delimiter);
+		$('#dp-csv-start').val(delimiter.sepLine ? '2' : '1');
+		renderFilePreview();
+	}
+
+	function clearBuffer() {
+		state.buffer = null;
+		state.mapping = [];
+		showTabs([], '');
+		showSheets([], '');
+		loadText();
+	}
+
+	// An Excel workbook with several worksheets (GroupCsvSource on the
+	// server): a list to choose one.
+	// label: what the converter calls the parts (e.g. "List" in a JSON
+	// feed); a workbook's worksheets keep the field's own words.
+	var sheetLabel = String($('#dp-csv-sheet-label').text() || '');
+	var sheetHelp = String($('#dp-csv-sheet-help').text() || '');
+	function showSheets(sheets, sheet, label) {
+		$('#dp-csv-sheet-label').text(label || sheetLabel);
+		$('#dp-csv-sheet-help').text(label ? i18n.chooseSheet : sheetHelp);
+		state.sheetLabel = String(label || '');
+		var $select = $('#dp-csv-sheet').empty();
+		(sheets || []).forEach(function(name) {
+			$select.append($('<option/>').val(String(name)).text(String(name)));
+		});
+		$select.val(sheet);
+		state.sheet = String(sheet || '');
+		$('#dp-csv-sheet-row').prop('hidden', !sheets || sheets.length < 2);
+	}
+
+	function base64Bytes(content) {
+		var binary = window.atob(content);
+		var bytes = new Uint8Array(binary.length);
+		for (var i = 0; i < binary.length; i++) {
+			bytes[i] = binary.charCodeAt(i);
+		}
+		return bytes.buffer;
+	}
+
+	// A zip (.xlsx) or an old Office file, which the browser cannot read as
+	// text, or JSON (an add-on converts it; without one the server says so).
+	function needsConverting(buffer) {
+		var b = new Uint8Array(buffer.slice(0, 4));
+		if ((b[0] === 0x50 && b[1] === 0x4B && b[2] === 0x03 && b[3] === 0x04) || (b[0] === 0xD0 && b[1] === 0xCF && b[2] === 0x11 && b[3] === 0xE0)) {
+			return true;
+		}
+		var head = new Uint8Array(buffer.slice(0, 64));
+		var i = head[0] === 0xEF && head[1] === 0xBB && head[2] === 0xBF ? 3 : 0;
+		while (i < head.length && (head[i] === 0x20 || head[i] === 0x09 || head[i] === 0x0A || head[i] === 0x0D)) {
+			i++;
+		}
+		return head[i] === 0x7B || head[i] === 0x5B;
+	}
+
+	// The server turns an uploaded workbook (or JSON) into CSV, for one worksheet (or list).
+	function convertFile(file, sheet) {
+		var data = new window.FormData();
+		data.append('action', cfg.convertAction);
+		data.append('nonce', cfg.nonce);
+		data.append('template_id', cfg.templateId);
+		data.append('sheet', sheet || '');
+		data.append('file', file);
+		setBusy(true, i18n.readingWorkbook);
+		$.ajax({ url: cfg.ajaxUrl, method: 'POST', dataType: 'json', data: data, processData: false, contentType: false }).done(function(response) {
+			var result = response && response.data ? response.data : {};
+			if (!response || !response.success || typeof result.content !== 'string') {
+				clearBuffer();
+				showError(result.errors || [i18n.requestFailed]);
+				return;
+			}
+			showSheets(result.sheets || [], String(result.sheet || ''), String(result.sheet_label || ''));
+			loadBuffer(base64Bytes(result.content));
+		}).fail(function(xhr) {
+			clearBuffer();
+			showError(responseData(xhr && xhr.responseJSON).errors);
+		}).always(function() {
+			setBusy(false);
+		});
+	}
+
+	$('#dp-csv-sheet').on('change', function() {
+		var sheet = String($(this).val() || '');
+		if (currentSource() === 'url') {
+			state.sheet = sheet;
+			state.sheetFor = String($('#dp-csv-url').val() || '').trim();
+			fetchUrl();
+		} else if (state.file) {
+			convertFile(state.file, sheet);
+		}
+	});
+
+	// A Google sheet with several tabs (GroupCsvSection::googleSheetTabs()):
+	// a list to choose the tab from.
+	function showTabs(tabs, gid) {
+		var $select = $('#dp-csv-tab').empty();
+		(tabs || []).forEach(function(tab) {
+			$select.append($('<option/>').val(String(tab.gid)).text(String(tab.name)));
+		});
+		$select.val(gid);
+		$('#dp-csv-tab-row').prop('hidden', !tabs || tabs.length < 2);
+	}
+
+	// The link with the chosen tab: #gid= for a sheet's own link, ?gid= for a
+	// published one; an earlier gid goes.
+	function withGid(url, gid) {
+		var bare = String(url).replace(/([?&#])gid=\d+&?/g, '$1').replace(/[?&#]+$/, '');
+		if (/\/spreadsheets\/d\/e\//.test(bare)) {
+			return bare + (bare.indexOf('?') === -1 ? '?' : '&') + 'gid=' + gid;
+		}
+		return bare.replace(/#.*$/, '') + '#gid=' + gid;
+	}
+
+	$('#dp-csv-tab').on('change', function() {
+		var gid = String($(this).val() || '');
+		if (gid) {
+			$('#dp-csv-url').val(withGid(String($('#dp-csv-url').val() || '').trim(), gid));
+			fetchUrl();
+		}
+	});
+
+	function currentSource() {
+		return String($('#dp-csv-source').val() || 'file');
+	}
+
+	function setSource(source) {
+		$('#dp-csv-source').val(source);
+		$modal.find('[data-csv-source-row]').each(function() {
+			$(this).prop('hidden', String($(this).data('csvSourceRow')) !== source);
+		});
+		$modal.find('[data-csv-url-only]').prop('hidden', source !== 'url');
+		openAdvancedFor($('#dp-csv-advanced [data-csv-advanced-open]'));
+	}
+
+	$('#dp-csv-source').on('change', function() {
+		setSource(currentSource());
+		showError([]);
+		$('#dp-csv-file').val('');
+		$('#dp-csv-fetched').prop('hidden', true).text('');
+		clearBuffer();
+	});
+
+	$('#dp-csv-file').on('change', function() {
+		var file = this.files && this.files[0];
+		showError([]);
+		if (!file) {
+			clearBuffer();
+			return;
+		}
+		var reader = new FileReader();
+		reader.onload = function() {
+			if (needsConverting(reader.result)) {
+				state.file = file;
+				convertFile(file, '');
+				return;
+			}
+			state.file = null;
+			showSheets([], '');
+			loadBuffer(reader.result);
+		};
+		reader.onerror = function() {
+			state.buffer = null;
+			showError([i18n.readError]);
+		};
+		reader.readAsArrayBuffer(file);
+	});
+
+	// Add-on values for the fetch (data-csv-fetch-extra, e.g. Pro's request
+	// header), by their data-csv-extra key.
+	function fetchExtra() {
+		var extra = {};
+		$modal.find('[data-csv-fetch-extra]').each(function() {
+			var $control = $(this);
+			var key = String($control.data('csvExtra') || this.id || '');
+			if (key) {
+				extra[key] = $control.is(':checkbox') ? ($control.is(':checked') ? '1' : '') : String($control.val() || '');
+			}
+		});
+		return extra;
+	}
+
+	// The server fetches the URL (a browser may not read most other sites)
+	// and returns the file's bytes.
+	// onFetched: what to do once the file is in (Next fetching for you).
+	// Opens step 1's "Advanced options" when one of these elements is shown
+	// (not inside a hidden one); it never closes them.
+	function openAdvancedFor($elements) {
+		var shown = $elements.filter(function() {
+			return $(this).closest('[hidden]').length === 0;
+		});
+		if (shown.length) {
+			$('#dp-csv-advanced').prop('open', true);
+		}
+	}
+
+	function fetchUrl(onFetched) {
+		var url = String($('#dp-csv-url').val() || '').trim();
+		showError([]);
+		if (!url || state.busy) {
+			if (!url) {
+				showError([i18n.noUrl]);
+			}
+			return;
+		}
+		setBusy(true, i18n.fetching);
+		$('#dp-csv-fetch').prop('disabled', true);
+		$('#dp-csv-fetched').prop('hidden', true).text('');
+		$.ajax({
+			url: cfg.ajaxUrl,
+			method: 'POST',
+			dataType: 'json',
+			// The worksheet chosen for this URL, if it is a workbook.
+			data: { action: cfg.fetchAction, nonce: cfg.nonce, template_id: cfg.templateId, url: url, sheet: url === state.sheetFor ? state.sheet : '', extra: fetchExtra() }
+		}).done(function(response) {
+			var data = response && response.data ? response.data : {};
+			if (!response || !response.success || typeof data.content !== 'string') {
+				clearBuffer();
+				showError(data.errors || [i18n.requestFailed]);
+				if (data.signin) {
+					// A key or token may be what is missing (an add-on's request field).
+					openAdvancedFor($('#dp-csv-advanced [data-csv-fetch-extra]'));
+				}
+				return;
+			}
+			cfg.lastUrl = url;
+			$('#dp-csv-fetched').text(fmt(i18n.fetched, data.name, data.size)).prop('hidden', false);
+			showSheets(data.sheets || [], String(data.sheet || ''), String(data.sheet_label || ''));
+			loadBuffer(base64Bytes(data.content));
+			showTabs(data.tabs || [], String(data.gid || ''));
+			state.sheetFor = url;
+			state.fetchedUrl = url;
+			if (typeof onFetched === 'function') {
+				setBusy(false);
+				onFetched();
+			}
+		}).fail(function(xhr) {
+			clearBuffer();
+			showError(responseData(xhr && xhr.responseJSON).errors);
+		}).always(function() {
+			setBusy(false);
+			$('#dp-csv-fetch').prop('disabled', false);
+		});
+	}
+
+	$('#dp-csv-fetch').on('click', function() { fetchUrl(); });
+
+	$('#dp-csv-encoding').on('change', function() {
+		$('#dp-csv-encoding-notice').prop('hidden', true);
+		state.mapping = [];
+		loadText();
+	});
+	$('#dp-csv-start, #dp-csv-headers').on('input change', function() {
+		state.mapping = [];
+		renderFilePreview();
+	});
+	$modal.on('change input', '[data-csv-delimiter], #dp-csv-other, #dp-csv-consecutive, #dp-csv-qualifier', function() {
+		if (this.id === 'dp-csv-other' && String($(this).val() || '') !== '') {
+			$modal.find('[data-csv-delimiter="other"]').prop('checked', true);
+		}
+		state.mapping = [];
+		$('.dp-csv-count').remove();
+		renderPreview();
+	});
+
+	$modal.on('change', '[data-csv-target]', function() {
+		var index = parseInt($(this).data('csvTarget'), 10);
+		var entry = state.mapping[index];
+		if (!entry) {
+			return;
+		}
+		var previous = entry.target;
+		entry.target = String($(this).val() || '');
+		if (entry.target === 'new') {
+			openPropertyDialog(index, previous);
+			return;
+		}
+		showConflicts();
+	});
+	$modal.on('click', '[data-csv-prop-cancel]', function() {
+		closePropertyDialog(false);
+	});
+	$('#dp-csv-prop-confirm').on('click', confirmPropertyDialog);
+	$('#dp-csv-prop-type').on('change', showPropertyTypeDetails);
+
+	$modal.on('keydown', function(e) {
+		// Enter would submit the template form around the dialog.
+		if (e.key === 'Enter' && $(e.target).is('input')) {
+			e.preventDefault();
+			if (propEdit && e.target.id === 'dp-csv-prop-label') {
+				confirmPropertyDialog();
+			} else if (e.target.id === 'dp-csv-url') {
+				fetchUrl();
+			}
+			return;
+		}
+		if (e.key === 'Escape') {
+			e.preventDefault();
+			if (propEdit) {
+				closePropertyDialog(false);
+			} else {
+				close();
+			}
+			return;
+		}
+		if (e.key === 'Tab') {
+			var $scope = propEdit ? $propModal : $modal;
+			var $focusable = $scope.find('button, input, select, textarea, [tabindex="0"]').filter(':visible:not(:disabled)');
+			if (!$focusable.length) {
+				return;
+			}
+			var first = $focusable.get(0);
+			var last = $focusable.get($focusable.length - 1);
+			if (e.shiftKey && document.activeElement === first) {
+				e.preventDefault();
+				last.focus();
+			} else if (!e.shiftKey && document.activeElement === last) {
+				e.preventDefault();
+				first.focus();
+			}
+		}
+	});
+
+	// Another parent in the classic editor's Page Attributes changes which
+	// groups the template has; the server only knows the stored parent.
+	$(document).on('change', '#parent_id', function() {
+		var changed = (parseInt($(this).val() || '0', 10) || 0) !== (parseInt(cfg.parentId || 0, 10) || 0);
+		$section.find('.dp-csv-actions').prop('hidden', changed);
+		$section.find('.dp-csv-parent-changed').prop('hidden', !changed);
+	});
+
+	api.parse = parse;
+	api.detectDelimiter = detectDelimiter;
+	api.detectEncoding = detectEncoding;
+	window.rowsproutGroupCsv = api;
+})(jQuery);

@@ -2,6 +2,7 @@
 
 namespace RowSprout;
 
+use RowSprout\Admin\GroupCsv\GroupCsvSection;
 use RowSprout\Admin\Menu;
 use RowSprout\Admin\Metaboxes;
 use RowSprout\Admin\PageEditNotice;
@@ -68,6 +69,7 @@ final class Plugin
         TemplateStatusColumn::register();
         TemplateTransferPage::register();
         ParentPayloadAjaxHandler::register();
+        GroupCsvSection::register();
         ChildTemplateInheritance::register();
         PermalinkSettings::register();
         \RowSprout\Core\PageEditing::register();
