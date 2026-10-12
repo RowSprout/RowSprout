@@ -726,7 +726,8 @@ final class GroupCsvSection {
 			wp_send_json_error( [ 'errors' => [ __( 'Enter a URL that starts with http:// or https://.', 'rowsprout' ) ] ] );
 		}
 
-		$file = self::fetch( $url, self::postedExtra() );
+		// The template goes along, so an add-on can use what it keeps for it (Pro: a saved request header).
+		$file = self::fetch( $url, [ 'template_id' => $templateId ] + self::postedExtra() );
 		if ( isset( $file['error'] ) ) {
 			wp_send_json_error( [ 'errors' => [ $file['error'] ] ] );
 		}
