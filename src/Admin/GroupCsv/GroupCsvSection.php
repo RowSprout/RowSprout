@@ -181,6 +181,11 @@ final class GroupCsvSection {
 							</div>
 							<p class="description"><?php esc_html_e( 'A CSV or text file on the web, or a Google Sheets link of a sheet shared with "Anyone with the link".', 'rowsprout' ); ?></p>
 							<p class="dp-csv-fetched" id="dp-csv-fetched" hidden></p>
+							<p class="dp-csv-tab-row" id="dp-csv-tab-row" hidden>
+								<label for="dp-csv-tab"><?php esc_html_e( 'Tab', 'rowsprout' ); ?></label><br />
+								<select id="dp-csv-tab"></select>
+								<span class="description"><?php esc_html_e( 'This sheet has several tabs. Choose the one to import; it is fetched right away.', 'rowsprout' ); ?></span>
+							</p>
 						</div>
 						<div class="dp-csv-fields">
 							<p>
@@ -508,6 +513,12 @@ final class GroupCsvSection {
 	 */
 	public static function normalizeUrl( string $url ): string {
 		$url = trim( $url );
+		// A published sheet's web page (…/pubhtml): its CSV, for the same tab.
+		if ( preg_match( '~^https://docs\.google\.com/spreadsheets/d/e/([A-Za-z0-9_-]+)/pubhtml(?:[?#].*)?$~', $url, $match ) === 1 ) {
+			$gid = self::googleSheetGid( $url );
+
+			return 'https://docs.google.com/spreadsheets/d/e/' . $match[1] . '/pub?output=csv' . ( $gid !== '' ? '&gid=' . $gid : '' );
+		}
 		// A sheet's own link (…/edit, …/view); a published (/d/e/…/pub) or
 		// export link already gives CSV.
 		if ( preg_match( '~^https://docs\.google\.com/spreadsheets/d/(?!e/)([A-Za-z0-9_-]+)(?:/(?:edit|view|htmlview)[^?#]*|/)?(?:[?#].*)?$~', $url, $match ) === 1 ) {
@@ -519,6 +530,74 @@ final class GroupCsvSection {
 		}
 
 		return $url;
+	}
+
+	/**
+	 * The tab (gid) a Google Sheets link asks for, or '' (the first tab).
+	 */
+	public static function googleSheetGid( string $url ): string {
+		return preg_match( '~[?&#]gid=(\d+)~', $url, $match ) === 1 ? $match[1] : '';
+	}
+
+	/**
+	 * The tabs of a Google sheet, in the sheet's order: gid => name, read from
+	 * the sheet's web view (…/htmlview, or …/pubhtml for a published sheet),
+	 * which needs no API key. [] for another URL, or when the tabs cannot be
+	 * read (a sheet that is not shared, or a page Google changed); the import
+	 * then simply uses the tab the link names.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function googleSheetTabs( string $url ): array {
+		$url = trim( $url );
+		if ( preg_match( '~^https://docs\.google\.com/spreadsheets/d/e/([A-Za-z0-9_-]+)~', $url, $match ) === 1 ) {
+			$view = 'https://docs.google.com/spreadsheets/d/e/' . $match[1] . '/pubhtml';
+		} elseif ( preg_match( '~^https://docs\.google\.com/spreadsheets/d/([A-Za-z0-9_-]+)~', $url, $match ) === 1 ) {
+			$view = 'https://docs.google.com/spreadsheets/d/' . $match[1] . '/htmlview';
+		} else {
+			return [];
+		}
+
+		$response = wp_safe_remote_get( $view, [ 'timeout' => 15, 'redirection' => 5, 'limit_response_size' => 4194304 ] );
+		if ( is_wp_error( $response ) || (int) wp_remote_retrieve_response_code( $response ) !== 200 ) {
+			return [];
+		}
+
+		return self::parseGoogleSheetTabs( (string) wp_remote_retrieve_body( $response ) );
+	}
+
+	/**
+	 * See googleSheetTabs(): the sheet's web view lists its tabs in a script
+	 * (items.push({name: "…", pageUrl: "…", gid: "…"…})); a published sheet's
+	 * page as buttons (id="sheet-button-<gid>").
+	 *
+	 * @return array<string, string>
+	 */
+	public static function parseGoogleSheetTabs( string $html ): array {
+		$tabs = [];
+		if ( preg_match_all( '~\{name: "((?:[^"\\\\]|\\\\.)*)", pageUrl: "(?:[^"\\\\]|\\\\.)*", gid: "(\d+)"~', $html, $matches, PREG_SET_ORDER ) > 0 ) {
+			foreach ( $matches as $match ) {
+				$tabs[ $match[2] ] = self::decodeScriptString( $match[1] );
+			}
+		} elseif ( preg_match_all( '~id="sheet-button-(\d+)"[^>]*>(.*?)</li>~s', $html, $matches, PREG_SET_ORDER ) > 0 ) {
+			foreach ( $matches as $match ) {
+				$tabs[ $match[1] ] = trim( html_entity_decode( wp_strip_all_tags( $match[2] ), ENT_QUOTES, 'UTF-8' ) );
+			}
+		}
+
+		return array_filter( $tabs, static function ( string $name ): bool {
+			return $name !== '';
+		} );
+	}
+
+	/**
+	 * A JavaScript string literal's contents as text (\xHH, \uHHHH, \" …).
+	 */
+	private static function decodeScriptString( string $value ): string {
+		$json    = (string) preg_replace( '~\\\\x([0-9a-fA-F]{2})~', '\\\\u00$1', str_replace( "\\'", "'", $value ) );
+		$decoded = json_decode( '"' . $json . '"' );
+
+		return is_string( $decoded ) ? $decoded : stripslashes( $value );
 	}
 
 	/**
@@ -612,11 +691,24 @@ final class GroupCsvSection {
 
 		update_post_meta( $templateId, self::URL_META, wp_slash( $url ) );
 
+		// A Google sheet with several tabs: the wizard offers them.
+		$tabs = self::googleSheetTabs( $url );
+		$gid  = self::googleSheetGid( $url );
+		if ( $gid === '' || ! isset( $tabs[ $gid ] ) ) {
+			$gid = (string) array_key_first( $tabs );
+		}
+		$tabList = [];
+		foreach ( $tabs as $tabGid => $tabName ) {
+			$tabList[] = [ 'gid' => (string) $tabGid, 'name' => $tabName ];
+		}
+
 		wp_send_json_success( [
 			// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- the file's bytes for the browser, which detects the encoding itself.
 			'content' => base64_encode( (string) $file['content'] ),
 			'name'    => $file['name'],
 			'size'    => $file['size'],
+			'tabs'    => count( $tabList ) > 1 ? $tabList : [],
+			'gid'     => count( $tabList ) > 1 ? $gid : '',
 		] );
 	}
 

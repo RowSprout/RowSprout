@@ -1043,6 +1043,7 @@
 		state.deleteMissing = false;
 		$('#dp-csv-file').val('');
 		$('#dp-csv-url').val(cfg.lastUrl || '');
+		showTabs([], '');
 		$('#dp-csv-fetched').prop('hidden', true).text('');
 		setSource(cfg.lastUrl ? 'url' : 'file');
 		$('#dp-csv-encoding').val('utf-8');
@@ -1114,8 +1115,38 @@
 	function clearBuffer() {
 		state.buffer = null;
 		state.mapping = [];
+		showTabs([], '');
 		loadText();
 	}
+
+	// A Google sheet with several tabs (GroupCsvSection::googleSheetTabs()):
+	// a list to choose the tab from.
+	function showTabs(tabs, gid) {
+		var $select = $('#dp-csv-tab').empty();
+		(tabs || []).forEach(function(tab) {
+			$select.append($('<option/>').val(String(tab.gid)).text(String(tab.name)));
+		});
+		$select.val(gid);
+		$('#dp-csv-tab-row').prop('hidden', !tabs || tabs.length < 2);
+	}
+
+	// The link with the chosen tab: #gid= for a sheet's own link, ?gid= for a
+	// published one; an earlier gid goes.
+	function withGid(url, gid) {
+		var bare = String(url).replace(/([?&#])gid=\d+&?/g, '$1').replace(/[?&#]+$/, '');
+		if (/\/spreadsheets\/d\/e\//.test(bare)) {
+			return bare + (bare.indexOf('?') === -1 ? '?' : '&') + 'gid=' + gid;
+		}
+		return bare.replace(/#.*$/, '') + '#gid=' + gid;
+	}
+
+	$('#dp-csv-tab').on('change', function() {
+		var gid = String($(this).val() || '');
+		if (gid) {
+			$('#dp-csv-url').val(withGid(String($('#dp-csv-url').val() || '').trim(), gid));
+			fetchUrl();
+		}
+	});
 
 	function currentSource() {
 		return String($('#dp-csv-source').val() || 'file');
@@ -1188,6 +1219,7 @@
 			cfg.lastUrl = url;
 			$('#dp-csv-fetched').text(fmt(i18n.fetched, data.name, data.size)).prop('hidden', false);
 			loadBuffer(bytes.buffer);
+			showTabs(data.tabs || [], String(data.gid || ''));
 		}).fail(function(xhr) {
 			clearBuffer();
 			showError(responseData(xhr && xhr.responseJSON).errors);
