@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-13T17:44:40+00:00\n"
+"POT-Creation-Date: 2026-10-13T17:59:45+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: rowsprout\n"
@@ -20,6 +20,7 @@ msgstr ""
 #: src/Admin/Menu.php:29
 #: src/Admin/MenuRegistrar.php:15
 #: src/Admin/MenuRegistrar.php:16
+#: src/Blocks/ConditionalBlock.php:55
 #: src/ThirdParty/Elementor/ElementorIntegration.php:150
 msgid "RowSprout"
 msgstr ""
@@ -1659,6 +1660,33 @@ msgstr ""
 msgid "The generated pages of one RowSprout template, as a list or as cards."
 msgstr ""
 
+#: src/Blocks/ConditionalBlock.php:83
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:47
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:94
+msgid "If / then"
+msgstr ""
+
+#: src/Blocks/ConditionalBlock.php:84
+msgid "Shows \"Then\" when the page's property values match the rules, else \"Else\"."
+msgstr ""
+
+#: src/Blocks/ConditionalBlock.php:101
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:197
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:517
+#: assets/js/conditional-block.js:185
+#: assets/js/conditional-block.js:252
+msgid "Then"
+msgstr ""
+
+#: src/Blocks/ConditionalBlock.php:101
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:206
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:352
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:517
+#: assets/js/conditional-block.js:186
+#: assets/js/conditional-block.js:258
+msgid "Else"
+msgstr ""
+
 #: src/Core/Blueprint/RowSproutPageBlueprint.php:63
 msgid "RowSprout page"
 msgstr ""
@@ -1699,7 +1727,7 @@ msgstr ""
 msgid "Rule %d: the operator does not fit the property's type (changed?), so \"is not empty\" / \"is checked\" is used. Choose the operator again."
 msgstr ""
 
-#: src/Core/Conditions/ConditionalOutput.php:169
+#: src/Core/Conditions/ConditionalOutput.php:175
 msgctxt "list separator"
 msgid ", "
 msgstr ""
@@ -2276,6 +2304,7 @@ msgstr ""
 #: src/ThirdParty/Elementor/PageFieldResolver.php:284
 #: src/ThirdParty/Elementor/PageFieldResolver.php:323
 #: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:586
+#: assets/js/conditional-block.js:72
 msgid "-- Select --"
 msgstr ""
 
@@ -2288,6 +2317,7 @@ msgid "Save"
 msgstr ""
 
 #: src/ThirdParty/Elementor/TemplateEditorTab.php:290
+#: assets/js/conditional-block.js:237
 msgid "Preview group"
 msgstr ""
 
@@ -2353,11 +2383,6 @@ msgstr ""
 msgid "Optional: take the button text from a Text field property."
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:47
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:94
-msgid "If / then"
-msgstr ""
-
 #: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:82
 msgid "A property"
 msgstr ""
@@ -2375,52 +2400,49 @@ msgid "Each rule is joined to the one above with \"and\" or \"or\"; \"and\" goes
 msgstr ""
 
 #: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:119
+#: assets/js/conditional-block.js:84
 msgid "And / or"
 msgstr ""
 
 #: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:122
+#: assets/js/conditional-block.js:86
 msgid "and"
 msgstr ""
 
 #: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:123
 #: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:191
+#: assets/js/conditional-block.js:86
 msgid "or"
 msgstr ""
 
 #: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:133
 #: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:424
+#: assets/js/conditional-block.js:91
 msgid "Property"
 msgstr ""
 
 #: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:148
+#: assets/js/conditional-block.js:106
 msgid "Operator"
 msgstr ""
 
 #: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:168
+#: assets/js/conditional-block.js:113
 msgid "Value"
 msgstr ""
 
 #: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:177
+#: assets/js/conditional-block.js:120
 msgid "And"
 msgstr ""
 
 #: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:186
+#: assets/js/conditional-block.js:200
 msgid "If"
 msgstr ""
 
 #: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:191
 msgid "(no property)"
-msgstr ""
-
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:197
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:517
-msgid "Then"
-msgstr ""
-
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:206
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:352
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:517
-msgid "Else"
 msgstr ""
 
 #: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:211
@@ -2743,4 +2765,24 @@ msgstr ""
 #: src/ThirdParty/WPBakery/WPBakeryIntegration.php:145
 #: assets/js/blocks.js:50
 msgid "Cards"
+msgstr ""
+
+#: assets/js/conditional-block.js:77
+msgid "not in this template"
+msgstr ""
+
+#: assets/js/conditional-block.js:131
+msgid "Remove rule"
+msgstr ""
+
+#: assets/js/conditional-block.js:184
+msgid "Both"
+msgstr ""
+
+#: assets/js/conditional-block.js:204
+msgid "Each rule is joined to the one above with \"and\" or \"or\"; \"and\" goes first, so \"A and B or C\" means \"(A and B) or C\"."
+msgstr ""
+
+#: assets/js/conditional-block.js:223
+msgid "Add rule"
 msgstr ""

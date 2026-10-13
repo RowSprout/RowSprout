@@ -14,14 +14,15 @@ if ( ! defined( 'ABSPATH' ) ) {
  * The markup of conditional content ("If / then"), the same for every
  * editor. Settings (an editor stores them under these names): "rules" (see
  * RuleSet), and per output, "" for Then and "else_" for Else: source
- * ("property", "text", "template", Else also "none"), property (a code),
+ * ("property", "text", "template", "inner" = the editor's own content such
+ * as a block's inner blocks, Else also "none"), property (a code),
  * text (own text with @code_…@ tokens), template (an editor's own template
  * id), html_tag (Else: "" = Then's); list_display for a list property.
  *
  * An output is text in its HTML tag with the classes rowsprout-conditional
  * and rowsprout-conditional--then / --else (an editor's text styles target
- * them), or a template in div.rowsprout-conditional-template (its own
- * styling). When a rule depends on today both outputs go into the page in
+ * them), or a template or inner content in div.rowsprout-conditional-template
+ * / div.rowsprout-conditional-blocks (their own styling). When a rule depends on today both outputs go into the page in
  * div.rowsprout-conditional-cases[data-rs-conditional] and
  * assets/js/conditional-content.js shows the right one with today's date
  * in the site's time zone, so a page cache cannot keep a stale outcome.
@@ -50,8 +51,9 @@ final class ConditionalOutput {
 	 * The HTML for a group ($context: PageFieldResolver::resolveGroupContext(),
 	 * null without a group) and the decision behind it. $renderers lets an
 	 * editor format own text ("text": callable(string): string; default
-	 * wpautop and shortcodes) and show its templates ("template":
-	 * callable(int): string; default nothing).
+	 * wpautop and shortcodes), show its templates ("template":
+	 * callable(int): string) and its own content ("inner": callable(string
+	 * $prefix): string); both default to nothing.
 	 *
 	 * @param array<string, mixed>      $settings
 	 * @param array<string, mixed>|null $context
@@ -105,6 +107,9 @@ final class ConditionalOutput {
 		if ( $source === 'template' ) {
 			return isset( $renderers['template'] ) ? (string) call_user_func( $renderers['template'], (int) ( $settings[ $prefix . 'template' ] ?? 0 ) ) : '';
 		}
+		if ( $source === 'inner' ) {
+			return isset( $renderers['inner'] ) ? (string) call_user_func( $renderers['inner'], $prefix ) : '';
+		}
 		$property = (string) ( $settings[ $prefix . 'property' ] ?? '' );
 		if ( $source !== 'property' || $property === '' || $context === null ) {
 			return '';
@@ -124,13 +129,14 @@ final class ConditionalOutput {
 	/**
 	 * One output in its element: text in its HTML tag with the text classes
 	 * (a single paragraph unwrapped into it; blocks fall back to a div), a
-	 * template in its own div.
+	 * template or inner content in its own div.
 	 *
 	 * @param array<string, mixed> $settings
 	 */
 	public static function wrap( array $settings, string $prefix, string $html, string $attributes ): string {
-		if ( ( $settings[ $prefix . 'source' ] ?? '' ) === 'template' ) {
-			return '<div class="rowsprout-conditional-template"' . $attributes . '>' . $html . '</div>';
+		$source = (string) ( $settings[ $prefix . 'source' ] ?? '' );
+		if ( $source === 'template' || $source === 'inner' ) {
+			return '<div class="rowsprout-conditional-' . ( $source === 'template' ? 'template' : 'blocks' ) . '"' . $attributes . '>' . $html . '</div>';
 		}
 		$tag = (string) ( $settings[ $prefix . 'html_tag' ] ?? '' );
 		if ( $prefix !== '' && $tag === '' ) {
