@@ -7,6 +7,7 @@ use RowSprout\ThirdParty\Elementor\Widgets\TextareaWidget;
 use RowSprout\ThirdParty\Elementor\Widgets\GridWidget;
 use RowSprout\ThirdParty\Elementor\Widgets\HeadingWidget;
 use RowSprout\ThirdParty\Elementor\Widgets\ButtonWidget;
+use RowSprout\ThirdParty\Elementor\Widgets\ConditionalWidget;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -31,6 +32,8 @@ final class ElementorIntegration {
 	public static function register(): void {
 		add_action( 'elementor/elements/categories_registered', [ self::class, 'registerCategory' ] );
 		add_action( 'elementor/widgets/register', [ self::class, 'registerWidgets' ] );
+		add_action( 'elementor/editor/after_enqueue_styles', [ ConditionalWidget::class, 'editorStyles' ] );
+		add_action( 'elementor/editor/after_enqueue_scripts', [ ConditionalWidget::class, 'editorScript' ] );
 		TextEditorTokenButton::register();
 		add_filter( 'rowsprout_excluded_meta_keys', [ self::class, 'extendExcludedMetaKeys' ], 10, 4 );
 		add_filter( 'rowsprout_page_delete_post_meta_keys', [ self::class, 'extendDeletedMetaKeys' ], 10, 2 );
@@ -165,5 +168,6 @@ final class ElementorIntegration {
 		$widgetsManager->register( new GridWidget() );
 		$widgetsManager->register( new HeadingWidget() );
 		$widgetsManager->register( new ButtonWidget() );
+		$widgetsManager->register( new ConditionalWidget() );
 	}
 }
