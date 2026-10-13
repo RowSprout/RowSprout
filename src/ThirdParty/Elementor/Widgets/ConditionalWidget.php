@@ -247,17 +247,6 @@ final class ConditionalWidget extends Widget_Base {
 				]
 			);
 		}
-		$this->add_control(
-			'html_tag',
-			[
-				'label'       => __( 'HTML tag', 'rowsprout' ),
-				'type'        => Controls_Manager::SELECT,
-				'options'     => array_combine( self::TAGS, self::TAGS ),
-				'default'     => 'div',
-				'separator'   => 'before',
-				'description' => __( 'For text (one paragraph of own text too). Several paragraphs, a bulleted or numbered list or a template are always in a div.', 'rowsprout' ),
-			]
-		);
 		$this->end_controls_section();
 
 		$this->start_controls_section(
@@ -474,6 +463,19 @@ final class ConditionalWidget extends Widget_Base {
 				]
 			);
 		}
+		// Then's tag is "html_tag"; Else's "else_html_tag", empty = the same as Then.
+		$tags = array_combine( self::TAGS, self::TAGS );
+		$this->add_control(
+			$prefix . 'html_tag',
+			[
+				'label'       => __( 'HTML tag', 'rowsprout' ),
+				'type'        => Controls_Manager::SELECT,
+				'options'     => $prefix === '' ? $tags : [ '' => __( 'Same as Then', 'rowsprout' ) ] + $tags,
+				'default'     => $prefix === '' ? 'div' : '',
+				'condition'   => [ $prefix . 'source' => [ 'property', 'text' ] ],
+				'description' => __( 'Several paragraphs, a bulleted or numbered list are always in a div.', 'rowsprout' ),
+			]
+		);
 	}
 
 	protected function render() {
@@ -515,7 +517,11 @@ final class ConditionalWidget extends Widget_Base {
 		if ( ( $settings[ $prefix . 'source' ] ?? '' ) === 'template' ) {
 			return '<div class="rowsprout-conditional-template"' . $attributes . '>' . $html . '</div>';
 		}
-		$tag = in_array( $settings['html_tag'] ?? 'div', self::TAGS, true ) ? (string) $settings['html_tag'] : 'div';
+		$tag = (string) ( $settings[ $prefix . 'html_tag' ] ?? '' );
+		if ( $prefix !== '' && $tag === '' ) {
+			$tag = (string) ( $settings['html_tag'] ?? '' );
+		}
+		$tag = in_array( $tag, self::TAGS, true ) ? $tag : 'div';
 		if ( $tag !== 'div' && preg_match( '#^\s*<p>((?:(?!</?p[\s>]).)*)</p>\s*$#is', $html, $single ) === 1 ) {
 			// One paragraph (as the text editor makes it): its text goes in the chosen tag.
 			$html = $single[1];
