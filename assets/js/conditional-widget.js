@@ -1,13 +1,14 @@
 /**
  * The "If / then" widget's rules that depend on today (ConditionalWidget):
- * the server put every output that can still match in the page and decided
- * the other rules; this picks the output again with today's date in the
- * site's time zone, so a cached page does not keep a stale one.
+ * the server put "Then" and "Otherwise" in the page and decided every other
+ * rule; this picks again with today's date in the site's time zone, so a
+ * cached page does not keep a stale outcome.
  *
- * data-rs-conditional = { offset: site UTC offset in minutes, cases: [ { i: case
- * index, m: "all"|"any", s: [ results decided by the server ], r: [ { d: the
- * property's day (Y-m-d), o: operator, n: days } ] } ] }; an output without a
- * matching case is "else" (data-rs-case="else").
+ * data-rs-conditional = { offset: site UTC offset in minutes, groups: [ [ { d:
+ * the property's day (Y-m-d), o: operator, n: days } ] ] }: the "or" groups
+ * today can still decide, each with only its rules on today (its other rules
+ * matched). "Then" (data-rs-case="then") when every rule of one group matches,
+ * else "Otherwise" (data-rs-case="else").
  */
 (function () {
 	'use strict';
@@ -39,13 +40,6 @@
 		return false;
 	}
 
-	function matches(results, match) {
-		if (!results.length) {
-			return false;
-		}
-		return match === 'any' ? results.indexOf(true) !== -1 : results.indexOf(false) === -1;
-	}
-
 	function pick(root) {
 		var data;
 		try {
@@ -53,16 +47,15 @@
 		} catch (e) {
 			return;
 		}
+		var groups = data && data.groups ? data.groups : [];
 		var chosen = 'else';
-		var cases = data && data.cases ? data.cases : [];
-		for (var i = 0; i < cases.length; i++) {
-			var results = (cases[i].s || []).slice();
-			for (var j = 0; j < (cases[i].r || []).length; j++) {
-				results.push(test(cases[i].r[j], data.offset || 0));
+		for (var i = 0; i < groups.length && chosen === 'else'; i++) {
+			var all = groups[i].length > 0;
+			for (var j = 0; j < groups[i].length; j++) {
+				all = all && test(groups[i][j], data.offset || 0);
 			}
-			if (matches(results, cases[i].m)) {
-				chosen = String(cases[i].i);
-				break;
+			if (all) {
+				chosen = 'then';
 			}
 		}
 		var outputs = root.querySelectorAll('[data-rs-case]');

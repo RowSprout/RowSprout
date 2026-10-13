@@ -46,6 +46,7 @@ final class ConditionEvaluator {
 			'contains'       => [ 'label' => __( 'contains', 'rowsprout' ), 'args' => 1 ],
 			'not_contains'   => [ 'label' => __( 'does not contain', 'rowsprout' ), 'args' => 1 ],
 			'starts_with'    => [ 'label' => __( 'starts with', 'rowsprout' ), 'args' => 1 ],
+			'ends_with'      => [ 'label' => __( 'ends with', 'rowsprout' ), 'args' => 1 ],
 			'gt'             => [ 'label' => __( 'is greater than / after', 'rowsprout' ), 'args' => 1 ],
 			'gte'            => [ 'label' => __( 'is greater than or equal to', 'rowsprout' ), 'args' => 1 ],
 			'lt'             => [ 'label' => __( 'is less than / before', 'rowsprout' ), 'args' => 1 ],
@@ -116,6 +117,7 @@ final class ConditionEvaluator {
 					'contains'     => __( 'contains', 'rowsprout' ),
 					'not_contains' => __( 'does not contain', 'rowsprout' ),
 					'starts_with'  => __( 'starts with', 'rowsprout' ),
+					'ends_with'    => __( 'ends with', 'rowsprout' ),
 				];
 		}
 	}
@@ -258,6 +260,10 @@ final class ConditionEvaluator {
 			case 'starts_with':
 				$needle = self::lower( self::plainText( $arg1 ) );
 				return $needle !== '' && strpos( self::lower( $text ), $needle ) === 0;
+			case 'ends_with':
+				$needle = self::lower( self::plainText( $arg1 ) );
+				$haystack = self::lower( $text );
+				return $needle !== '' && strlen( $haystack ) >= strlen( $needle ) && substr( $haystack, -strlen( $needle ) ) === $needle;
 			case 'gt':
 			case 'gte':
 			case 'lt':
@@ -310,6 +316,7 @@ final class ConditionEvaluator {
 				return $low !== null && $high !== null && self::compareDates( $date, $low ) >= 0 && self::compareDates( $date, $high ) <= 0;
 			case 'contains':
 			case 'starts_with':
+			case 'ends_with':
 				return self::testScalar( $date['date']->format( $date['time'] ? 'Y-m-d H:i' : 'Y-m-d' ), self::KIND_TEXT, $operator, $arg1, $arg2, $today );
 		}
 
