@@ -88,6 +88,7 @@ final class Plugin
         SeoPress::register();
         SeoFramework::register();
         WPBakeryIntegration::register();
+        \RowSprout\ThirdParty\WPBakery\ConditionalElement::register();
         WpRocket::register();
         ElementorIntegration::register();
         TemplateEditorTab::register();
