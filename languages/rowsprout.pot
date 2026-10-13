@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-13T14:59:37+00:00\n"
+"POT-Creation-Date: 2026-10-13T15:11:03+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: rowsprout\n"
@@ -20,7 +20,7 @@ msgstr ""
 #: src/Admin/Menu.php:29
 #: src/Admin/MenuRegistrar.php:15
 #: src/Admin/MenuRegistrar.php:16
-#: src/ThirdParty/Elementor/ElementorIntegration.php:150
+#: src/ThirdParty/Elementor/ElementorIntegration.php:151
 msgid "RowSprout"
 msgstr ""
 
@@ -1403,7 +1403,7 @@ msgid "Select all"
 msgstr ""
 
 #: src/Admin/TemplateTransferPage.php:296
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:306
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:468
 msgid "Template"
 msgstr ""
 
@@ -1644,7 +1644,7 @@ msgid "(opens in a new tab)"
 msgstr ""
 
 #: src/Blocks/BlockRegistry.php:43
-#: src/ThirdParty/Elementor/ElementorIntegration.php:157
+#: src/ThirdParty/Elementor/ElementorIntegration.php:158
 #: src/ThirdParty/WPBakery/WPBakeryIntegration.php:140
 msgid "RowSprout pages"
 msgstr ""
@@ -2234,7 +2234,7 @@ msgstr ""
 
 #: src/ThirdParty/Elementor/PageFieldResolver.php:284
 #: src/ThirdParty/Elementor/PageFieldResolver.php:323
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:618
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:833
 msgid "-- Select --"
 msgstr ""
 
@@ -2312,163 +2312,232 @@ msgstr ""
 msgid "Optional: take the button text from a Text field property."
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:56
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:103
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:60
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:107
 msgid "If / then"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:91
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:95
 msgid "A property"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:92
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:96
 msgid "Own text"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:95
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:99
 msgid "An Elementor template"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:111
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:123
 msgid "Each rule is joined to the one above with \"and\" or \"or\"; \"and\" goes first, so \"A and B or C\" means \"(A and B) or C\". A date is written as YYYY-MM-DD."
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:120
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:132
 msgid "And / or"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:123
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:135
 msgid "and"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:124
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:192
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:136
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:204
 msgid "or"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:134
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:286
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:146
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:448
 msgid "Property"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:149
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:161
 msgid "Operator"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:169
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:181
 msgid "Value"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:178
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:190
 msgid "And"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:187
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:199
 msgid "If"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:192
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:204
 msgid "(no property)"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:198
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:531
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:210
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:745
 msgid "Then"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:207
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:531
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:219
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:376
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:745
 msgid "Otherwise"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:212
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:224
 msgid "Nothing"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:218
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:296
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:230
+msgid "Show a list as"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:233
+msgid "Lines"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:234
+msgid "Bulleted list"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:235
+msgid "Numbered list"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:236
+msgid "Separated by commas"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:253
+#: src/ThirdParty/Elementor/Widgets/HeadingWidget.php:67
+msgid "HTML tag"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:258
+msgid "For text (one paragraph of own text too). Several paragraphs, a bulleted or numbered list or a template are always in a div."
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:266
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:458
 #: src/ThirdParty/Elementor/Widgets/HeadingWidget.php:95
 #: src/ThirdParty/Elementor/Widgets/TextareaWidget.php:74
 msgid "Text"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:225
-#: src/ThirdParty/Elementor/Widgets/HeadingWidget.php:67
-msgid "HTML tag"
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:274
+msgid "For a property and own text. An Elementor template keeps its own styling."
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:234
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:281
 msgid "Alignment"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:237
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:284
 msgid "Left"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:238
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:285
 msgid "Center"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:239
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:286
 msgid "Right"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:240
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:287
 msgid "Justified"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:257
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:304
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:398
 #: src/ThirdParty/Elementor/Widgets/HeadingWidget.php:111
 #: src/ThirdParty/Elementor/Widgets/TextareaWidget.php:90
 msgid "Text color"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:277
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:321
+msgid "Space between paragraphs"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:332
+msgid "Own text and rich text with paragraphs or lists."
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:340
+msgid "Links"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:354
+msgid "Link color"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:364
+msgid "Link hover color"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:384
+msgid "Only when \"Otherwise\" is shown; what you leave empty follows \"Text\"."
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:408
+msgid "Background color"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:418
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:249
+#: src/ThirdParty/Elementor/Widgets/GridWidget.php:320
+msgid "Padding"
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:439
 msgid "Show"
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:311
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:473
 msgid "RowSprout widgets in the template show this page's values; @code_…@ tokens typed as text in it are not replaced."
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:512
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:548
+msgctxt "list separator"
+msgid ", "
+msgstr ""
+
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:726
 msgid "This template has no groups yet, so the rules cannot be checked."
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:514
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:728
 msgid "No rule has a property yet: \"Otherwise\" is shown."
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:516
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:730
 msgid "Preview group: the rules match, so \"Then\" is shown."
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:518
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:732
 msgid "Preview group: the rules do not match, and \"Otherwise\" shows nothing."
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:518
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:732
 msgid "Preview group: the rules do not match, so \"Otherwise\" is shown."
 msgstr ""
 
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:521
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:735
 msgid "A rule depends on today: the page checks it again when it is shown."
 msgstr ""
 
 #. translators: %s: comma-separated property codes.
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:525
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:739
 #, php-format
 msgid "Not in this template (these rules never match): %s"
 msgstr ""
 
 #. translators: %d: rule number.
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:529
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:743
 #, php-format
 msgid "Rule %d: the operator does not fit the property's type (changed?), so \"is not empty\" / \"is checked\" is used. Choose the operator again."
 msgstr ""
 
 #. translators: %s: "Then" or "Otherwise".
-#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:534
+#: src/ThirdParty/Elementor/Widgets/ConditionalWidget.php:748
 #, php-format
 msgid "%s shows an Elementor template, which needs Elementor Pro: nothing is shown."
 msgstr ""
@@ -2597,11 +2666,6 @@ msgstr ""
 #: src/ThirdParty/Elementor/Widgets/GridWidget.php:237
 #: src/ThirdParty/Elementor/Widgets/GridWidget.php:365
 msgid "Border radius"
-msgstr ""
-
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:249
-#: src/ThirdParty/Elementor/Widgets/GridWidget.php:320
-msgid "Padding"
 msgstr ""
 
 #: src/ThirdParty/Elementor/Widgets/GridWidget.php:261

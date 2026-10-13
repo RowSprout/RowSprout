@@ -3,6 +3,7 @@
 namespace RowSprout\ThirdParty\Elementor\Widgets;
 
 use Elementor\Controls_Manager;
+use Elementor\Group_Control_Text_Shadow;
 use Elementor\Group_Control_Typography;
 use Elementor\Repeater;
 use Elementor\Widget_Base;
@@ -44,6 +45,9 @@ final class ConditionalWidget extends Widget_Base {
 	private const NO_OUTPUT_TYPES = [ 'thumbnail', 'file', 'icon' ];
 
 	private const TAGS = [ 'div', 'p', 'span', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ];
+
+	/** How an item list is shown. */
+	private const LIST_DISPLAYS = [ 'lines', 'bullets', 'numbers', 'commas' ];
 
 	/** @var array<int, int> Elementor templates being rendered (a template showing itself). */
 	private static $rendering = [];
@@ -102,6 +106,14 @@ final class ConditionalWidget extends Widget_Base {
 			[
 				'label' => __( 'If / then', 'rowsprout' ),
 				'tab'   => Controls_Manager::TAB_CONTENT,
+			]
+		);
+		$this->add_control(
+			'preview_note',
+			[
+				'type' => Controls_Manager::RAW_HTML,
+				// Filled by the editor script (editorScript()) from the preview.
+				'raw'  => '<div class="rowsprout-conditional-panel-note"></div>',
 			]
 		);
 		$this->add_control(
@@ -210,6 +222,42 @@ final class ConditionalWidget extends Widget_Base {
 			]
 		);
 		$this->addOutputControls( 'else_', $sources + [ 'none' => __( 'Nothing', 'rowsprout' ) ], 'none', $templates );
+		$listCodes = $byKind[ ConditionEvaluator::KIND_LIST ] ?? [];
+		if ( $listCodes !== [] ) {
+			$this->add_control(
+				'list_display',
+				[
+					'label'      => __( 'Show a list as', 'rowsprout' ),
+					'type'       => Controls_Manager::SELECT,
+					'options'    => [
+						'lines'   => __( 'Lines', 'rowsprout' ),
+						'bullets' => __( 'Bulleted list', 'rowsprout' ),
+						'numbers' => __( 'Numbered list', 'rowsprout' ),
+						'commas'  => __( 'Separated by commas', 'rowsprout' ),
+					],
+					'default'    => 'lines',
+					'separator'  => 'before',
+					'conditions' => [
+						'relation' => 'or',
+						'terms'    => [
+							[ 'relation' => 'and', 'terms' => [ [ 'name' => 'source', 'operator' => '===', 'value' => 'property' ], [ 'name' => 'property', 'operator' => 'in', 'value' => $listCodes ] ] ],
+							[ 'relation' => 'and', 'terms' => [ [ 'name' => 'else_source', 'operator' => '===', 'value' => 'property' ], [ 'name' => 'else_property', 'operator' => 'in', 'value' => $listCodes ] ] ],
+						],
+					],
+				]
+			);
+		}
+		$this->add_control(
+			'html_tag',
+			[
+				'label'       => __( 'HTML tag', 'rowsprout' ),
+				'type'        => Controls_Manager::SELECT,
+				'options'     => array_combine( self::TAGS, self::TAGS ),
+				'default'     => 'div',
+				'separator'   => 'before',
+				'description' => __( 'For text (one paragraph of own text too). Several paragraphs, a bulleted or numbered list or a template are always in a div.', 'rowsprout' ),
+			]
+		);
 		$this->end_controls_section();
 
 		$this->start_controls_section(
@@ -220,12 +268,11 @@ final class ConditionalWidget extends Widget_Base {
 			]
 		);
 		$this->add_control(
-			'html_tag',
+			'style_note',
 			[
-				'label'   => __( 'HTML tag', 'rowsprout' ),
-				'type'    => Controls_Manager::SELECT,
-				'options' => array_combine( self::TAGS, self::TAGS ),
-				'default' => 'div',
+				'type'            => Controls_Manager::RAW_HTML,
+				'raw'             => esc_html__( 'For a property and own text. An Elementor template keeps its own styling.', 'rowsprout' ),
+				'content_classes' => 'elementor-descriptor',
 			]
 		);
 		$this->add_responsive_control(
@@ -258,6 +305,121 @@ final class ConditionalWidget extends Widget_Base {
 				'type'      => Controls_Manager::COLOR,
 				'selectors' => [
 					'{{WRAPPER}} .rowsprout-conditional' => 'color: {{VALUE}};',
+				],
+			]
+		);
+		$this->add_group_control(
+			Group_Control_Text_Shadow::get_type(),
+			[
+				'name'     => 'text_shadow',
+				'selector' => '{{WRAPPER}} .rowsprout-conditional',
+			]
+		);
+		$this->add_responsive_control(
+			'paragraph_spacing',
+			[
+				'label'       => __( 'Space between paragraphs', 'rowsprout' ),
+				'type'        => Controls_Manager::SLIDER,
+				'size_units'  => [ 'px', 'em' ],
+				'range'       => [
+					'px' => [ 'min' => 0, 'max' => 60 ],
+					'em' => [ 'min' => 0, 'max' => 4, 'step' => 0.1 ],
+				],
+				'selectors'   => [
+					'{{WRAPPER}} .rowsprout-conditional p, {{WRAPPER}} .rowsprout-conditional ul, {{WRAPPER}} .rowsprout-conditional ol' => 'margin-top: 0; margin-bottom: {{SIZE}}{{UNIT}};',
+					'{{WRAPPER}} .rowsprout-conditional > :last-child' => 'margin-bottom: 0;',
+				],
+				'description' => __( 'Own text and rich text with paragraphs or lists.', 'rowsprout' ),
+			]
+		);
+		$this->end_controls_section();
+
+		$this->start_controls_section(
+			'section_style_links',
+			[
+				'label' => __( 'Links', 'rowsprout' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+		$this->add_group_control(
+			Group_Control_Typography::get_type(),
+			[
+				'name'     => 'link_typography',
+				'selector' => '{{WRAPPER}} .rowsprout-conditional a',
+			]
+		);
+		$this->add_control(
+			'link_color',
+			[
+				'label'     => __( 'Link color', 'rowsprout' ),
+				'type'      => Controls_Manager::COLOR,
+				'selectors' => [
+					'{{WRAPPER}} .rowsprout-conditional a' => 'color: {{VALUE}};',
+				],
+			]
+		);
+		$this->add_control(
+			'link_hover_color',
+			[
+				'label'     => __( 'Link hover color', 'rowsprout' ),
+				'type'      => Controls_Manager::COLOR,
+				'selectors' => [
+					'{{WRAPPER}} .rowsprout-conditional a:hover, {{WRAPPER}} .rowsprout-conditional a:focus' => 'color: {{VALUE}};',
+				],
+			]
+		);
+		$this->end_controls_section();
+
+		$this->start_controls_section(
+			'section_style_otherwise',
+			[
+				'label' => __( 'Otherwise', 'rowsprout' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+		$this->add_control(
+			'otherwise_note',
+			[
+				'type'            => Controls_Manager::RAW_HTML,
+				'raw'             => esc_html__( 'Only when "Otherwise" is shown; what you leave empty follows "Text".', 'rowsprout' ),
+				'content_classes' => 'elementor-descriptor',
+			]
+		);
+		$this->add_group_control(
+			Group_Control_Typography::get_type(),
+			[
+				'name'     => 'else_typography',
+				'selector' => '{{WRAPPER}} .rowsprout-conditional.rowsprout-conditional--else',
+			]
+		);
+		$this->add_control(
+			'else_color',
+			[
+				'label'     => __( 'Text color', 'rowsprout' ),
+				'type'      => Controls_Manager::COLOR,
+				'selectors' => [
+					'{{WRAPPER}} .rowsprout-conditional.rowsprout-conditional--else' => 'color: {{VALUE}};',
+				],
+			]
+		);
+		$this->add_control(
+			'else_background',
+			[
+				'label'     => __( 'Background color', 'rowsprout' ),
+				'type'      => Controls_Manager::COLOR,
+				'selectors' => [
+					'{{WRAPPER}} .rowsprout-conditional.rowsprout-conditional--else' => 'background-color: {{VALUE}};',
+				],
+			]
+		);
+		$this->add_responsive_control(
+			'else_padding',
+			[
+				'label'      => __( 'Padding', 'rowsprout' ),
+				'type'       => Controls_Manager::DIMENSIONS,
+				'size_units' => [ 'px', 'em', '%' ],
+				'selectors'  => [
+					'{{WRAPPER}} .rowsprout-conditional.rowsprout-conditional--else' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
 				],
 			]
 		);
@@ -320,27 +482,72 @@ final class ConditionalWidget extends Widget_Base {
 		$templateId = get_post_type( $postId ) === PostTypes::TEMPLATE ? $postId : 0;
 		$context    = PageFieldResolver::resolveGroupContext( $postId, $templateId );
 		$decision   = self::decide( (array) ( $settings['rules'] ?? [] ), $context['group'] ?? null );
-		$tag        = tag_escape( in_array( $settings['html_tag'] ?? 'div', self::TAGS, true ) ? (string) $settings['html_tag'] : 'div' );
 
 		if ( $decision['client'] === null ) {
-			$html = $this->output( $settings, $decision['matches'] ? '' : 'else_', $context );
+			$prefix = $decision['matches'] ? '' : 'else_';
+			$html   = $this->output( $settings, $prefix, $context );
 			if ( $html !== '' ) {
-				echo '<' . $tag . ' class="rowsprout-conditional">' . $html . '</' . $tag . '>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- formatted by PropertyBindingSource::format(), the widget's own text or Elementor.
+				echo $this->wrap( $settings, $prefix, $html, '' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- formatted by PropertyBindingSource::format(), the widget's own text or Elementor.
 			}
 		} else {
 			// Both outputs; the script shows the right one.
 			echo '<div class="rowsprout-conditional-cases" data-rs-conditional="' . esc_attr( (string) wp_json_encode( $decision['client'] ) ) . '">';
 			foreach ( [ 'then' => '', 'else' => 'else_' ] as $name => $prefix ) {
 				$shown = $decision['matches'] === ( $name === 'then' );
-				echo '<' . $tag . ' class="rowsprout-conditional" data-rs-case="' . esc_attr( $name ) . '"' . ( $shown ? '' : ' hidden' ) . '>';
-				echo $this->output( $settings, $prefix, $context ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- see above.
-				echo '</' . $tag . '>';
+				echo $this->wrap( $settings, $prefix, $this->output( $settings, $prefix, $context ), ' data-rs-case="' . esc_attr( $name ) . '"' . ( $shown ? '' : ' hidden' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- see above.
 			}
 			echo '</div>';
 		}
 
 		if ( self::isEditor() ) {
 			$this->renderEditorNote( $decision, $context, $settings );
+		}
+	}
+
+	/**
+	 * One output in its element: text in the chosen tag with the text styles
+	 * (rowsprout-conditional, --then / --else), a template or a bulleted or
+	 * numbered list in a div (a template keeps its own styling).
+	 *
+	 * @param array<string, mixed> $settings
+	 */
+	private function wrap( array $settings, string $prefix, string $html, string $attributes ): string {
+		if ( ( $settings[ $prefix . 'source' ] ?? '' ) === 'template' ) {
+			return '<div class="rowsprout-conditional-template"' . $attributes . '>' . $html . '</div>';
+		}
+		$tag = in_array( $settings['html_tag'] ?? 'div', self::TAGS, true ) ? (string) $settings['html_tag'] : 'div';
+		if ( $tag !== 'div' && preg_match( '#^\s*<p>((?:(?!</?p[\s>]).)*)</p>\s*$#is', $html, $single ) === 1 ) {
+			// One paragraph (as the text editor makes it): its text goes in the chosen tag.
+			$html = $single[1];
+		}
+		if ( preg_match( '/<(ul|ol|p|div|h[1-6])[\s>]/i', $html ) === 1 && $tag !== 'div' ) {
+			// Blocks cannot go inside a p, span or heading.
+			$tag = 'div';
+		}
+		$tag = tag_escape( $tag );
+
+		return '<' . $tag . ' class="rowsprout-conditional rowsprout-conditional--' . ( $prefix === '' ? 'then' : 'else' ) . '"' . $attributes . '>' . $html . '</' . $tag . '>';
+	}
+
+	/**
+	 * An item list (one item per line) as lines, a bulleted or numbered list,
+	 * or separated by commas.
+	 */
+	public static function listHtml( string $value, string $display ): string {
+		$items = array_values( array_filter( array_map( 'trim', preg_split( '/\r\n|\r|\n/', $value ) ?: [] ), 'strlen' ) );
+		if ( $items === [] ) {
+			return '';
+		}
+		$items = array_map( 'esc_html', $items );
+		switch ( $display ) {
+			case 'bullets':
+				return '<ul><li>' . implode( '</li><li>', $items ) . '</li></ul>';
+			case 'numbers':
+				return '<ol><li>' . implode( '</li><li>', $items ) . '</li></ol>';
+			case 'commas':
+				return implode( esc_html_x( ', ', 'list separator', 'rowsprout' ), $items );
+			default:
+				return implode( '<br>', $items );
 		}
 	}
 
@@ -477,8 +684,15 @@ final class ConditionalWidget extends Widget_Base {
 			return '';
 		}
 		$field = PageFieldResolver::getFieldByCode( (array) $context['group'], $property );
+		if ( $field === null ) {
+			return '';
+		}
+		if ( ConditionEvaluator::kindOf( $field['type'] ) === ConditionEvaluator::KIND_LIST ) {
+			$display = in_array( $settings['list_display'] ?? 'lines', self::LIST_DISPLAYS, true ) ? (string) $settings['list_display'] : 'lines';
+			return self::listHtml( $field['value'], $display );
+		}
 
-		return $field === null ? '' : (string) PropertyBindingSource::format( $field['value'], $field['type'], 'content' );
+		return (string) PropertyBindingSource::format( $field['value'], $field['type'], 'content' );
 	}
 
 	/**
@@ -500,8 +714,8 @@ final class ConditionalWidget extends Widget_Base {
 	}
 
 	/**
-	 * In the editor only: whether the preview group matches, and rules that
-	 * cannot be checked.
+	 * In the editor only, for the panel: whether the preview group matches,
+	 * and rules that cannot be checked.
 	 *
 	 * @param array<string, mixed>      $decision
 	 * @param array<string, mixed>|null $context
@@ -535,7 +749,8 @@ final class ConditionalWidget extends Widget_Base {
 			}
 		}
 
-		echo '<div class="rowsprout-conditional-note" style="margin-top:6px;padding:4px 8px;border-left:3px solid #93003c;background:#fdf2f6;color:#1d2327;font:12px/1.5 sans-serif">';
+		// Not in the canvas: editorScript() shows it at the top of the Content tab.
+		echo '<div class="rowsprout-conditional-note" hidden>';
 		foreach ( $notes as $note ) {
 			echo '<div>' . esc_html( $note ) . '</div>';
 		}
@@ -640,7 +855,58 @@ final class ConditionalWidget extends Widget_Base {
 	 * row's position).
 	 */
 	public static function editorStyles(): void {
-		wp_add_inline_style( 'elementor-editor', '.elementor-control-rules .elementor-repeater-fields:first-child .rowsprout-conditional-join{display:none}' );
+		wp_add_inline_style( 'elementor-editor', '.elementor-control-rules .elementor-repeater-fields:first-child .rowsprout-conditional-join{display:none}'
+			. '.rowsprout-conditional-panel-note:empty{display:none}'
+			. '.rowsprout-conditional-panel-note{padding:6px 10px;border-left:3px solid #93003c;background:#fdf2f6;color:#1d2327;font-size:12px;line-height:1.5}'
+			. '.rowsprout-conditional-panel-note div+div{margin-top:4px}' );
+	}
+
+	/**
+	 * Editor script: copies the widget's note from the preview (rendered
+	 * hidden, see renderEditorNote()) to the top of its Content tab, again
+	 * after every change, since the panel itself is built only once.
+	 */
+	public static function editorScript(): void {
+		wp_add_inline_script( 'elementor-editor', <<<'JS'
+(function () {
+	var timer = null;
+	function sync() {
+		var target = document.querySelector('.rowsprout-conditional-panel-note');
+		if (!target || !window.elementor || !elementor.$preview || !elementor.$preview[0]) {
+			return;
+		}
+		var page = elementor.getPanelView && elementor.getPanelView().getCurrentPageView && elementor.getPanelView().getCurrentPageView();
+		var model = page && page.model;
+		var doc = elementor.$preview[0].contentDocument;
+		if (!model || !doc) {
+			return;
+		}
+		var note = doc.querySelector('.elementor-element-' + model.get('id') + ' .rowsprout-conditional-note');
+		var html = note ? note.innerHTML : '';
+		if (target.innerHTML !== html) {
+			target.innerHTML = html;
+		}
+	}
+	function later() {
+		clearTimeout(timer);
+		timer = setTimeout(sync, 80);
+	}
+	function watch(node) {
+		if (node && window.MutationObserver) {
+			new MutationObserver(later).observe(node, { childList: true, subtree: true });
+		}
+	}
+	jQuery(window).on('elementor:init', function () {
+		elementor.hooks.addAction('panel/open_editor/widget/rowsprout_page_conditional_widget', later);
+		elementor.on('preview:loaded', function () {
+			watch(elementor.$preview[0].contentDocument && elementor.$preview[0].contentDocument.body);
+			later();
+		});
+		watch(document.getElementById('elementor-panel'));
+	});
+}());
+JS
+		);
 	}
 
 	private static function isEditor(): bool {

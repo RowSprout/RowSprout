@@ -34,6 +34,7 @@ final class ElementorIntegration {
 		add_action( 'elementor/widgets/register', [ self::class, 'registerWidgets' ] );
 		add_action( 'elementor/frontend/after_register_scripts', [ self::class, 'registerScripts' ] );
 		add_action( 'elementor/editor/after_enqueue_styles', [ ConditionalWidget::class, 'editorStyles' ] );
+		add_action( 'elementor/editor/after_enqueue_scripts', [ ConditionalWidget::class, 'editorScript' ] );
 		TextEditorTokenButton::register();
 		add_filter( 'rowsprout_excluded_meta_keys', [ self::class, 'extendExcludedMetaKeys' ], 10, 4 );
 		add_filter( 'rowsprout_page_delete_post_meta_keys', [ self::class, 'extendDeletedMetaKeys' ], 10, 2 );
