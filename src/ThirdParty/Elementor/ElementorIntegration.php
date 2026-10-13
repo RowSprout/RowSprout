@@ -32,7 +32,6 @@ final class ElementorIntegration {
 	public static function register(): void {
 		add_action( 'elementor/elements/categories_registered', [ self::class, 'registerCategory' ] );
 		add_action( 'elementor/widgets/register', [ self::class, 'registerWidgets' ] );
-		add_action( 'elementor/frontend/after_register_scripts', [ self::class, 'registerScripts' ] );
 		add_action( 'elementor/editor/after_enqueue_styles', [ ConditionalWidget::class, 'editorStyles' ] );
 		add_action( 'elementor/editor/after_enqueue_scripts', [ ConditionalWidget::class, 'editorScript' ] );
 		TextEditorTokenButton::register();
@@ -170,16 +169,5 @@ final class ElementorIntegration {
 		$widgetsManager->register( new HeadingWidget() );
 		$widgetsManager->register( new ButtonWidget() );
 		$widgetsManager->register( new ConditionalWidget() );
-	}
-
-	/**
-	 * The "If / then" widget's script, which Elementor loads only on pages
-	 * with the widget (ConditionalWidget::get_script_depends()).
-	 */
-	public static function registerScripts(): void {
-		$suffix       = defined( 'WP_DEBUG' ) && WP_DEBUG ? '' : '.min';
-		$relativePath = 'assets/js/conditional-widget' . $suffix . '.js';
-		$file         = ROWSPROUT_PATH . $relativePath;
-		wp_register_script( ConditionalWidget::SCRIPT_HANDLE, plugins_url( $relativePath, ROWSPROUT_FILE ), [], file_exists( $file ) ? (string) filemtime( $file ) : ROWSPROUT_VERSION, true );
 	}
 }

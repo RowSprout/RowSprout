@@ -63,6 +63,7 @@ final class Plugin
         Metaboxes::register();
         TemplateBlockEditor::register();
         PropertyBindingSource::register();
+        \RowSprout\Core\Conditions\ConditionalOutput::register();
         BlockRegistry::register();
         PageEditNotice::register();
         ChildTemplateAdminUx::register();

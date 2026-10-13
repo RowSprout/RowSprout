@@ -7,9 +7,10 @@ use Elementor\Group_Control_Text_Shadow;
 use Elementor\Group_Control_Typography;
 use Elementor\Repeater;
 use Elementor\Widget_Base;
-use RowSprout\Core\BlockBindings\PropertyBindingSource;
+use RowSprout\Core\Conditions\ConditionalNotes;
+use RowSprout\Core\Conditions\ConditionalOutput;
 use RowSprout\Core\Conditions\ConditionEvaluator;
-use RowSprout\Core\Page\PageBuilder;
+use RowSprout\Core\Conditions\RuleSet;
 use RowSprout\Core\PostTypes;
 use RowSprout\Core\TemplateMeta;
 use RowSprout\ThirdParty\Elementor\PageFieldResolver;
@@ -19,35 +20,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * "If / then": shows "Then" when the current page's property values match
- * the rules, else "Else". Rules are a list, each joined to the one above
- * with "and" or "or" ("and" binds first: A and B or C = (A and B) or C), each
- * with an operator list per kind of property, shown for the chosen
- * property's kind. "Then" and "Else" show a property (formatted as the
- * block bindings format it), own text with @code_…@ tokens (replaced when the
- * page is generated; in the editor for the preview group) or, with Elementor
- * Pro active, a saved Elementor template.
+ * "If / then" for Elementor: shows "Then" when the current page's property
+ * values match the rules, else "Else". The rules, their evaluation and the
+ * markup are the editor-independent Core\Conditions (RuleSet,
+ * ConditionalOutput, ConditionalNotes); this widget adds Elementor's panel
+ * (the rules as a repeater with an operator list per kind of property,
+ * shown for the chosen property's kind; Then/Else as a property, own text
+ * or, with Elementor Pro active, a saved Elementor template), the
+ * template rendering and the preview note at the top of the Content tab.
  *
- * Resolved when the page is shown, like the other RowSprout widgets. When the
- * outcome depends on a rule on today (ConditionEvaluator::isRelative()),
- * both outputs go into the page and assets/js/conditional-widget.js picks
- * again with today's date in the site's time zone, so a page cache cannot
- * keep a stale outcome.
+ * Resolved when the page is shown, like the other RowSprout widgets.
  */
 final class ConditionalWidget extends Widget_Base {
 
-	public const SCRIPT_HANDLE = 'rowsprout-conditional-widget';
-
-	public const JOIN_AND = 'and';
-	public const JOIN_OR  = 'or';
-
 	/** Output types without text to show. */
 	private const NO_OUTPUT_TYPES = [ 'thumbnail', 'file', 'icon' ];
-
-	private const TAGS = [ 'div', 'p', 'span', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ];
-
-	/** How an item list is shown. */
-	private const LIST_DISPLAYS = [ 'lines', 'bullets', 'numbers', 'commas' ];
 
 	/** @var array<int, int> Elementor templates being rendered (a template showing itself). */
 	private static $rendering = [];
@@ -77,7 +64,7 @@ final class ConditionalWidget extends Widget_Base {
 	}
 
 	public function get_script_depends() {
-		return [ self::SCRIPT_HANDLE ];
+		return [ ConditionalOutput::SCRIPT_HANDLE ];
 	}
 
 	/**
@@ -90,7 +77,7 @@ final class ConditionalWidget extends Widget_Base {
 
 	protected function register_controls() {
 		$properties = PageFieldResolver::getFieldCodeOptions( null );
-		$byKind     = self::codesByKind();
+		$byKind     = RuleSet::codesByKind( PageFieldResolver::resolveCurrentTemplateId() );
 		$sources    = [
 			'property' => __( 'A property', 'rowsprout' ),
 			'text'     => __( 'Own text', 'rowsprout' ),
@@ -132,10 +119,10 @@ final class ConditionalWidget extends Widget_Base {
 				'label'       => __( 'And / or', 'rowsprout' ),
 				'type'        => Controls_Manager::SELECT,
 				'options'     => [
-					self::JOIN_AND => __( 'and', 'rowsprout' ),
-					self::JOIN_OR  => __( 'or', 'rowsprout' ),
+					RuleSet::JOIN_AND => __( 'and', 'rowsprout' ),
+					RuleSet::JOIN_OR  => __( 'or', 'rowsprout' ),
 				],
-				'default'     => self::JOIN_AND,
+				'default'     => RuleSet::JOIN_AND,
 				// Hidden for the first rule by editorStyles().
 				'classes'     => 'rowsprout-conditional-join',
 			]
@@ -199,9 +186,9 @@ final class ConditionalWidget extends Widget_Base {
 				'label'       => __( 'If', 'rowsprout' ),
 				'type'        => Controls_Manager::REPEATER,
 				'fields'      => $repeater->get_controls(),
-				'default'     => [ [ 'join' => self::JOIN_AND ] ],
+				'default'     => [ [ 'join' => RuleSet::JOIN_AND ] ],
 				// The property's label, and "· or" for a rule joined with "or".
-				'title_field' => '<# var rsLabels = ' . wp_json_encode( array_diff_key( $properties, [ '' => true ] ) ) . '; #>{{ ( rsLabels[ rule_property ] || rule_property || ' . wp_json_encode( __( '(no property)', 'rowsprout' ) ) . ' ) + ( join === ' . wp_json_encode( self::JOIN_OR ) . ' ? ' . wp_json_encode( ' · ' . __( 'or', 'rowsprout' ) ) . ' : "" ) }}',
+				'title_field' => '<# var rsLabels = ' . wp_json_encode( array_diff_key( $properties, [ '' => true ] ) ) . '; #>{{ ( rsLabels[ rule_property ] || rule_property || ' . wp_json_encode( __( '(no property)', 'rowsprout' ) ) . ' ) + ( join === ' . wp_json_encode( RuleSet::JOIN_OR ) . ' ? ' . wp_json_encode( ' · ' . __( 'or', 'rowsprout' ) ) . ' : "" ) }}',
 			]
 		);
 		$this->add_control(
@@ -464,7 +451,7 @@ final class ConditionalWidget extends Widget_Base {
 			);
 		}
 		// Then's tag is "html_tag"; Else's "else_html_tag", empty = the same as Then.
-		$tags = array_combine( self::TAGS, self::TAGS );
+		$tags = array_combine( ConditionalOutput::TAGS, ConditionalOutput::TAGS );
 		$this->add_control(
 			$prefix . 'html_tag',
 			[
@@ -483,222 +470,19 @@ final class ConditionalWidget extends Widget_Base {
 		$postId     = (int) get_the_ID();
 		$templateId = get_post_type( $postId ) === PostTypes::TEMPLATE ? $postId : 0;
 		$context    = PageFieldResolver::resolveGroupContext( $postId, $templateId );
-		$decision   = self::decide( (array) ( $settings['rules'] ?? [] ), $context['group'] ?? null );
-
-		if ( $decision['client'] === null ) {
-			$prefix = $decision['matches'] ? '' : 'else_';
-			$html   = $this->output( $settings, $prefix, $context );
-			if ( $html !== '' ) {
-				echo $this->wrap( $settings, $prefix, $html, '' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- formatted by PropertyBindingSource::format(), the widget's own text or Elementor.
-			}
-		} else {
-			// Both outputs; the script shows the right one.
-			echo '<div class="rowsprout-conditional-cases" data-rs-conditional="' . esc_attr( (string) wp_json_encode( $decision['client'] ) ) . '">';
-			foreach ( [ 'then' => '', 'else' => 'else_' ] as $name => $prefix ) {
-				$shown = $decision['matches'] === ( $name === 'then' );
-				echo $this->wrap( $settings, $prefix, $this->output( $settings, $prefix, $context ), ' data-rs-case="' . esc_attr( $name ) . '"' . ( $shown ? '' : ' hidden' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- see above.
-			}
-			echo '</div>';
-		}
+		$result     = ConditionalOutput::render( $settings, $context, [
+			'text'     => function ( string $text ): string {
+				return $this->parse_text_editor( $text );
+			},
+			'template' => static function ( int $id ): string {
+				return self::renderTemplate( $id );
+			},
+		] );
+		echo $result['html']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built by ConditionalOutput: formatted properties, the widget's own text, Elementor's template.
 
 		if ( self::isEditor() ) {
-			$this->renderEditorNote( $decision, $context, $settings );
+			$this->renderEditorNote( $result['decision'], $context, $settings );
 		}
-	}
-
-	/**
-	 * One output in its element: text in the chosen tag with the text styles
-	 * (rowsprout-conditional, --then / --else), a template or a bulleted or
-	 * numbered list in a div (a template keeps its own styling).
-	 *
-	 * @param array<string, mixed> $settings
-	 */
-	private function wrap( array $settings, string $prefix, string $html, string $attributes ): string {
-		if ( ( $settings[ $prefix . 'source' ] ?? '' ) === 'template' ) {
-			return '<div class="rowsprout-conditional-template"' . $attributes . '>' . $html . '</div>';
-		}
-		$tag = (string) ( $settings[ $prefix . 'html_tag' ] ?? '' );
-		if ( $prefix !== '' && $tag === '' ) {
-			$tag = (string) ( $settings['html_tag'] ?? '' );
-		}
-		$tag = in_array( $tag, self::TAGS, true ) ? $tag : 'div';
-		if ( $tag !== 'div' && preg_match( '#^\s*<p>((?:(?!</?p[\s>]).)*)</p>\s*$#is', $html, $single ) === 1 ) {
-			// One paragraph (as the text editor makes it): its text goes in the chosen tag.
-			$html = $single[1];
-		}
-		if ( preg_match( '/<(ul|ol|p|div|h[1-6])[\s>]/i', $html ) === 1 && $tag !== 'div' ) {
-			// Blocks cannot go inside a p, span or heading.
-			$tag = 'div';
-		}
-		$tag = tag_escape( $tag );
-
-		return '<' . $tag . ' class="rowsprout-conditional rowsprout-conditional--' . ( $prefix === '' ? 'then' : 'else' ) . '"' . $attributes . '>' . $html . '</' . $tag . '>';
-	}
-
-	/**
-	 * An item list (one item per line) as lines, a bulleted or numbered list,
-	 * or separated by commas.
-	 */
-	public static function listHtml( string $value, string $display ): string {
-		$items = array_values( array_filter( array_map( 'trim', preg_split( '/\r\n|\r|\n/', $value ) ?: [] ), 'strlen' ) );
-		if ( $items === [] ) {
-			return '';
-		}
-		$items = array_map( 'esc_html', $items );
-		switch ( $display ) {
-			case 'bullets':
-				return '<ul><li>' . implode( '</li><li>', $items ) . '</li></ul>';
-			case 'numbers':
-				return '<ol><li>' . implode( '</li><li>', $items ) . '</li></ol>';
-			case 'commas':
-				return implode( esc_html_x( ', ', 'list separator', 'rowsprout' ), $items );
-			default:
-				return implode( '<br>', $items );
-		}
-	}
-
-	/**
-	 * Whether a group matches the rules ("matches", with $today, default
-	 * today in the site's time zone). "client" is set when the outcome
-	 * depends on a rule on today: the "or" groups that today can still
-	 * decide, each with only its rules on today ({ d: the property's day,
-	 * o: operator, n: days }; its other rules all matched here).
-	 *
-	 * @param array<int, mixed>         $rules
-	 * @param array<string, mixed>|null $group
-	 * @return array{matches: bool, client: array<string, mixed>|null, missing: array<int, string>, changed: array<int, int>, ruleCount: int}
-	 */
-	public static function decide( array $rules, ?array $group, ?string $today = null ): array {
-		$groups    = [];
-		$missing   = [];
-		$changed   = [];
-		$ruleCount = 0;
-
-		foreach ( array_values( $rules ) as $index => $rule ) {
-			$rule = is_array( $rule ) ? $rule : [];
-			$code = (string) ( $rule['rule_property'] ?? '' );
-			if ( $code === '' ) {
-				continue;
-			}
-			// "or" starts a new "and" group.
-			if ( $ruleCount === 0 || ( $rule['join'] ?? '' ) === self::JOIN_OR ) {
-				$groups[] = [ 'results' => [], 'today' => [] ];
-			}
-			$ruleCount++;
-			$last  = count( $groups ) - 1;
-			$field = $group === null ? null : PageFieldResolver::getFieldByCode( $group, $code );
-			if ( $field === null ) {
-				$missing[]                    = $code;
-				$groups[ $last ]['results'][] = false;
-				$groups[ $last ]['decided'][] = false;
-				continue;
-			}
-			$fallback = false;
-			$operator = self::operatorFor( $rule, ConditionEvaluator::kindOf( $field['type'] ), $fallback );
-			if ( $fallback ) {
-				$changed[] = $index;
-			}
-			$value  = (string) ( $rule['value'] ?? '' );
-			$result = ConditionEvaluator::test( $field['value'], $field['type'], $operator, $value, (string) ( $rule['value2'] ?? '' ), $today );
-			$day    = ConditionEvaluator::isRelative( $operator ) ? ConditionEvaluator::dayOf( $field['value'], $field['type'] ) : null;
-			$groups[ $last ]['results'][] = $result;
-			if ( $day !== null ) {
-				$groups[ $last ]['today'][] = [ 'd' => $day, 'o' => $operator, 'n' => max( 0, (int) $value ) ];
-			} else {
-				$groups[ $last ]['decided'][] = $result;
-			}
-		}
-
-		$matches = false;
-		$open    = [];
-		$always  = false;
-		foreach ( $groups as $andGroup ) {
-			$matches = $matches || ConditionEvaluator::matches( $andGroup['results'], ConditionEvaluator::MATCH_ALL );
-			if ( in_array( false, $andGroup['decided'] ?? [], true ) ) {
-				// Never matches, whatever the date.
-				continue;
-			}
-			if ( $andGroup['today'] === [] ) {
-				$always = true;
-				continue;
-			}
-			$open[] = $andGroup['today'];
-		}
-
-		return [
-			'matches'   => $matches,
-			// Only when today can still change the outcome.
-			'client'    => ! $always && $open !== [] ? [ 'offset' => (int) round( wp_timezone()->getOffset( new \DateTimeImmutable( 'now' ) ) / 60 ), 'groups' => $open ] : null,
-			'missing'   => array_values( array_unique( $missing ) ),
-			'changed'   => $changed,
-			'ruleCount' => $ruleCount,
-		];
-	}
-
-	/**
-	 * The operator a rule uses for its property's kind: the one chosen in that
-	 * kind's list, else the kind's default ($fallback then says so: the list
-	 * had something that does not fit, or nothing while other kinds' lists
-	 * had a choice, e.g. after the property's type changed).
-	 *
-	 * @param array<string, mixed> $rule
-	 */
-	private static function operatorFor( array $rule, string $kind, bool &$fallback ): string {
-		$chosen   = (string) ( $rule[ 'op_' . $kind ] ?? '' );
-		$fallback = false;
-		if ( isset( ConditionEvaluator::operatorsFor( $kind )[ $chosen ] ) ) {
-			return $chosen;
-		}
-		if ( $chosen !== '' ) {
-			$fallback = true;
-		} else {
-			foreach ( ConditionEvaluator::kinds() as $other ) {
-				if ( ! empty( $rule[ 'op_' . $other ] ) ) {
-					$fallback = true;
-					break;
-				}
-			}
-		}
-
-		return ConditionEvaluator::defaultOperator( $kind );
-	}
-
-	/**
-	 * The HTML of "Then" ($prefix '') or "Else" ('else_').
-	 *
-	 * @param array<string, mixed>      $settings
-	 * @param array<string, mixed>|null $context
-	 */
-	private function output( array $settings, string $prefix, ?array $context ): string {
-		$source = (string) ( $settings[ $prefix . 'source' ] ?? ( $prefix === '' ? 'property' : 'none' ) );
-
-		if ( $source === 'text' ) {
-			$text = (string) ( $settings[ $prefix . 'text' ] ?? '' );
-			if ( $context !== null && strpos( $text, '@code_' ) !== false ) {
-				// Generated pages had their tokens replaced already; this is the editor's preview.
-				$templateId = (int) $context['template_id'];
-				$text       = PageBuilder::applyGroupPlaceholderTokensToMarkup( $text, (array) $context['group'], $templateId, (int) wp_get_post_parent_id( $templateId ), $templateId );
-			}
-
-			return trim( $text ) === '' ? '' : $this->parse_text_editor( $text );
-		}
-		if ( $source === 'template' ) {
-			return self::renderTemplate( (int) ( $settings[ $prefix . 'template' ] ?? 0 ) );
-		}
-		$property = (string) ( $settings[ $prefix . 'property' ] ?? '' );
-		if ( $source !== 'property' || $property === '' || $context === null ) {
-			return '';
-		}
-		$field = PageFieldResolver::getFieldByCode( (array) $context['group'], $property );
-		if ( $field === null ) {
-			return '';
-		}
-		if ( ConditionEvaluator::kindOf( $field['type'] ) === ConditionEvaluator::KIND_LIST ) {
-			$display = in_array( $settings['list_display'] ?? 'lines', self::LIST_DISPLAYS, true ) ? (string) $settings['list_display'] : 'lines';
-			return self::listHtml( $field['value'], $display );
-		}
-
-		return (string) PropertyBindingSource::format( $field['value'], $field['type'], 'content' );
 	}
 
 	/**
@@ -720,34 +504,16 @@ final class ConditionalWidget extends Widget_Base {
 	}
 
 	/**
-	 * In the editor only, for the panel: whether the preview group matches,
-	 * and rules that cannot be checked.
+	 * The editor note (ConditionalNotes, plus a template that needs Elementor
+	 * Pro), hidden in the canvas: editorScript() shows it at the top of the
+	 * Content tab.
 	 *
 	 * @param array<string, mixed>      $decision
 	 * @param array<string, mixed>|null $context
 	 * @param array<string, mixed>      $settings
 	 */
 	private function renderEditorNote( array $decision, ?array $context, array $settings ): void {
-		if ( $context === null ) {
-			$notes = [ __( 'This template has no groups yet, so the rules cannot be checked.', 'rowsprout' ) ];
-		} elseif ( $decision['ruleCount'] === 0 ) {
-			$notes = [ __( 'No rule has a property yet: "Else" is shown.', 'rowsprout' ) ];
-		} elseif ( $decision['matches'] ) {
-			$notes = [ __( 'Preview group: the rules match, so "Then" is shown.', 'rowsprout' ) ];
-		} else {
-			$notes = [ ( $settings['else_source'] ?? 'none' ) === 'none' ? __( 'Preview group: the rules do not match, and "Else" shows nothing.', 'rowsprout' ) : __( 'Preview group: the rules do not match, so "Else" is shown.', 'rowsprout' ) ];
-		}
-		if ( $decision['client'] !== null ) {
-			$notes[] = __( 'A rule depends on today: the page checks it again when it is shown.', 'rowsprout' );
-		}
-		if ( $decision['missing'] !== [] && $context !== null ) {
-			/* translators: %s: comma-separated property codes. */
-			$notes[] = sprintf( __( 'Not in this template (these rules never match): %s', 'rowsprout' ), implode( ', ', $decision['missing'] ) );
-		}
-		foreach ( $decision['changed'] as $index ) {
-			/* translators: %d: rule number. */
-			$notes[] = sprintf( __( 'Rule %d: the operator does not fit the property\'s type (changed?), so "is not empty" / "is checked" is used. Choose the operator again.', 'rowsprout' ), (int) $index + 1 );
-		}
+		$notes = ConditionalNotes::messages( $decision, $context, $settings );
 		foreach ( [ '' => __( 'Then', 'rowsprout' ), 'else_' => __( 'Else', 'rowsprout' ) ] as $prefix => $label ) {
 			if ( ( $settings[ $prefix . 'source' ] ?? '' ) === 'template' && ! self::templatesAvailable() ) {
 				/* translators: %s: "Then" or "Else". */
@@ -755,30 +521,11 @@ final class ConditionalWidget extends Widget_Base {
 			}
 		}
 
-		// Not in the canvas: editorScript() shows it at the top of the Content tab.
 		echo '<div class="rowsprout-conditional-note" hidden>';
 		foreach ( $notes as $note ) {
 			echo '<div>' . esc_html( $note ) . '</div>';
 		}
 		echo '</div>';
-	}
-
-	/**
-	 * The current template's property codes by the kind their type compares
-	 * as (only the kinds the template has).
-	 *
-	 * @return array<string, array<int, string>>
-	 */
-	private static function codesByKind(): array {
-		$byKind = [];
-		foreach ( (array) ( TemplateMeta::get( PageFieldResolver::resolveCurrentTemplateId() )['field_types'] ?? [] ) as $definition ) {
-			$code = is_array( $definition ) ? (string) ( $definition['code'] ?? '' ) : '';
-			if ( $code !== '' ) {
-				$byKind[ ConditionEvaluator::kindOf( (string) ( $definition['type'] ?? '' ) ) ][] = $code;
-			}
-		}
-
-		return $byKind;
 	}
 
 	/**

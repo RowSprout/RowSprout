@@ -1,5 +1,6 @@
 /**
- * The "If / then" widget's rules that depend on today (ConditionalWidget):
+ * Conditional content's rules that depend on today (Core\Conditions\ConditionalOutput, used
+ * by the "If / then" widget):
  * the server put "Then" and "Else" in the page and decided every other
  * rule; this picks again with today's date in the site's time zone, so a
  * cached page does not keep a stale outcome.
