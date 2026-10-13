@@ -96,10 +96,11 @@ final class ConditionalWidget extends Widget_Base {
 		}
 		$templates = self::templatesAvailable() ? self::templateOptions() : [];
 
+		// One section (Elementor needs one), with headings for If / Then / Otherwise.
 		$this->start_controls_section(
 			'section_if',
 			[
-				'label' => __( 'If … then', 'rowsprout' ),
+				'label' => __( 'If / then', 'rowsprout' ),
 				'tab'   => Controls_Manager::TAB_CONTENT,
 			]
 		);
@@ -116,18 +117,19 @@ final class ConditionalWidget extends Widget_Base {
 		$repeater->add_control(
 			'join',
 			[
-				'label'       => __( 'Joined with the rule above', 'rowsprout' ),
+				'label'       => __( 'And / or', 'rowsprout' ),
 				'type'        => Controls_Manager::SELECT,
 				'options'     => [
 					self::JOIN_AND => __( 'and', 'rowsprout' ),
 					self::JOIN_OR  => __( 'or', 'rowsprout' ),
 				],
 				'default'     => self::JOIN_AND,
-				'description' => __( 'Not used for the first rule.', 'rowsprout' ),
+				// Hidden for the first rule by editorStyles().
+				'classes'     => 'rowsprout-conditional-join',
 			]
 		);
 		$repeater->add_control(
-			'field',
+			'rule_property',
 			[
 				'label'   => __( 'Property', 'rowsprout' ),
 				'type'    => Controls_Manager::SELECT,
@@ -148,7 +150,7 @@ final class ConditionalWidget extends Widget_Base {
 					'type'      => Controls_Manager::SELECT,
 					'options'   => ConditionEvaluator::operatorsFor( $kind ),
 					'default'   => ConditionEvaluator::defaultOperator( $kind ),
-					'condition' => [ 'field' => $codes ],
+					'condition' => [ 'rule_property' => $codes ],
 				]
 			);
 			$takesValue = array_values( array_filter( array_keys( ConditionEvaluator::operatorsFor( $kind ) ), static function ( string $operator ): bool {
@@ -187,20 +189,27 @@ final class ConditionalWidget extends Widget_Base {
 				'fields'      => $repeater->get_controls(),
 				'default'     => [ [ 'join' => self::JOIN_AND ] ],
 				// The property's label, and "· or" for a rule joined with "or".
-				'title_field' => '<# var rsLabels = ' . wp_json_encode( array_diff_key( $properties, [ '' => true ] ) ) . '; #>{{ ( rsLabels[ field ] || field || ' . wp_json_encode( __( '(no property)', 'rowsprout' ) ) . ' ) + ( join === ' . wp_json_encode( self::JOIN_OR ) . ' ? ' . wp_json_encode( ' · ' . __( 'or', 'rowsprout' ) ) . ' : "" ) }}',
+				'title_field' => '<# var rsLabels = ' . wp_json_encode( array_diff_key( $properties, [ '' => true ] ) ) . '; #>{{ ( rsLabels[ rule_property ] || rule_property || ' . wp_json_encode( __( '(no property)', 'rowsprout' ) ) . ' ) + ( join === ' . wp_json_encode( self::JOIN_OR ) . ' ? ' . wp_json_encode( ' · ' . __( 'or', 'rowsprout' ) ) . ' : "" ) }}',
 			]
 		);
-		$this->addOutputControls( '', __( 'Then show', 'rowsprout' ), $sources, 'property', $templates );
-		$this->end_controls_section();
-
-		$this->start_controls_section(
-			'section_otherwise',
+		$this->add_control(
+			'heading_then',
 			[
-				'label' => __( 'Otherwise', 'rowsprout' ),
-				'tab'   => Controls_Manager::TAB_CONTENT,
+				'label'     => __( 'Then', 'rowsprout' ),
+				'type'      => Controls_Manager::HEADING,
+				'separator' => 'before',
 			]
 		);
-		$this->addOutputControls( 'else_', __( 'Show', 'rowsprout' ), $sources + [ 'none' => __( 'Nothing', 'rowsprout' ) ], 'none', $templates );
+		$this->addOutputControls( '', $sources, 'property', $templates );
+		$this->add_control(
+			'heading_otherwise',
+			[
+				'label'     => __( 'Otherwise', 'rowsprout' ),
+				'type'      => Controls_Manager::HEADING,
+				'separator' => 'before',
+			]
+		);
+		$this->addOutputControls( 'else_', $sources + [ 'none' => __( 'Nothing', 'rowsprout' ) ], 'none', $templates );
 		$this->end_controls_section();
 
 		$this->start_controls_section(
@@ -256,20 +265,19 @@ final class ConditionalWidget extends Widget_Base {
 	}
 
 	/**
-	 * "Then show" / "Otherwise": the source and its property, text or template.
+	 * "Then" / "Otherwise": the source and its property, text or template.
 	 *
 	 * @param array<string, string> $sources
 	 * @param array<string, string> $templates
 	 */
-	private function addOutputControls( string $prefix, string $label, array $sources, string $default, array $templates ): void {
+	private function addOutputControls( string $prefix, array $sources, string $default, array $templates ): void {
 		$this->add_control(
 			$prefix . 'source',
 			[
-				'label'     => $label,
-				'type'      => Controls_Manager::SELECT,
-				'options'   => $sources,
-				'default'   => $default,
-				'separator' => 'before',
+				'label'   => __( 'Show', 'rowsprout' ),
+				'type'    => Controls_Manager::SELECT,
+				'options' => $sources,
+				'default' => $default,
 			]
 		);
 		$this->add_control(
@@ -355,7 +363,7 @@ final class ConditionalWidget extends Widget_Base {
 
 		foreach ( array_values( $rules ) as $index => $rule ) {
 			$rule = is_array( $rule ) ? $rule : [];
-			$code = (string) ( $rule['field'] ?? '' );
+			$code = (string) ( $rule['rule_property'] ?? '' );
 			if ( $code === '' ) {
 				continue;
 			}
@@ -564,7 +572,7 @@ final class ConditionalWidget extends Widget_Base {
 		return [
 			'relation' => 'and',
 			'terms'    => [
-				[ 'name' => 'field', 'operator' => 'in', 'value' => $codes ],
+				[ 'name' => 'rule_property', 'operator' => 'in', 'value' => $codes ],
 				[ 'name' => $control, 'operator' => 'in', 'value' => $operators ],
 			],
 		];
@@ -580,7 +588,7 @@ final class ConditionalWidget extends Widget_Base {
 		// Nothing can need it: a condition that never holds.
 		return [
 			'relation' => 'or',
-			'terms'    => $alternatives === [] ? [ [ 'name' => 'field', 'operator' => '===', 'value' => '__never__' ] ] : $alternatives,
+			'terms'    => $alternatives === [] ? [ [ 'name' => 'rule_property', 'operator' => '===', 'value' => '__never__' ] ] : $alternatives,
 		];
 	}
 
@@ -625,6 +633,14 @@ final class ConditionalWidget extends Widget_Base {
 		}
 
 		return $options;
+	}
+
+	/**
+	 * Editor CSS: no "And / or" for the first rule (a control cannot know its
+	 * row's position).
+	 */
+	public static function editorStyles(): void {
+		wp_add_inline_style( 'elementor-editor', '.elementor-control-rules .elementor-repeater-fields:first-child .rowsprout-conditional-join{display:none}' );
 	}
 
 	private static function isEditor(): bool {
