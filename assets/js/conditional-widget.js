@@ -1,6 +1,6 @@
 /**
  * The "If / then" widget's rules that depend on today (ConditionalWidget):
- * the server put "Then" and "Otherwise" in the page and decided every other
+ * the server put "Then" and "Else" in the page and decided every other
  * rule; this picks again with today's date in the site's time zone, so a
  * cached page does not keep a stale outcome.
  *
@@ -8,7 +8,7 @@
  * the property's day (Y-m-d), o: operator, n: days } ] ] }: the "or" groups
  * today can still decide, each with only its rules on today (its other rules
  * matched). "Then" (data-rs-case="then") when every rule of one group matches,
- * else "Otherwise" (data-rs-case="else").
+ * else "Else" (data-rs-case="else").
  */
 (function () {
 	'use strict';

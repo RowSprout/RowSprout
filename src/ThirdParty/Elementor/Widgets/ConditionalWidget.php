@@ -20,10 +20,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * "If / then": shows "Then" when the current page's property values match
- * the rules, else "Otherwise". Rules are a list, each joined to the one above
+ * the rules, else "Else". Rules are a list, each joined to the one above
  * with "and" or "or" ("and" binds first: A and B or C = (A and B) or C), each
  * with an operator list per kind of property, shown for the chosen
- * property's kind. "Then" and "Otherwise" show a property (formatted as the
+ * property's kind. "Then" and "Else" show a property (formatted as the
  * block bindings format it), own text with @code_…@ tokens (replaced when the
  * page is generated; in the editor for the preview group) or, with Elementor
  * Pro active, a saved Elementor template.
@@ -100,7 +100,7 @@ final class ConditionalWidget extends Widget_Base {
 		}
 		$templates = self::templatesAvailable() ? self::templateOptions() : [];
 
-		// One section (Elementor needs one), with headings for If / Then / Otherwise.
+		// One section (Elementor needs one), with headings for If / Then / Else.
 		$this->start_controls_section(
 			'section_if',
 			[
@@ -216,7 +216,7 @@ final class ConditionalWidget extends Widget_Base {
 		$this->add_control(
 			'heading_otherwise',
 			[
-				'label'     => __( 'Otherwise', 'rowsprout' ),
+				'label'     => __( 'Else', 'rowsprout' ),
 				'type'      => Controls_Manager::HEADING,
 				'separator' => 'before',
 			]
@@ -373,7 +373,7 @@ final class ConditionalWidget extends Widget_Base {
 		$this->start_controls_section(
 			'section_style_otherwise',
 			[
-				'label' => __( 'Otherwise', 'rowsprout' ),
+				'label' => __( 'Else', 'rowsprout' ),
 				'tab'   => Controls_Manager::TAB_STYLE,
 			]
 		);
@@ -381,7 +381,7 @@ final class ConditionalWidget extends Widget_Base {
 			'otherwise_note',
 			[
 				'type'            => Controls_Manager::RAW_HTML,
-				'raw'             => esc_html__( 'Only when "Otherwise" is shown; what you leave empty follows "Text".', 'rowsprout' ),
+				'raw'             => esc_html__( 'Only when "Else" is shown; what you leave empty follows "Text".', 'rowsprout' ),
 				'content_classes' => 'elementor-descriptor',
 			]
 		);
@@ -427,7 +427,7 @@ final class ConditionalWidget extends Widget_Base {
 	}
 
 	/**
-	 * "Then" / "Otherwise": the source and its property, text or template.
+	 * "Then" / "Else": the source and its property, text or template.
 	 *
 	 * @param array<string, string> $sources
 	 * @param array<string, string> $templates
@@ -658,7 +658,7 @@ final class ConditionalWidget extends Widget_Base {
 	}
 
 	/**
-	 * The HTML of "Then" ($prefix '') or "Otherwise" ('else_').
+	 * The HTML of "Then" ($prefix '') or "Else" ('else_').
 	 *
 	 * @param array<string, mixed>      $settings
 	 * @param array<string, mixed>|null $context
@@ -725,11 +725,11 @@ final class ConditionalWidget extends Widget_Base {
 		if ( $context === null ) {
 			$notes = [ __( 'This template has no groups yet, so the rules cannot be checked.', 'rowsprout' ) ];
 		} elseif ( $decision['ruleCount'] === 0 ) {
-			$notes = [ __( 'No rule has a property yet: "Otherwise" is shown.', 'rowsprout' ) ];
+			$notes = [ __( 'No rule has a property yet: "Else" is shown.', 'rowsprout' ) ];
 		} elseif ( $decision['matches'] ) {
 			$notes = [ __( 'Preview group: the rules match, so "Then" is shown.', 'rowsprout' ) ];
 		} else {
-			$notes = [ ( $settings['else_source'] ?? 'none' ) === 'none' ? __( 'Preview group: the rules do not match, and "Otherwise" shows nothing.', 'rowsprout' ) : __( 'Preview group: the rules do not match, so "Otherwise" is shown.', 'rowsprout' ) ];
+			$notes = [ ( $settings['else_source'] ?? 'none' ) === 'none' ? __( 'Preview group: the rules do not match, and "Else" shows nothing.', 'rowsprout' ) : __( 'Preview group: the rules do not match, so "Else" is shown.', 'rowsprout' ) ];
 		}
 		if ( $decision['client'] !== null ) {
 			$notes[] = __( 'A rule depends on today: the page checks it again when it is shown.', 'rowsprout' );
@@ -742,9 +742,9 @@ final class ConditionalWidget extends Widget_Base {
 			/* translators: %d: rule number. */
 			$notes[] = sprintf( __( 'Rule %d: the operator does not fit the property\'s type (changed?), so "is not empty" / "is checked" is used. Choose the operator again.', 'rowsprout' ), (int) $index + 1 );
 		}
-		foreach ( [ '' => __( 'Then', 'rowsprout' ), 'else_' => __( 'Otherwise', 'rowsprout' ) ] as $prefix => $label ) {
+		foreach ( [ '' => __( 'Then', 'rowsprout' ), 'else_' => __( 'Else', 'rowsprout' ) ] as $prefix => $label ) {
 			if ( ( $settings[ $prefix . 'source' ] ?? '' ) === 'template' && ! self::templatesAvailable() ) {
-				/* translators: %s: "Then" or "Otherwise". */
+				/* translators: %s: "Then" or "Else". */
 				$notes[] = sprintf( __( '%s shows an Elementor template, which needs Elementor Pro: nothing is shown.', 'rowsprout' ), $label );
 			}
 		}
