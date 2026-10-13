@@ -65,6 +65,7 @@ final class Plugin
         PropertyBindingSource::register();
         \RowSprout\Core\Conditions\ConditionalOutput::register();
         BlockRegistry::register();
+        \RowSprout\Blocks\ConditionalBlock::register();
         PageEditNotice::register();
         ChildTemplateAdminUx::register();
         TemplateStatusColumn::register();
