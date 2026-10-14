@@ -29,6 +29,14 @@ final class UpgradeMenu {
 				],
 			],
 			[
+				'title' => __( 'Groups from other sources', 'rowsprout' ),
+				'items' => [
+					__( 'Scheduled sync: keep a template\'s groups up to date with a Google sheet, a CSV or Excel file at a URL, or a JSON feed, every hour, day or week. New and changed pages are generated automatically.', 'rowsprout' ),
+					__( 'JSON feeds and REST APIs as an import source, with a request header for an API key.', 'rowsprout' ),
+					__( 'A Syncs screen with a log of every run, safeguards against a broken source, and an email when a sync starts failing.', 'rowsprout' ),
+				],
+			],
+			[
 				'title' => __( 'Multiple languages', 'rowsprout' ),
 				'items' => [
 					__( 'WPML: translate a template once and all of its pages are generated in that language.', 'rowsprout' ),
@@ -39,6 +47,7 @@ final class UpgradeMenu {
 				'title' => __( 'More field types and elements', 'rowsprout' ),
 				'items' => [
 					__( 'Extra field types: Checkbox, Date, Date and time, Item list, Icon, Phone, Rich text, Thumbnail, Select, Color and File.', 'rowsprout' ),
+					__( 'If / then rules on dates (such as "is in the future"), checkboxes and item lists.', 'rowsprout' ),
 					__( 'Elementor: Date, Item List, Thumbnail and Sibling Links widgets, plus RowSprout Page Field and Page Link dynamic tags.', 'rowsprout' ),
 					__( 'Block editor: an Item List block.', 'rowsprout' ),
 					__( 'WPBakery: an Item List element.', 'rowsprout' ),
@@ -47,7 +56,7 @@ final class UpgradeMenu {
 			[
 				'title' => __( 'Automation', 'rowsprout' ),
 				'items' => [
-					__( 'An MCP server and WP-CLI commands to manage templates and pages from scripts or AI agents.', 'rowsprout' ),
+					__( 'An MCP server and WP-CLI commands to manage templates, pages, group imports and syncs from scripts or AI agents.', 'rowsprout' ),
 					__( 'Import that updates templates already on the site (for example from staging to live) and downloads missing images.', 'rowsprout' ),
 					__( 'Export only the properties and groups you choose.', 'rowsprout' ),
 				],

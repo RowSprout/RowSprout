@@ -163,6 +163,7 @@ final class GroupsMetaBoxAssets {
 			'post_status'      => 'any',
 			'posts_per_page'   => -1,
 			'fields'           => 'ids',
+			// phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.SuppressFilters_suppress_filters -- every language: a child template in another WPML language has groups for these rows too.
 			'suppress_filters' => true,
 		] );
 

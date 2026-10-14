@@ -4,7 +4,7 @@ Tags: programmatic seo, bulk pages, page generator, landing pages, local seo
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 3.2
+Stable tag: 3.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,7 +24,7 @@ A plumbing company works in 30 towns. With RowSprout it designs one "Plumber in 
 
 1. **Build a template.** Design the page once in the block editor, Elementor or WPBakery Page Builder, like any other page.
 2. **Define its properties.** These are the fields every page will have: a title, a URL, a piece of text, a link, an email address and so on. Place them in your design with a widget, a block or a placeholder.
-3. **Add your data.** Every row (a "group") is one page. Type the values in the table right below the editor.
+3. **Add your data.** Every row (a "group") is one page. Type the values in the table right below the editor, or import them from a spreadsheet.
 4. **Save.** RowSprout generates the pages in the background. They are real WordPress pages with their own URL, title, content and featured image.
 
 = Features =
@@ -37,17 +37,18 @@ A plumbing company works in 30 towns. With RowSprout it designs one "Plumber in 
 * **Background generation.** Pages are created in a queue (Action Scheduler), so saving a template with hundreds of rows never slows down your admin.
 * **Placeholders anywhere.** Use a property in the page title, the URL, the content or a link, and it is replaced per page.
 * **Field types:** Title, URL slug, Text, Textarea, URL, Email and Number.
-* **Import and export.** Download templates with their properties, rows and design as a file and add them to another site, for example from a staging site to the live one.
-* **Groups from a spreadsheet.** Download a template's groups as a CSV file, edit them in Excel or Google Sheets, and import the file (or a URL, such as a Google Sheets link) again: a step-by-step import updates the groups it recognises, adds the others, can delete the groups that are not in the file, and can add new properties for new columns.
+* **Import and export.** Download templates with their properties, rows and design as a file and add them to another site, for example from a staging site to the live one. Before importing, you see what the file adds and changes.
+* **Groups from a spreadsheet.** Download a template's groups as a CSV file, edit them in Excel or Google Sheets, and import them again: from a CSV or Excel (.xlsx) file, a URL or a shared Google sheet (with a choice of tab). A step-by-step import shows what it will do first, updates the groups it recognises, adds the others, can delete the groups that are not in the file, can add new properties for new columns, and remembers your column choices for next time.
+* **Content per row with "If / then".** Show one part of the design when a page's values match your rules (*if the price is above 100*, *if the date is in the future*, *if the type is "hotel"*), and another part, or nothing, when they don't. Rules can be combined with and/or, and the operators follow the property's type. Rules about today's date stay right on cached pages.
 * **Grid of pages.** Show all pages of a template as a list or as cards on any page, for example an overview of every town you serve.
 * **Child templates.** Give a template a parent template and it reuses the parent's rows: its pages inherit the title, URL and fields of the matching row, for example a "Roof repair in [town]" page for every town that has a "Roofer in [town]" page. Templates nest one level deep.
 * **As many templates as you need**, managed from the Templates screen.
 
 = Works with the editor you already use =
 
-* **Block editor:** bind a Paragraph, Heading, List item, Button or Image block to a property with Block Bindings, insert placeholders from the text toolbar, and use the Grid block.
-* **Elementor:** Heading, Textarea, Button and Grid widgets, an "Insert RowSprout property" button in the Text Editor, and a "RowSprout template" tab to manage properties and rows without leaving Elementor.
-* **WPBakery Page Builder** (including builds bundled with themes): a Grid element and the same insert button in its text editors.
+* **Block editor:** bind a Paragraph, Heading, List item, Button or Image block to a property with Block Bindings, insert placeholders from the text toolbar, and use the Grid and If / then blocks.
+* **Elementor:** Heading, Textarea, Button, Grid and If / then widgets, an "Insert RowSprout property" button in the Text Editor, and a "RowSprout template" tab to manage properties and rows without leaving Elementor. With Elementor Pro, If / then can show a saved Elementor template.
+* **WPBakery Page Builder:** Grid and If / then elements, and the same insert button in its text editors.
 
 = Integrations =
 
@@ -61,6 +62,7 @@ A plumbing company works in 30 towns. With RowSprout it designs one "Plumber in 
 
 * **Smart Generate:** a save only regenerates the pages affected by what you changed, instead of every page of the template.
 * **Planning:** choose per row when its page is published.
+* **Scheduled sync:** keep a template's groups in sync with a Google sheet, a CSV or Excel file at a URL, or a JSON feed or REST API (with a request header for an API key), every hour, day or week. New and changed pages are generated automatically; a Syncs screen with a log shows every run, with safeguards against a broken source and an email when a sync starts failing.
 * **WPML:** translate a template once and all of its pages are generated in that language.
 * **Extra field types:** Checkbox, Date, Date and time, Item list, Icon, Thumbnail, Select, Rich text, Color, Phone and File.
 * **Extra Elementor elements:** Date, Item List, Thumbnail and Sibling Links widgets, plus RowSprout Page Field and Page Link dynamic tags.
@@ -68,11 +70,19 @@ A plumbing company works in 30 towns. With RowSprout it designs one "Plumber in 
 * **Extra WPBakery element:** an Item List element.
 * **Status overview** on the Templates screen: a live-updating status bar per template, a per-row overview of every page, and generating all pages of a template in one click.
 * **Throttling** of batch size and processing hours on busy sites.
-* **WP-CLI and MCP commands** to manage templates and pages from scripts or AI agents.
+* **WP-CLI and MCP commands** to manage templates, pages, group imports and syncs from scripts or AI agents.
+* **Template import that updates:** move changes from a staging site to the live site, with translations, images and a choice of what to export.
 
 = Privacy =
 
-The free plugin does not connect to any external service, does not track you and does not load anything from outside your site.
+The free plugin does not track you, does not load anything from outside your site and sends nothing anywhere on its own. The only outside requests it makes are the ones you ask for when you import groups from a URL (see External services below).
+
+= External services =
+
+When you import a template's groups from a URL, RowSprout fetches that URL from your server, when you click Fetch or Next in the import wizard. Nothing else is sent: no data about your site, its users or the groups goes along with the request, apart from the usual HTTP headers WordPress sends (such as its user agent with your site's address).
+
+* **A URL you enter** (a CSV, text or Excel file on any server): the request goes to the server that URL points to, under that site's own terms and privacy policy.
+* **A Google Sheets link:** RowSprout fetches the sheet's CSV export, and for a sheet with several tabs its list of tabs, from Google (docs.google.com). This only works for a sheet shared with "Anyone with the link". Google's [Terms of Service](https://policies.google.com/terms) and [Privacy Policy](https://policies.google.com/privacy) apply.
 
 = Development =
 
@@ -127,7 +137,15 @@ No. Pages are generated in the background, and visitors get normal WordPress pag
 
 = Does this plugin connect to external services? =
 
-No. The free plugin works entirely on your own site. RowSprout Pro, a separate plugin, contacts RowSprout's license server to activate a license.
+Only when you ask it to: importing groups from a URL or a Google Sheets link fetches that file (see External services). Otherwise the free plugin works entirely on your own site. RowSprout Pro, a separate plugin, contacts RowSprout's license server to activate a license and check for updates.
+
+= Can I import my rows from Excel or Google Sheets? =
+
+Yes. On a template's General tab, click "Import groups…" and choose a CSV or Excel (.xlsx) file, a URL, or the link of a Google sheet shared with "Anyone with the link". The wizard shows a preview, lets you choose which column fills which property (or a new one), and tells you what it will add, update or delete before it saves anything. RowSprout Pro can repeat such an import from a URL on a schedule.
+
+= Can a page show different content depending on its row? =
+
+Yes, in the block editor, Elementor and WPBakery. Add "If / then", set rules on the page's properties, such as "Price is greater than 100" or "Date is in the future", and choose what to show when they match (Then) and when they don't (Else).
 
 == Screenshots ==
 
@@ -138,6 +156,22 @@ No. The free plugin works entirely on your own site. RowSprout Pro, a separate p
 5. A generated page: a real WordPress page with its own URL, title and content.
 
 == Changelog ==
+
+= 3.3 =
+* New: import and export a template's groups. On the General tab, download the groups as CSV (four formats, for Excel in any language and for scripts), edit them in a spreadsheet and import them again. The import wizard reads CSV and text files, Excel workbooks (.xlsx, with a choice of worksheet), any URL and shared Google sheets (with a choice of tab). It shows a preview, lets you choose the delimiters, which column fills which property or a new property, and the character encoding and start row under "Advanced options", and tells you what it will add, update, leave alone or delete before saving. Column choices are remembered per template. Values a spreadsheet app changed (such as dropped leading zeros) keep their stored value.
+* New: "If / then", for the block editor (a block with Then and Else areas), Elementor (a widget with style settings, which can also show an Elementor Pro template) and WPBakery (an element with Then and Else containers). Show content when a page's values match your rules, joined with and/or, with operators that follow the property's type; rules about today's date stay right on cached pages.
+* New: Yoast SEO, SEOPress and The SEO Framework. Generated pages get the template's SEO settings with each page's own values, and templates are kept out of these plugins' sitemaps and set to noindex.
+* New: importing templates first shows what the file adds and changes: per template a new draft or an update, and the properties and groups that are new, changed or removed, plus a missing parent template and duplicate URLs.
+* New: hooks for add-ons in the group import (other file formats, the request for a URL, extra fields in the wizard, after an import), for an add-on's settings in the settings form, and for the comparison of If / then rules. See the hook reference on docs.rowsprout.com.
+* Change: a group without a title gets no page; the Groups tab and the save notice say which groups wait for one. An empty URL/slug follows from the title.
+* Change: removing a group of a parent template also removes the groups its child templates have for it, with their pages.
+* Change: a child template's Groups tab no longer offers "Add group" or drag handles, as its groups come from the parent template.
+* Change: RowSprout → Settings has one Save Changes button for all its settings.
+* Fix: saving a template with many groups could cut the form off at PHP's max_input_vars and lose the groups past the limit. The form is now sent as one field, and a cut-off form is never stored.
+* Fix: removing a group no longer removes the rows that a child template or a WPML translation has under the same group ID.
+* Fix: an empty new group card is no longer marked as missing a title.
+* Fix: the Grid block's editor texts are translated, and four admin texts were worded more clearly.
+* Fix: the sample data no longer sets a page template of its own, so its pages use the theme's page template.
 
 = 3.2 =
 * New: RowSprout → Import / Export. Download templates (with their properties, groups and page-builder layout) as a file and import them on another site as drafts. The Templates list gets an Export action too.
@@ -152,6 +186,9 @@ No. The free plugin works entirely on your own site. RowSprout Pro, a separate p
 * Initial public release.
 
 == Upgrade Notice ==
+
+= 3.3 =
+Fixes lost groups when saving templates with many groups. Also: import groups from CSV, Excel, a URL or Google Sheets, "If / then" content per row, and Yoast SEO, SEOPress and The SEO Framework.
 
 = 3.2 =
 Import and export templates between sites, sample data to try RowSprout with, no more pages at a URL that is already in use, and fixes for block themes and bulk actions.
