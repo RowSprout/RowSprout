@@ -43,6 +43,7 @@ final class XlsxReader {
 	 */
 	public static function read( string $bytes, string $sheet = '' ): array {
 		if ( ! class_exists( '\ZipArchive' ) || ! class_exists( '\XMLReader' ) ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- not output: GroupCsvSource::convert() catches it and returns the message as an error, which the wizard shows as text.
 			throw new \RuntimeException( __( 'This server cannot read Excel files (PHP\'s zip extension is missing). Save the file as CSV instead.', 'rowsprout' ) );
 		}
 		$path = (string) tempnam( get_temp_dir(), 'rsxlsx' );
@@ -234,6 +235,7 @@ final class XlsxReader {
 	private static function sheetRows( \ZipArchive $zip, string $file, array $strings, array $formats, bool $date1904 ): array {
 		$xml = $zip->getFromName( $file );
 		if ( ! is_string( $xml ) ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- not output: GroupCsvSource::convert() catches it and returns the message as an error, which the wizard shows as text.
 			throw new \RuntimeException( __( 'This Excel file could not be read: a worksheet is missing.', 'rowsprout' ) );
 		}
 		$reader  = self::reader( $xml );
@@ -384,6 +386,7 @@ final class XlsxReader {
 	private static function xml( \ZipArchive $zip, string $name ): \SimpleXMLElement {
 		$raw = $zip->getFromName( $name );
 		if ( ! is_string( $raw ) || $raw === '' ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- not output: GroupCsvSource::convert() catches it and returns the message as an error, which the wizard shows as text.
 			throw new \RuntimeException( __( 'This is not an Excel workbook (.xlsx). Save it in Excel as .xlsx or as CSV.', 'rowsprout' ) );
 		}
 
@@ -395,6 +398,7 @@ final class XlsxReader {
 		$parsed   = simplexml_load_string( $xml, \SimpleXMLElement::class, LIBXML_NONET );
 		libxml_use_internal_errors( $previous );
 		if ( ! $parsed instanceof \SimpleXMLElement ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- not output: GroupCsvSource::convert() catches it and returns the message as an error, which the wizard shows as text.
 			throw new \RuntimeException( __( 'This Excel file could not be read: it is damaged.', 'rowsprout' ) );
 		}
 

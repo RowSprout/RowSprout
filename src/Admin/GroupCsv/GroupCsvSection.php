@@ -743,6 +743,7 @@ final class GroupCsvSection {
 			wp_send_json_error( [ 'errors' => [ __( 'You are not allowed to import groups into this template.', 'rowsprout' ) ] ], 403 );
 		}
 
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized by esc_url_raw(); trimmed first, so a pasted URL with a trailing space still works.
 		$url = isset( $_POST['url'] ) ? esc_url_raw( trim( (string) wp_unslash( $_POST['url'] ) ), [ 'http', 'https' ] ) : '';
 		if ( $url === '' ) {
 			wp_send_json_error( [ 'errors' => [ __( 'Enter a URL that starts with http:// or https://.', 'rowsprout' ) ] ] );
