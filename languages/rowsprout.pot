@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-13T18:29:29+00:00\n"
+"POT-Creation-Date: 2026-10-14T06:31:07+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: rowsprout\n"
@@ -1038,7 +1038,7 @@ msgstr ""
 
 #: src/Admin/MenuRegistrar.php:67
 #: src/Admin/MenuRegistrar.php:68
-#: src/Admin/UpgradeMenu.php:58
+#: src/Admin/UpgradeMenu.php:67
 msgid "RowSprout Pro"
 msgstr ""
 
@@ -1583,66 +1583,86 @@ msgid "Throttling: limit the batch size and the hours in which pages are process
 msgstr ""
 
 #: src/Admin/UpgradeMenu.php:32
-msgid "Multiple languages"
+msgid "Groups from other sources"
 msgstr ""
 
 #: src/Admin/UpgradeMenu.php:34
-msgid "WPML: translate a template once and all of its pages are generated in that language."
+msgid "Scheduled sync: keep a template's groups up to date with a Google sheet, a CSV or Excel file at a URL, or a JSON feed, every hour, day or week. New and changed pages are generated automatically."
 msgstr ""
 
 #: src/Admin/UpgradeMenu.php:35
-msgid "Import and export keep a template's language versions together and link them again on the other site."
+msgid "JSON feeds and REST APIs as an import source, with a request header for an API key."
 msgstr ""
 
-#: src/Admin/UpgradeMenu.php:39
-msgid "More field types and elements"
+#: src/Admin/UpgradeMenu.php:36
+msgid "A Syncs screen with a log of every run, safeguards against a broken source, and an email when a sync starts failing."
 msgstr ""
 
-#: src/Admin/UpgradeMenu.php:41
-msgid "Extra field types: Checkbox, Date, Date and time, Item list, Icon, Phone, Rich text, Thumbnail, Select, Color and File."
+#: src/Admin/UpgradeMenu.php:40
+msgid "Multiple languages"
 msgstr ""
 
 #: src/Admin/UpgradeMenu.php:42
-msgid "Elementor: Date, Item List, Thumbnail and Sibling Links widgets, plus RowSprout Page Field and Page Link dynamic tags."
+msgid "WPML: translate a template once and all of its pages are generated in that language."
 msgstr ""
 
 #: src/Admin/UpgradeMenu.php:43
-msgid "Block editor: an Item List block."
+msgid "Import and export keep a template's language versions together and link them again on the other site."
 msgstr ""
 
-#: src/Admin/UpgradeMenu.php:44
-msgid "WPBakery: an Item List element."
+#: src/Admin/UpgradeMenu.php:47
+msgid "More field types and elements"
 msgstr ""
 
-#: src/Admin/UpgradeMenu.php:48
-msgid "Automation"
+#: src/Admin/UpgradeMenu.php:49
+msgid "Extra field types: Checkbox, Date, Date and time, Item list, Icon, Phone, Rich text, Thumbnail, Select, Color and File."
 msgstr ""
 
 #: src/Admin/UpgradeMenu.php:50
-msgid "An MCP server and WP-CLI commands to manage templates and pages from scripts or AI agents."
+msgid "If / then rules on dates (such as \"is in the future\"), checkboxes and item lists."
 msgstr ""
 
 #: src/Admin/UpgradeMenu.php:51
-msgid "Import that updates templates already on the site (for example from staging to live) and downloads missing images."
+msgid "Elementor: Date, Item List, Thumbnail and Sibling Links widgets, plus RowSprout Page Field and Page Link dynamic tags."
 msgstr ""
 
 #: src/Admin/UpgradeMenu.php:52
+msgid "Block editor: an Item List block."
+msgstr ""
+
+#: src/Admin/UpgradeMenu.php:53
+msgid "WPBakery: an Item List element."
+msgstr ""
+
+#: src/Admin/UpgradeMenu.php:57
+msgid "Automation"
+msgstr ""
+
+#: src/Admin/UpgradeMenu.php:59
+msgid "An MCP server and WP-CLI commands to manage templates, pages, group imports and syncs from scripts or AI agents."
+msgstr ""
+
+#: src/Admin/UpgradeMenu.php:60
+msgid "Import that updates templates already on the site (for example from staging to live) and downloads missing images."
+msgstr ""
+
+#: src/Admin/UpgradeMenu.php:61
 msgid "Export only the properties and groups you choose."
 msgstr ""
 
-#: src/Admin/UpgradeMenu.php:62
+#: src/Admin/UpgradeMenu.php:71
 msgid "RowSprout works fully on its own: there are no limits on templates, groups or pages, and nothing in this plugin requires Pro."
 msgstr ""
 
-#: src/Admin/UpgradeMenu.php:65
+#: src/Admin/UpgradeMenu.php:74
 msgid "RowSprout Pro is a separate add-on, not distributed through WordPress.org and adds:"
 msgstr ""
 
-#: src/Admin/UpgradeMenu.php:79
+#: src/Admin/UpgradeMenu.php:88
 msgid "Learn more on rowsprout.com"
 msgstr ""
 
-#: src/Admin/UpgradeMenu.php:80
+#: src/Admin/UpgradeMenu.php:89
 msgid "(opens in a new tab)"
 msgstr ""
 
@@ -1696,10 +1716,6 @@ msgstr ""
 #: assets/js/conditional-block.js:186
 #: assets/js/conditional-block.js:258
 msgid "Else"
-msgstr ""
-
-#: src/Core/Blueprint/RowSproutPageBlueprint.php:63
-msgid "RowSprout page"
 msgstr ""
 
 #: src/Core/Conditions/ConditionalNotes.php:25
