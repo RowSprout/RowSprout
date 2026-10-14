@@ -145,7 +145,7 @@ Yes. On a template's General tab, click "Import groups…" and choose a CSV or E
 
 = Can a page show different content depending on its row? =
 
-Yes, with the If / then block, Elementor widget or WPBakery element. Set rules on the page's properties, such as "Price is greater than 100" or "Date is in the future", and choose what to show when they match (Then) and when they don't (Else).
+Yes, in the block editor, Elementor and WPBakery. Add "If / then", set rules on the page's properties, such as "Price is greater than 100" or "Date is in the future", and choose what to show when they match (Then) and when they don't (Else).
 
 == Screenshots ==
 
@@ -188,7 +188,7 @@ Yes, with the If / then block, Elementor widget or WPBakery element. Set rules o
 == Upgrade Notice ==
 
 = 3.3 =
-Import groups from CSV, Excel, a URL or Google Sheets, show content per row with "If / then" in the block editor, Elementor and WPBakery, support for Yoast SEO, SEOPress and The SEO Framework, and a fix for templates with many groups.
+Fixes lost groups when saving templates with many groups. Also: import groups from CSV, Excel, a URL or Google Sheets, "If / then" content per row, and Yoast SEO, SEOPress and The SEO Framework.
 
 = 3.2 =
 Import and export templates between sites, sample data to try RowSprout with, no more pages at a URL that is already in use, and fixes for block themes and bulk actions.
