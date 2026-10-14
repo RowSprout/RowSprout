@@ -48,7 +48,7 @@ A plumbing company works in 30 towns. With RowSprout it designs one "Plumber in 
 
 * **Block editor:** bind a Paragraph, Heading, List item, Button or Image block to a property with Block Bindings, insert placeholders from the text toolbar, and use the Grid and If / then blocks.
 * **Elementor:** Heading, Textarea, Button, Grid and If / then widgets, an "Insert RowSprout property" button in the Text Editor, and a "RowSprout template" tab to manage properties and rows without leaving Elementor. With Elementor Pro, If / then can show a saved Elementor template.
-* **WPBakery Page Builder** (including builds bundled with themes): Grid and If / then elements, and the same insert button in its text editors.
+* **WPBakery Page Builder:** Grid and If / then elements, and the same insert button in its text editors.
 
 = Integrations =
 
